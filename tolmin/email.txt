@@ -1,0 +1,2128 @@
+     This very long file contains the package of Fortran subroutines that is
+the double length version of TOLMIN, which minimizes a general differentiable
+function of several variables subject to linear constraints.  Instructions on
+the use of the software are given in the comment cards of SUBROUTINE GETMIN,
+which is the subroutine that has to be called by the user.  Because all the
+routines are in a single file, they have to be separated before compiling and
+running the Fortran.  First Makefile is given below to simplify your task if
+you are using the UNIX operating system.  It is followed by the subroutines,
+separated by the characters `+++'.  You should use the file names that are
+adjacent to these characters for compatibility with `Makefile'.  This package
+should run after you have formed the separate subroutines, except that some
+compilers will give warning messages about jumping into an IF - END IF block,
+and some are even so fussy that they tell you that 1.0 is not a double
+precision number.  In fact the software has solved a wide range of problems
+successfully.  The given calculation is the `pentagon problem', which is
+studied in the report `TOLMIN: A Fortran Package for Linearly Constrained
+Optimization Calculations' by M.J.D. Powell, Report Number DAMTP 1989/NA2,
+University of Cambridge, the output of the calculation being given at the
+end of the file.  The method of TOLMIN is described in the paper `A tolerant
+algorithm for linearly constrained optimization calculations', Mathematical
+Programming B, Vol. 45, pp. 547-566 (1989). Please contact the author at
+mjdp@cam.ac.uk if you require further information.
+
+April, 1990.
+
+
++++ The file name of the following block should be Makefile
+
+
+main: addcon.o adjtol.o conres.o delcon.o eqcons.o fgcalc.o getd.o getfes.o getmin.o initzu.o ktvec.o lsrch.o main.o minflc.o minfun.o newcon.o satact.o sdegen.o sdirn.o stepbd.o zbfgs.o
+        f77 -g addcon.o adjtol.o conres.o delcon.o eqcons.o fgcalc.o getd.o getfes.o getmin.o initzu.o ktvec.o lsrch.o main.o minflc.o minfun.o newcon.o satact.o sdegen.o sdirn.o stepbd.o zbfgs.o
+addcon.o: addcon.f
+        f77 -g -c addcon.f
+adjtol.o: adjtol.f
+        f77 -g -c adjtol.f
+conres.o: conres.f
+        f77 -g -c conres.f
+delcon.o: delcon.f
+        f77 -g -c delcon.f
+eqcons.o: eqcons.f
+        f77 -g -c eqcons.f
+fgcalc.o: fgcalc.f
+        f77 -g -c fgcalc.f
+getd.o: getd.f
+        f77 -g -c getd.f
+getfes.o: getfes.f
+        f77 -g -c getfes.f
+getmin.o: getmin.f
+        f77 -g -c getmin.f
+initzu.o: initzu.f
+        f77 -g -c initzu.f
+ktvec.o: ktvec.f
+        f77 -g -c ktvec.f
+lsrch.o: lsrch.f
+        f77 -g -c lsrch.f
+main.o: main.f
+        f77 -g -c main.f
+minflc.o: minflc.f
+        f77 -g -c minflc.f
+minfun.o: minfun.f
+        f77 -g -c minfun.f
+newcon.o: newcon.f
+        f77 -g -c newcon.f
+satact.o: satact.f
+        f77 -g -c satact.f
+sdegen.o: sdegen.f
+        f77 -g -c sdegen.f
+sdirn.o: sdirn.f
+        f77 -g -c sdirn.f
+stepbd.o: stepbd.f
+        f77 -g -c stepbd.f
+zbfgs.o: zbfgs.f
+        f77 -g -c zbfgs.f
+
+
++++ The file name of the following block should be addcon.f
+
+
+      SUBROUTINE ADDCON (N,M,A,IA,IACT,NACT,Z,U,RELACC,INDXBD,ZTC,
+     1  CGRAD)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION A(IA,*),IACT(*),Z(*),U(*),ZTC(*),CGRAD(*)
+      NP=NACT+1
+      ICON=IACT(INDXBD)
+      IACT(INDXBD)=IACT(NP)
+      IACT(NP)=ICON
+C
+C     Form ZTC when the new constraint is a bound.
+C
+      IF (ICON .GT. M) THEN
+          INEWBD=ICON-M
+          IF (INEWBD .LE. N) THEN
+              TEMP=-1.0
+          ELSE
+              INEWBD=INEWBD-N
+              TEMP=1.0
+          END IF
+          IZNBD=INEWBD*N-N
+          DO 10 J=1,N
+   10     ZTC(J)=TEMP*Z(IZNBD+J)
+C
+C     Else form ZTC for an ordinary constraint.
+C
+      ELSE
+          DO 20 I=1,N
+   20     CGRAD(I)=A(I,ICON)
+          DO 30 J=1,N
+          ZTC(J)=0.0
+          IZ=J
+          DO 30 I=1,N
+          ZTC(J)=ZTC(J)+Z(IZ)*CGRAD(I)
+   30     IZ=IZ+N
+      END IF
+C
+C     Find any Givens rotations to apply to the last columns of Z.
+C
+      J=N
+   40 JP=J
+      J=J-1
+      IF (J .GT. NACT) THEN
+          IF (ZTC(JP) .EQ. 0.0) GOTO 40
+          IF (DABS(ZTC(JP)) .LE. RELACC*DABS(ZTC(J))) THEN
+              TEMP=DABS(ZTC(J))
+          ELSE IF (DABS(ZTC(J)) .LE. RELACC*DABS(ZTC(JP))) THEN
+              TEMP=DABS(ZTC(JP))
+          ELSE
+              TEMP=DABS(ZTC(JP))*DSQRT(1.0+(ZTC(J)/ZTC(JP))**2)
+          END IF
+          WCOS=ZTC(J)/TEMP
+          WSIN=ZTC(JP)/TEMP
+          ZTC(J)=TEMP
+C
+C     Apply the rotation when the new constraint is a bound.
+C
+          IZ=J
+          IF (ICON .GT. M) THEN
+              DO 50 I=1,N
+              TEMP=WCOS*Z(IZ+1)-WSIN*Z(IZ)
+              Z(IZ)=WCOS*Z(IZ)+WSIN*Z(IZ+1)
+              Z(IZ+1)=TEMP
+   50         IZ=IZ+N
+              Z(IZNBD+JP)=0.0
+C
+C     Else apply the rotation for an ordinary constraint.
+C
+          ELSE
+              WPIV=0.0
+              DO 60 I=1,N
+              TEMPA=WCOS*Z(IZ+1)
+              TEMPB=WSIN*Z(IZ)
+              TEMP=DABS(CGRAD(I))*(DABS(TEMPA)+DABS(TEMPB))
+              IF (TEMP .GT. WPIV) THEN
+                  WPIV=TEMP
+                  IPIV=I
+              END IF
+              Z(IZ)=WCOS*Z(IZ)+WSIN*Z(IZ+1)
+              Z(IZ+1)=TEMPA-TEMPB
+   60         IZ=IZ+N
+C
+C     Ensure orthogonality of Z(.,JP) to CGRAD.
+C
+              SUM=0.0
+              IZ=JP
+              DO 70 I=1,N
+              SUM=SUM+Z(IZ)*CGRAD(I)
+   70         IZ=IZ+N
+              IF (SUM .NE. 0.0) THEN
+                  IZ=IPIV*N-N+JP
+                  Z(IZ)=Z(IZ)-SUM/CGRAD(IPIV)
+              END IF
+          END IF
+          GO TO 40
+      END IF
+C
+C     Test for linear independence in the proposed new active set.
+C
+      IF (ZTC(NP) .EQ. 0.0) GOTO 90
+      IF (ICON .LE. M) THEN
+          SUM=0.0
+          SUMABS=0.0
+          IZ=NP
+          DO 80 I=1,N
+          TEMP=Z(IZ)*CGRAD(I)
+          SUM=SUM+TEMP
+          SUMABS=SUMABS+DABS(TEMP)
+   80     IZ=IZ+N
+          IF (DABS(SUM) .LE. RELACC*SUMABS) GOTO 90
+      END IF
+C
+C     Set the new diagonal element of U and return.
+C
+      U(NP)=1.0/ZTC(NP)
+      NACT=NP
+   90 RETURN
+      END
+
+
++++ The file name of the following block should be adjtol.f
+
+
+      SUBROUTINE ADJTOL (N,M,A,IA,B,XL,XU,X,IACT,NACT,XBIG,RELACC,TOL,
+     1  MEQL)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION A(IA,*),B(*),XL(*),XU(*),X(*),IACT(*),XBIG(*)
+C
+C     Set VIOL to the greatest relative constraint residual of the first
+C       NACT constraints.
+C
+      VIOL=0.0
+      IF (NACT .GT. MEQL) THEN
+          KL=MEQL+1
+          DO 20 K=KL,NACT
+          J=IACT(K)
+          IF (J .LE. M) THEN
+              RES=B(J)
+              RESABS=DABS(B(J))
+              DO 10 I=1,N
+              RES=RES-A(I,J)*X(I)
+   10         RESABS=RESABS+DABS(A(I,J)*XBIG(I))
+          ELSE
+              JM=J-M
+              IF (JM .LE. N) THEN
+                  RES=X(JM)-XL(JM)
+                  RESABS=XBIG(JM)+DABS(XL(JM))
+              ELSE
+                  JM=JM-N
+                  RES=XU(JM)-X(JM)
+                  RESABS=XBIG(JM)+DABS(XU(JM))
+              END IF
+          END IF
+          IF (RES .GT. 0.0) VIOL=DMAX1(VIOL,RES/RESABS)
+   20     CONTINUE
+      END IF
+C
+C     Adjust TOL.
+C
+      TOL=0.1*DMIN1(TOL,VIOL)
+      IF (TOL .LE. RELACC+RELACC) THEN
+          TOL=RELACC
+          DO 30 I=1,N
+   30     XBIG(I)=DABS(X(I))
+      END IF
+      RETURN
+      END
+
+
++++ The file name of the following block should be conres.f
+
+
+      SUBROUTINE CONRES (N,M,A,IA,B,XL,XU,X,IACT,NACT,PAR,G,Z,U,XBIG,
+     1  BRES,D,ZTG,RELACC,TOL,STEPCB,SUMRES,MEQL,MSAT,MTOT,INDXBD,
+     2  GM,GMNEW,PARNEW,CGRAD)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION A(IA,*),B(*),XL(*),XU(*),X(*),IACT(*),PAR(*),G(*),
+     1  Z(*),U(*),XBIG(*),BRES(*),D(*),ZTG(*),GM(*),GMNEW(*),PARNEW(*),
+     2  CGRAD(*)
+      IDIFF=MTOT-MSAT
+C
+C     Calculate and partition the residuals of the inactive constraints,
+C       and set the gradient vector when seeking feasibility.
+C
+      IF (IDIFF .GT. 0.0) THEN
+          DO 10 I=1,N
+   10     G(I)=0.0
+          SUMRES=0.0
+      END IF
+      MSATK=MSAT
+      MDEG=NACT
+      MSAT=NACT
+      KL=MEQL+1
+      DO 50 K=KL,MTOT
+      J=IACT(K)
+C
+C     Calculate the residual of the current constraint.
+C
+      IF (J .LE. M) THEN
+          RES=B(J)
+          RESABS=DABS(B(J))
+          DO 20 I=1,N
+          RES=RES-X(I)*A(I,J)
+   20     RESABS=RESABS+DABS(XBIG(I)*A(I,J))
+      ELSE
+          JM=J-M
+          IF (JM .LE. N) THEN
+              RES=X(JM)-XL(JM)
+              RESABS=DABS(XBIG(JM))+DABS(XL(JM))
+          ELSE
+              JM=JM-N
+              RES=XU(JM)-X(JM)
+              RESABS=DABS(XBIG(JM))+DABS(XU(JM))
+          END IF
+      END IF
+      BRES(J)=RES
+C
+C     Set TEMP to the relative residual.
+C
+      TEMP=0.0
+      IF (RESABS .NE. 0.0) TEMP=RES/RESABS
+      IF (K .GT. MSATK .AND. TEMP .LT. 0.0) THEN
+          IF (TEMP+RELACC .GE. 0.0) THEN
+              IF (J .LE. M) THEN
+                  SUM=DABS(B(J))
+                  DO 30 I=1,N
+   30             SUM=SUM+DABS(X(I)*A(I,J))
+              ELSE
+                  JM=J-M
+                  IF (JM .LE. N) THEN
+                      SUM=DABS(X(JM))+DABS(XL(JM))
+                  ELSE
+                      SUM=DABS(X(JM-N))+DABS(XU(JM-N))
+                  END IF
+              END IF
+              IF (DABS(RES) .LE. SUM*RELACC) TEMP=0.0
+          END IF
+      END IF
+C
+C     Place the residual in the appropriate position.
+C
+      IF (K .LE. NACT) GOTO 50
+      IF (K .LE. MSATK .OR. TEMP .GE. 0.0) THEN
+          MSAT=MSAT+1
+          IF (MSAT .LT. K) THEN
+              IACT(K)=IACT(MSAT)
+          END IF
+          IF (TEMP .GT. TOL) THEN
+              IACT(MSAT)=J
+          ELSE
+              MDEG=MDEG+1
+              IACT(MSAT)=IACT(MDEG)
+              IACT(MDEG)=J
+          END IF
+C
+C     Update the gradient and SUMRES if the constraint is violated when
+C       seeking feasibility.
+C
+      ELSE
+          IF (J .LE. M) THEN
+              DO 40 I=1,N
+   40         G(I)=G(I)+A(I,J)
+          ELSE
+              J=J-M
+              IF (J .LE. N) THEN
+                  G(J)=G(J)-1.0
+              ELSE
+                  G(J-N)=G(J-N)+1.0
+              END IF
+          END IF
+          SUMRES=SUMRES+DABS(RES)
+      END IF
+   50 CONTINUE
+C
+C     Seek the next search direction unless CONRES was called from GETFES
+C       and feasibility has been achieved.
+C
+      STEPCB=0.0
+      IF (IDIFF .GT. 0 .AND. MSAT .EQ. MTOT) GOTO 60
+      CALL GETD (N,M,A,IA,IACT,NACT,PAR,G,Z,U,D,ZTG,RELACC,DDOTG,MEQL,
+     1  MDEG,GM,GMNEW,PARNEW,CGRAD)
+C
+C     Calculate the (bound on the) step-length due to the constraints.
+C
+      IF (DDOTG .LT. 0.0) THEN
+          CALL STEPBD (N,M,A,IA,IACT,BRES,D,STEPCB,DDOTG,MDEG,MSAT,
+     1      MTOT,INDXBD)
+      END IF
+      IF (IDIFF .EQ. 0) SUMRES=DDOTG
+   60 RETURN
+      END
+
+
++++ The file name of the following block should be delcon.f
+
+
+      SUBROUTINE DELCON (N,M,A,IA,IACT,NACT,Z,U,RELACC,IDROP)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION A(IA,*),IACT(*),Z(*),U(*)
+      NM=NACT-1
+      IF (IDROP .EQ. NACT) GOTO 60
+      ISAVE=IACT(IDROP)
+C
+C     Cycle through the constraint exchanges that are needed.
+C
+      DO 50 J=IDROP,NM
+      JP=J+1
+      ICON=IACT(JP)
+      IACT(J)=ICON
+C
+C     Calculate the (J,JP) element of R.
+C
+      IF (ICON .LE. M) THEN
+          RJJP=0.0
+          IZ=J
+          DO 10 I=1,N
+          RJJP=RJJP+Z(IZ)*A(I,ICON)
+   10     IZ=IZ+N
+      ELSE
+          IBD=ICON-M
+          IF (IBD .LE. N) THEN
+              IZBD=IBD*N-N
+              RJJP=-Z(IZBD+J)
+          ELSE
+              IBD=IBD-N
+              IZBD=IBD*N-N
+              RJJP=Z(IZBD+J)
+          END IF
+      END IF
+C
+C     Calculate the parameters of the next rotation.
+C
+      UJP=U(JP)
+      TEMP=RJJP*UJP
+      DENOM=DABS(TEMP)
+      IF (DENOM*RELACC .LT. 1.0) DENOM=DSQRT(1.0+DENOM*DENOM)
+      WCOS=TEMP/DENOM
+      WSIN=1.0/DENOM
+C
+C     Rotate Z when a bound constraint is promoted.
+C
+      IZ=J
+      IF (ICON .GT. M) THEN
+          DO 20 I=1,N
+          TEMP=WCOS*Z(IZ+1)-WSIN*Z(IZ)
+          Z(IZ)=WCOS*Z(IZ)+WSIN*Z(IZ+1)
+          Z(IZ+1)=TEMP
+   20     IZ=IZ+N
+          Z(IZBD+JP)=0.0
+C
+C     Rotate Z when an ordinary constraint is promoted.
+C
+      ELSE
+          WPIV=0.0
+          DO 30 I=1,N
+          TEMPA=WCOS*Z(IZ+1)
+          TEMPB=WSIN*Z(IZ)
+          TEMP=DABS(A(I,ICON))*(DABS(TEMPA)+DABS(TEMPB))
+          IF (TEMP .GT. WPIV) THEN
+              WPIV=TEMP
+              IPIV=I
+          END IF
+          Z(IZ)=WCOS*Z(IZ)+WSIN*Z(IZ+1)
+          Z(IZ+1)=TEMPA-TEMPB
+   30     IZ=IZ+N
+C
+C     Ensure orthogonality to promoted constraint.
+C
+          SUM=0.0
+          IZ=JP
+          DO 40 I=1,N
+          SUM=SUM+Z(IZ)*A(I,ICON)
+   40     IZ=IZ+N
+          IF (SUM .NE. 0.0) THEN
+              IZ=IPIV*N-N+JP
+              Z(IZ)=Z(IZ)-SUM/A(IPIV,ICON)
+          END IF
+      END IF
+C
+C     Set the new diagonal elements of U.
+C
+      U(JP)=-DENOM*U(J)
+      U(J)=UJP/DENOM
+   50 CONTINUE
+C
+C     Return.
+C
+      IACT(NACT)=ISAVE
+   60 NACT=NM
+      RETURN
+      END
+
+
++++ The file name of the following block should be eqcons.f
+
+
+      SUBROUTINE EQCONS (N,M,MEQ,A,IA,B,XU,IACT,MEQL,INFO,Z,U,RELACC,
+     1  AM,CGRAD)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION A(IA,*),B(*),XU(*),IACT(*),Z(*),U(*),AM(*),CGRAD(*)
+C
+C     Try to add the next equality constraint to the active set.
+C
+      DO 50 KEQ=1,MEQ
+      IF (MEQL .LT. N) THEN
+          NP=MEQL+1
+          IACT(NP)=KEQ
+          CALL ADDCON (N,M,A,IA,IACT,MEQL,Z,U,RELACC,NP,AM,CGRAD)
+          IF (MEQL .EQ. NP) GOTO 50
+      END IF
+C
+C     If linear dependence occurs then find the multipliers of the
+C       dependence relation and apply them to the right hand sides.
+C
+      SUM=B(KEQ)
+      SUMABS=DABS(B(KEQ))
+      IF (MEQL .GT. 0) THEN
+          DO 10 I=1,N
+   10     AM(I)=A(I,KEQ)
+          K=MEQL
+   20     VMULT=0.0
+          IZ=K
+          DO 30 I=1,N
+          VMULT=VMULT+Z(IZ)*AM(I)
+   30     IZ=IZ+N
+          VMULT=VMULT*U(K)
+          J=IACT(K)
+          IF (J .LE. M) THEN
+              DO 40 I=1,N
+   40         AM(I)=AM(I)-VMULT*A(I,J)
+              RHS=B(J)
+          ELSE
+              JM=J-M-N
+              AM(JM)=AM(JM)-VMULT
+              RHS=XU(JM)
+          END IF
+          SUM=SUM-RHS*VMULT
+          SUMABS=SUMABS+DABS(RHS*VMULT)
+          K=K-1
+          IF (K .GE. 1) GOTO 20
+      END IF
+C
+C     Error return if the constraints are inconsistent.
+C
+      IF (DABS(SUM) .GT. RELACC*SUMABS) THEN
+          INFO=5
+          GOTO 60
+      END IF
+   50 CONTINUE
+   60 RETURN
+      END
+
+
++++ The file name of the following block should be fgcalc.f
+
+
+      SUBROUTINE FGCALC (N,X,F,G)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION X(*),G(*)
+C
+C     Calculate the objective function and its gradient.
+C
+      WA=(X(1)-X(3))**2+(X(2)-X(4))**2
+      WB=(X(3)-X(5))**2+(X(4)-X(6))**2
+      WC=(X(5)-X(1))**2+(X(6)-X(2))**2
+      F=1.0/(WA**8)+1.0/(WB**8)+1.0/(WC**8)
+      G(1)=16.0*((X(3)-X(1))/(WA**9)+(X(5)-X(1))/(WC**9))
+      G(2)=16.0*((X(4)-X(2))/(WA**9)+(X(6)-X(2))/(WC**9))
+      G(3)=16.0*((X(5)-X(3))/(WB**9)+(X(1)-X(3))/(WA**9))
+      G(4)=16.0*((X(6)-X(4))/(WB**9)+(X(2)-X(4))/(WA**9))
+      G(5)=16.0*((X(1)-X(5))/(WC**9)+(X(3)-X(5))/(WB**9))
+      G(6)=16.0*((X(2)-X(6))/(WC**9)+(X(4)-X(6))/(WB**9))
+      RETURN
+      END
+
+
++++ The file name of the following block should be getd.f
+
+
+      SUBROUTINE GETD (N,M,A,IA,IACT,NACT,PAR,G,Z,U,D,ZTG,RELACC,
+     1  DDOTG,MEQL,MDEG,GM,GMNEW,PARNEW,CGRAD)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION A(IA,*),IACT(*),PAR(*),G(*),Z(*),U(*),D(*),ZTG(*),
+     1  GM(*),GMNEW(*),PARNEW(*),CGRAD(*)
+C
+C     Initialize GM and cycle backwards through the active set.
+C
+   10 DO 20 I=1,N
+   20 GM(I)=G(I)
+      K=NACT
+   30 IF (K .GT. 0) THEN
+C
+C     Set TEMP to the next multiplier, but reduce the active set if
+C       TEMP has an unacceptable sign.
+C
+          TEMP=0.0
+          IZ=K
+          DO 40 I=1,N
+          TEMP=TEMP+Z(IZ)*GM(I)
+   40     IZ=IZ+N
+          TEMP=TEMP*U(K)
+          IF (K .GT. MEQL .AND. TEMP .GT. 0.0) THEN
+              CALL DELCON (N,M,A,IA,IACT,NACT,Z,U,RELACC,K)
+              GOTO 10
+          END IF
+C
+C     Update GM using the multiplier that has just been calculated.
+C
+          J=IACT(K)
+          IF (J .LE. M) THEN
+              DO 50 I=1,N
+   50         GM(I)=GM(I)-TEMP*A(I,J)
+          ELSE
+              JM=J-M
+              IF (JM .LE. N) THEN
+                  GM(JM)=GM(JM)+TEMP
+              ELSE
+                  GM(JM-N)=GM(JM-N)-TEMP
+              END IF
+          END IF
+          PAR(K)=TEMP
+          K=K-1
+          GOTO 30
+      END IF
+C
+C     Calculate the search direction and DDOTG.
+C
+      DDOTG=0.0
+      IF (NACT .LT. N) THEN
+          CALL SDEGEN (N,M,A,IA,IACT,NACT,PAR,Z,U,D,ZTG,GM,RELACC,
+     1      DDOTGM,MEQL,MDEG,GMNEW,PARNEW,CGRAD)
+          IF (DDOTGM .LT. 0.0) THEN
+              DO 60 I=1,N
+   60         DDOTG=DDOTG+D(I)*G(I)
+          END IF
+      END IF
+      RETURN
+      END
+
+
++++ The file name of the following block should be getfes.f
+
+
+      SUBROUTINE GETFES (N,M,A,IA,B,XL,XU,X,IACT,NACT,PAR,INFO,G,Z,
+     1  U,XBIG,RELACC,TOL,MEQL,MSAT,MTOT,BRES,D,ZTG,GM,GMNEW,PARNEW,
+     2  CGRAD)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION A(IA,*),B(*),XL(*),XU(*),X(*),IACT(*),PAR(*),G(*),Z(*),
+     1  U(*),XBIG(*),BRES(*),D(*),ZTG(*),GM(*),GMNEW(*),PARNEW(*),
+     2  CGRAD(*)
+C
+C     Make the correction to X for the active constraints.
+C
+      INFO=0
+   10 CALL SATACT (N,M,A,IA,B,XL,XU,X,IACT,NACT,INFO,Z,U,XBIG,RELACC,
+     1  TOL,MEQL)
+      IF (INFO .GT. 0) MSAT=NACT
+      IF (MSAT .EQ. MTOT) GOTO 60
+C
+C     Try to correct the infeasibility.
+C
+   20 MSATK=MSAT
+      SUMRSK=0.0
+   30 CALL CONRES (N,M,A,IA,B,XL,XU,X,IACT,NACT,PAR,G,Z,U,XBIG,BRES,
+     1  D,ZTG,RELACC,TOL,STEPCB,SUMRES,MEQL,MSAT,MTOT,INDXBD,GM,GMNEW,
+     2  PARNEW,CGRAD)
+C
+C     Include the new constraint in the active set.
+C
+      IF (STEPCB .GT. 0.0) THEN
+          DO 40 I=1,N
+          X(I)=X(I)+STEPCB*D(I)
+   40     XBIG(I)=DMAX1(XBIG(I),DABS(X(I)))
+          CALL ADDCON (N,M,A,IA,IACT,NACT,Z,U,RELACC,INDXBD,GMNEW,CGRAD)
+      END IF
+C
+C     Test whether to continue the search for feasibility.
+C
+      IF (MSAT .LT. MTOT) THEN
+          IF (STEPCB .EQ. 0.0) GOTO 50
+          IF (MSATK .LT. MSAT) GOTO 20
+          IF (SUMRSK .EQ. 0.0 .OR. SUMRES .LT. SUMRSK) THEN
+              SUMRSK=SUMRES
+              ITEST=0
+          END IF
+          ITEST=ITEST+1
+          IF (ITEST .LE. 2) GOTO 30
+C
+C     Reduce TOL if it may be too large to allow feasibility.
+C
+   50     IF (TOL .GT. RELACC) THEN
+              CALL ADJTOL (N,M,A,IA,B,XL,XU,X,IACT,NACT,XBIG,RELACC,
+     1          TOL,MEQL)
+              GOTO 10
+          END IF
+      END IF
+   60 RETURN
+      END
+
+
++++ The file name of the following block should be getmin.f
+
+
+      SUBROUTINE GETMIN (N,M,MEQ,A,IA,B,XL,XU,X,ACC,IACT,NACT,PAR,
+     1  IPRINT,INFO,W)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION A(IA,*),B(*),XL(*),XU(*),X(*),IACT(*),PAR(*),W(*)
+C
+C  This is the entry point to a package of subroutines that calculate the
+C     the least value of a differentiable function of several variables
+C     subject to linear constraints on the values of the variables, using
+C     the method that is described in the paper "A tolerant algorithm for
+C     linearly constrained optimization calculations", Math. Programming B,
+C     Vol. 45, pp. 547-566 (1989).
+C
+C  N is the number of variables and must be set by the user.
+C  M is the number of linear constraints (excluding simple bounds) and
+C     must be set by the user.
+C  MEQ is the number of constraints that are equalities and must be set
+C     by the user.
+C  A(.,.) is a 2-dimensional array whose columns are the gradients of the
+C     M constraint functions.  Its entries must be set by the user and
+C     its dimensions must be at least N by M.
+C  IA is the actual first dimension of the array A that is supplied by the
+C     user, so its value may not be less than N.
+C  B(.) is a vector of constraint right hand sides that must also be set
+C     by the user.  Specifically the constraints on the variables X(I)
+C     I=1(1)N are
+C          A(1,K)*X(1)+...+A(N,K)*X(N) .EQ. B(K)  K=1,...,MEQ
+C          A(1,K)*X(1)+...+A(N,K)*X(N) .LE. B(K)  K=MEQ+1,...,M  .
+C     Note that the data that define the equality constraints come before
+C     the data of the inequalities.
+C  XL(.) and XU(.) are vectors whose components must be set to lower and
+C     upper bounds on the variables.  Choose very large negative and
+C     positive entries if a component should be unconstrained, or set
+C     XL(I)=XU(I) to freeze the I-th variable.  Specifically these simple
+C     bounds are
+C          XL(I) .LE. X(I) and X(I) .LE. XU(I)  I=1,...,N  .
+C  X(.) is the vector of variables of the optimization calculation.  Its
+C     initial elements must be set by the user to an estimate of the
+C     required solution.  The subroutines can usually cope with poor
+C     estimates, and there is no need for X(.) to be feasible initially.
+C     These variables are adjusted automatically and the values that give
+C     the least feasible calculated value of the objective function are
+C     available in X(.) on the return from GETMIN.
+C  ACC is a tolerance on the first order conditions at the calculated
+C     solution of the optimization problem.  These first order conditions
+C     state that, if X(.) is a solution, then there is a set of active
+C     constraints with indices IACT(K) K=1(1)NACT, say, such that X(.) is
+C     on the boundaries of these constraints, and the gradient of the
+C     objective function can be expressed in the form
+C          GRAD(F)=PAR(1)*GRAD(C(IACT(1)))+...
+C                        ...+PAR(NACT)*GRAD(C(IACT(NACT)))  .
+C     Here PAR(K) K=1(1)NACT are Lagrange multipliers that are nonpositive
+C     for inequality constraints, and GRAD(C(IACT(K))) is the gradient of
+C     the IACT(K)-th constraint function, so it is A(.,IACT(K)) if IACT(K)
+C     .LE. M, and it is minus or plus the J-th coordinate vector if the
+C     constraint is the lower or upper bound on X(J) respectively.  The
+C     normal return from the calculation occurs when X(.) is feasible and
+C     the sum of squares of components of the vector RESKT(.) is at most
+C     ACC**2, where RESKT(.) is the N-component vector of residuals of
+C     the first order condition that is displayed above.  Sometimes the
+C     package cannot satisfy this condition, because noise in the function
+C     values can prevent a change to the variables, no line search being
+C     allowed to increase the objective function.
+C  IACT(.) is a working space array of integer variables that must be
+C     provided by the user.  Its length must be at least (M+2*N).  Its
+C     leading entries on the return from the subroutine are the indices
+C     IACT(K) K=1(1)NACT that are mentioned in the previous paragraph:
+C     in other words they are the indices of the final active constraints.
+C     Here the indices M+1,...,M+N and M+N+1,...,M+2*N denote the lower
+C     and upper bounds respectively.
+C  NACT is set automatically to the integer variable of this ilk that has
+C     been introduced already.
+C  PAR(.) is a one-dimensional array that will hold the Lagrange
+C     multipliers PAR(K) K=1(1)NACT on the return from GETMIN, these
+C     parameters being defined in the above paragraph on ACC.  The length
+C     of PAR should be at least N.
+C  IPRINT must be set by the user to specify the frequency of printing
+C     during the execution of the optimization package.  There is no
+C     printed output if IPRINT=0.  Otherwise, after ensuring feasibility,
+C     information is given every IABS(IPRINT) iterations and whenever a
+C     parameter called TOL is reduced.  The printing provides the values
+C     of X(.), F(.) and G(.)=GRAD(F) if IPRINT is positive, while if
+C     IPRINT is negative this information is augmented by the current
+C     values of IACT(K) K=1(1)NACT, PAR(K) K=1(1)NACT and RESKT(I)
+C     I=1(1)N.  The reason for returning to the calling program is also
+C     displayed when IPRINT is nonzero.
+C  INFO is an integer variable that should be set to zero initially,
+C     unless the user wishes to impose an upper bound on the number of
+C     evaluations of the objective function and its gradient, in which
+C     case INFO should be set to the value of this bound.  On the exit
+C     from GETMIN it will have one of the following integer values to
+C     indicate the reason for leaving the optimization package:
+C          INFO=1   X(.) is feasible and the condition that depends on
+C     ACC is satisfied.
+C          INFO=2   X(.) is feasible and rounding errors are preventing
+C     further progress.
+C          INFO=3   X(.) is feasible but the objective function fails to
+C     decrease although a decrease is predicted by the current gradient
+C     vector.  If this return occurs and RESKT(.) has large components
+C     then the user's calculation of the gradient of the objective
+C     function may be incorrect.  One should also question the coding of
+C     the gradient when the final rate of convergence is slow.
+C          INFO=4   In this case the calculation cannot begin because IA
+C     is less than N or because the lower bound on a variable is greater
+C     than the upper bound.
+C          INFO=5   This value indicates that the equality constraints
+C     are inconsistent.   These constraints include any components of
+C     X(.) that are frozen by setting XL(I)=XU(I).
+C          INFO=6   In this case there is an error return because the
+C     equality constraints and the bounds on the variables are found to
+C     be inconsistent.
+C          INFO=7   This value indicates that there is no vector of
+C     variables that satisfies all of the constraints.  Specifically,
+C     when this return or an INFO=6 return occurs, the current active
+C     constraints (whose indices are IACT(K) K=1(1)NACT) prevent any
+C     change in X(.) that reduces the sum of constraint violations,
+C     where only bounds are included in this sum if INFO=6.
+C          INFO=8   In this case the limit on the number of calls of
+C     subroutine FGCALC (see below) has been reached, and there would
+C     have been further calculation otherwise.
+C  W(.) is a working space array of real variables that must be provided
+C     by the user.  Its length must be at least (M+11*N+N**2).  On exit
+C     from the package one can find the final components of GRAD(F) and
+C     RESKT(.) in W(1),...,W(N) and W(N+1),...,W(2*N) respectively.
+C  Note 1.   The variables N, M, MEQ, IA, ACC and IPRINT and the elements
+C     of the arrays A(,.,), B(.), XL(.) and XU(.) are not altered by the
+C     optimization procedure.  Their values, the value of INFO and the
+C     initial components of X(.) must be set on entry to GETMIN.
+C  Note 2.   Of course the package needs the objective function and its
+C     gradient.  Therefore the user must provide a subroutine called
+C     FGCALC, its first two lines being
+C          SUBROUTINE FGCALC (N,X,F,G)
+C          DIMENSION X(*),G(*)   .
+C     It is called automatically with N set as above and with X(.) set
+C     to a feasible vector of variables.  It should calculate the value
+C     of the objective function and its gradient for this X(.) and should
+C     set them in F and G(I) I=1(1)N respectively, without disturbing N
+C     or any of the components of X(.).
+C
+C     Partition the workspace array.
+C
+      IG=1
+      IRESKT=IG+N
+      IZ=IRESKT+N
+      IU=IZ+N*N
+      IXBIG=IU+N
+      IBRES=IXBIG+N
+      ID=IBRES+M+N+N
+      IZTG=ID+N
+      IGM=IZTG+N
+      IXS=IGM+N
+      IGS=IXS+N
+C
+C     Call the optimization package.
+C
+      CALL MINFLC (N,M,MEQ,A,IA,B,XL,XU,X,ACC,IACT,NACT,PAR,IPRINT,
+     1  INFO,W(IG),W(IZ),W(IU),W(IXBIG),W(IRESKT),W(IBRES),W(ID),
+     2  W(IZTG),W(IGM),W(IXS),W(IGS))
+      RETURN
+      END
+
+
++++ The file name of the following block should be initzu.f
+
+
+      SUBROUTINE INITZU (N,M,XL,XU,X,IACT,MEQL,INFO,Z,U,XBIG,RELACC)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION XL(*),XU(*),X(*),IACT(*),Z(*),U(*),XBIG(*)
+C
+C     Set RELACC.
+C
+      ZTPAR=100.0
+      RELACC=1.0
+   10 RELACC=0.5*RELACC
+      TEMPA=ZTPAR+0.5*RELACC
+      TEMPB=ZTPAR+RELACC
+      IF (ZTPAR .LT. TEMPA .AND. TEMPA .LT. TEMPB) GOTO 10
+C
+C     Seek bound inconsistencies and bound equality constraints.
+C
+      MEQL=0
+      DO 20 I=1,N
+      IF (XL(I) .GT. XU(I)) GOTO 50
+      IF (XL(I) .EQ. XU(I)) MEQL=MEQL+1
+   20 CONTINUE
+C
+C     Initialize U, Z and XBIG.
+C
+      JACT=0
+      NN=N*N
+      DO 30 I=1,NN
+   30 Z(I)=0.0
+      IZ=0
+      DO 40 I=1,N
+      IF (XL(I) .EQ. XU(I)) THEN
+          X(I)=XU(I)
+          JACT=JACT+1
+          U(JACT)=1.0
+          IACT(JACT)=I+M+N
+          J=JACT
+      ELSE
+          J=I+MEQL-JACT
+      END IF
+      Z(IZ+J)=1.0
+      IZ=IZ+N
+   40 XBIG(I)=DABS(X(I))
+      INFO=1
+   50 RETURN
+      END
+
+
++++ The file name of the following block should be ktvec.f
+
+
+      SUBROUTINE KTVEC (N,M,A,IA,IACT,NACT,PAR,G,RESKT,Z,U,BRES,RELAXF,
+     1  MEQL,SSQKT,PARW,RESKTW)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION A(IA,*),IACT(*),PAR(*),G(*),RESKT(*),Z(*),U(*),
+     1  BRES(*),PARW(*),RESKTW(*)
+C
+C     Calculate the Lagrange parameters and the residual vector.
+C
+      DO 10 I=1,N
+   10 RESKT(I)=G(I)
+      IF (NACT .GT. 0) THEN
+          ICASE=0
+   20     DO 50 KK=1,NACT
+          K=NACT+1-KK
+          J=IACT(K)
+          TEMP=0.0
+          IZ=K
+          DO 30 I=1,N
+          TEMP=TEMP+Z(IZ)*RESKT(I)
+   30     IZ=IZ+N
+          TEMP=TEMP*U(K)
+          IF (ICASE .EQ. 0) PAR(K)=0.0
+          IF (K .LE. MEQL .OR. PAR(K)+TEMP .LT. 0.0) THEN
+              PAR(K)=PAR(K)+TEMP
+          ELSE
+              TEMP=-PAR(K)
+              PAR(K)=0.0
+          END IF
+          IF (TEMP .NE. 0.0) THEN
+              IF (J .LE. M) THEN
+                  DO 40 I=1,N
+   40             RESKT(I)=RESKT(I)-TEMP*A(I,J)
+              ELSE
+                  JM=J-M
+                  IF (JM .LE. N) THEN
+                      RESKT(JM)=RESKT(JM)+TEMP
+                  ELSE
+                      RESKT(JM-N)=RESKT(JM-N)-TEMP
+                  END IF
+              END IF
+          END IF
+   50     CONTINUE
+C
+C     Calculate the sum of squares of the KT residual vector.
+C
+          SSQKT=0.0
+          IF (NACT .EQ. N) GOTO 130
+          DO 60 I=1,N
+   60     SSQKT=SSQKT+RESKT(I)**2
+C
+C     Apply iterative refinement to the residual vector.
+C
+          IF (ICASE .EQ. 0) THEN
+              ICASE=1
+              DO 70 K=1,NACT
+   70         PARW(K)=PAR(K)
+              DO 80 I=1,N
+   80         RESKTW(I)=RESKT(I)
+              SSQKTW=SSQKT
+              GOTO 20
+          END IF
+C
+C     Undo the iterative refinement if it does not reduce SSQKT.
+C
+          IF (SSQKTW .LT. SSQKT) THEN
+              DO 90 K=1,NACT
+   90         PAR(K)=PARW(K)
+              DO 100 I=1,N
+  100         RESKT(I)=RESKTW(I)
+              SSQKT=SSQKTW
+          END IF
+C
+C     Calculate SSQKT when there are no active constraints.
+C
+      ELSE
+          SSQKT=0.0
+          DO 110 I=1,N
+  110     SSQKT=SSQKT+G(I)**2
+      END IF
+C
+C     Predict the reduction in F if one corrects any positive residuals
+C       of active inequality constraints.
+C
+      RELAXF=0.0
+      IF (MEQL. LT. NACT) THEN
+          KL=MEQL+1
+          DO 120 K=KL,NACT
+          J=IACT(K)
+          IF (BRES(J) .GT. 0.0) THEN
+              RELAXF=RELAXF-PAR(K)*BRES(J)
+          END IF
+  120     CONTINUE
+      END IF
+  130 RETURN
+      END
+
+
++++ The file name of the following block should be lsrch.f
+
+
+      SUBROUTINE LSRCH (N,X,G,D,XS,GS,RELACC,STEPCB,DDOTG,F,STEP,
+     1  NFVALS,NFMAX,GOPT)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION X(*),G(*),D(*),XS(*),GS(*),GOPT(*)
+C
+C     Initialization.
+C
+      RELINT=0.9
+      ICOUNT=0
+      RATIO=-1.0
+      DO 10 I=1,N
+      XS(I)=X(I)
+      GS(I)=G(I)
+      GOPT(I)=G(I)
+      IF (D(I) .NE. 0.0) THEN
+          TEMP=DABS(X(I)/D(I))
+          IF (RATIO .LT. 0.0 .OR. TEMP .LT. RATIO) RATIO=TEMP
+      END IF
+   10 CONTINUE
+      STEP=DMIN1(1.0D0,STEPCB)
+C
+C     The following number 1.0D-12 is independent of the working
+C       accuracy of the computer arithmetic.
+C
+      STPMIN=DMAX1(RELACC*RATIO,1.0D-12*STEP)
+      STEP=DMAX1(STPMIN,STEP)
+      SBASE=0.0
+      FBASE=F
+      DDOTGB=DDOTG
+      STPLOW=0.0
+      FLOW=F
+      DGLOW=DDOTG
+      STPHGH=0.0
+      STPOPT=0.0
+      FOPT=F
+      DGOPT=DABS(DDOTG)
+C
+C     Calculate another function and gradient value.
+C
+   20 DO 30 I=1,N
+   30 X(I)=XS(I)+STEP*D(I)
+      CALL FGCALC (N,X,F,G)
+      ICOUNT=ICOUNT+1
+      DGMID=0.0
+      DO 40 I=1,N
+   40 DGMID=DGMID+D(I)*G(I)
+      IF (F .LE. FOPT) THEN
+          IF (F .LT. FOPT .OR. DABS(DGMID) .LT. DGOPT) THEN
+              STPOPT=STEP
+              FOPT=F
+              DO 50 I=1,N
+   50         GOPT(I)=G(I)
+              DGOPT=DABS(DGMID)
+          END IF
+      END IF
+      IF (NFVALS+ICOUNT .EQ. NFMAX) GOTO 70
+C
+C      Modify the bounds on the steplength or convergence.
+C
+      IF (F .GE. FBASE+0.1*(STEP-SBASE)*DDOTGB) THEN
+          IF (STPHGH .GT. 0.0 .OR. F .GT. FBASE .OR. DGMID .GT.
+     1      0.5*DDOTG) THEN
+              STPHGH=STEP
+              FHGH=F
+              DGHGH=DGMID
+              GOTO 60
+          END IF
+          SBASE=STEP
+          FBASE=F
+          DDOTGB=DGMID
+      END IF
+      IF (DGMID .GE. 0.7*DDOTGB) GOTO 70
+      STPLOW=STEP
+      FLOW=F
+      DGLOW=DGMID
+   60 IF (STPHGH .GT. 0.0 .AND. STPLOW .GE. RELINT*STPHGH) GOTO 70
+C
+C     Calculate the next step length or end the iterations.
+C
+      IF (STPHGH .EQ. 0.0) THEN
+          IF (STEP .EQ. STEPCB) GOTO 70
+          TEMP=10.0
+          IF (DGMID .GT. 0.9*DDOTG) TEMP=DDOTG/(DDOTG-DGMID)
+          STEP=DMIN1(TEMP*STEP,STEPCB)
+          GOTO 20
+      ELSE IF (ICOUNT .EQ. 1 .OR. STPLOW .GT. 0.0) THEN
+          DGKNOT=2.0*(FHGH-FLOW)/(STPHGH-STPLOW)-0.5*(DGLOW+DGHGH)
+          IF (DGKNOT .GE. 0.0) THEN
+              RATIO=DMAX1(0.1D0,0.5D0*DGLOW/(DGLOW-DGKNOT))
+          ELSE
+              RATIO=(0.5*DGHGH-DGKNOT)/(DGHGH-DGKNOT)
+          END IF
+          STEP=STPLOW+RATIO*(STPHGH-STPLOW)
+          GOTO 20
+      ELSE
+          STEP=0.1*STEP
+          IF (STEP .GE. STPMIN) GOTO 20
+      END IF
+C
+C     Return from subroutine.
+C
+   70 IF (STEP .NE. STPOPT) THEN
+          STEP=STPOPT
+          F=FOPT
+          DO 80 I=1,N
+          X(I)=XS(I)+STEP*D(I)
+   80     G(I)=GOPT(I)
+      END IF
+      NFVALS=NFVALS+ICOUNT
+      RETURN
+      END
+
+
++++ The file name of the following block should be main.f
+
+
+C
+C     The pentagon problem.
+C
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION A(10,15),B(15),XL(6),XU(6),X(6),IACT(27),PAR(20),
+     1  W(1000)
+C
+C     The two values of ICASE provide two different values of ACC, the latter
+C     accuracy being so demanding that a return with INFO=2 occurs. The
+C     final values of the objective function in the two cases agree well
+C     and constraint violations are negligible, considering the differences
+C     between the final values of the variables.
+C
+      IPRINT=10
+      IA=10
+      N=6
+      DO 100 ICASE=1,2
+      ACC=1.0D-6
+      IF (ICASE .EQ. 2) ACC=1.0D-14
+C
+C     Set the components of XL, XU and X.
+C
+      DO 10 I=1,N
+      XL(I)=-1.0D6
+      XU(I)=1.0D6
+   10 X(I)=0.5D0*DFLOAT(I-3)
+      X(2)=0.0D0
+      X(4)=-1.0D0
+      X(6)=1.0D0
+C
+C     Set the constraints.
+C
+      M=0
+      MEQ=0
+      PI=4.0D0*DATAN(1.0D0)
+      DO 30 K=1,5
+      THETA=0.4D0*DFLOAT(K-1)*PI
+      CTH=DCOS(THETA)
+      STH=DSIN(THETA)
+      DO 30 J=2,N,2
+      M=M+1
+      DO 20 I=1,N
+   20 A(I,M)=0.0D0
+      A(J-1,M)=CTH
+      A(J,M)=STH
+   30 B(M)=1.0D0
+C
+C     Call the optimization package.
+C
+      INFO=0
+      PRINT 40, ACC,IPRINT
+   40 FORMAT (//5X,'CALL OF GETMIN WITH  ACC =',1PD11.4,
+     1  '  AND  IPRINT =',I3)
+      CALL GETMIN (N,M,MEQ,A,IA,B,XL,XU,X,ACC,IACT,NACT,PAR,IPRINT,
+     1  INFO,W)
+      PRINT 50, INFO
+   50 FORMAT (/5X,'RETURN FROM TOLMIN WITH INFO =',I2)
+      CALL FGCALC (N,X,F,W)
+      PRINT 60, F
+   60 FORMAT (/5X,'FINAL VALUE OF OBJECTIVE FUNCTION =',1PD20.12)
+      PRINT 70, (X(I),I=1,N)
+   70 FORMAT (/5X,'FINAL COMPONENTS OF X ='//(4X,1P3D20.12))
+      DO 80 K=1,M
+      DO 80 I=1,N
+   80 B(K)=B(K)-A(I,K)*X(I)
+      PRINT 90, (B(K),K=1,M)
+   90 FORMAT (/5X,'FINAL CONSTRAINT RESIDUALS ='//(3X,1P6D12.4))
+  100 CONTINUE
+      STOP
+      END
+
+
++++ The file name of the following block should be minflc.f
+
+
+      SUBROUTINE MINFLC (N,M,MEQ,A,IA,B,XL,XU,X,ACC,IACT,NACT,PAR,
+     1  IPRINT,INFO,G,Z,U,XBIG,RESKT,BRES,D,ZTG,GM,XS,GS)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION A(IA,*),B(*),XL(*),XU(*),X(*),IACT(*),PAR(*),G(*),
+     1  Z(*),U(*),XBIG(*),RESKT(*),BRES(*),D(*),ZTG(*),GM(*),XS(*),
+     2  GS(*)
+C
+C     Initialize ZZNORM, ITERC, NFVALS and NFMAX.
+C
+      ZZNORM=-1.0
+      ITERC=0
+      NFVALS=0
+      NFMAX=0
+      IF (INFO .GT. 0) NFMAX=INFO
+C
+C     Check the bounds on N, M and MEQ.
+C
+      INFO=4
+      IF (MAX0(1-N,-M,MEQ*(MEQ-M)) .GT. 0) THEN
+          IF (IPRINT .NE. 0) PRINT 1010
+ 1010     FORMAT (/5X,'ERROR RETURN FROM GETMIN BECAUSE A CONDITION',
+     1      ' ON N, M OR MEQ IS VIOLATED')
+          GOTO 40
+      END IF
+C
+C     Initialize RELACC, Z, U and TOL.
+C
+      CALL INITZU (N,M,XL,XU,X,IACT,MEQL,INFO,Z,U,XBIG,RELACC)
+      TOL=DMAX1(0.01D0,10.0D0*RELACC)
+      IF (INFO .EQ. 4) THEN
+          IF (IPRINT .NE. 0) PRINT 1020
+ 1020     FORMAT (/5X,'ERROR RETURN FROM GETMIN BECAUSE A LOWER',
+     1      ' BOUND EXCEEDS AN UPPER BOUND')
+          GOTO 40
+      END IF
+C
+C     Add any equality constraints to the active set.
+C
+      IF (MEQ .GT. 0) THEN
+          CALL EQCONS (N,M,MEQ,A,IA,B,XU,IACT,MEQL,INFO,Z,U,RELACC,XS,
+     1      GS)
+          IF (INFO .EQ. 5) THEN
+              IF (IPRINT .NE. 0) PRINT 1030
+ 1030         FORMAT (/5X,'ERROR RETURN FROM GETMIN BECAUSE THE',
+     1          ' EQUALITY CONSTRAINTS ARE INCONSISTENT')
+              GOTO 40
+          END IF
+      END IF
+      NACT=MEQL
+      MSAT=MEQL
+C
+C     Add the bounds to the list of constraints.
+C
+      MTOT=NACT
+      DO 10 I=1,N
+      IF (XL(I) .LT. XU(I)) THEN
+          MTOT=MTOT+2
+          IACT(MTOT-1)=M+I
+          IACT(MTOT)=M+N+I
+      END IF
+   10 CONTINUE
+C
+C     Try to satisfy the bound constraints.
+C
+      CALL GETFES (N,M,A,IA,B,XL,XU,X,IACT,NACT,PAR,INFO,G,Z,U,XBIG,
+     1  RELACC,TOL,MEQL,MSAT,MTOT,BRES,D,ZTG,GM,RESKT,XS,GS)
+      IF (MSAT .LT. MTOT) THEN
+          IF (IPRINT .NE. 0) PRINT 1040
+ 1040     FORMAT (/5X,'ERROR RETURN FROM GETMIN BECAUSE THE',
+     1      ' EQUALITIES AND BOUNDS ARE INCONSISTENT')
+          INFO=6
+          GOTO 40
+      END IF
+C
+C     Add the ordinary inequalities to the list of constraints.
+C
+      IF (M .GT. MEQ) THEN
+          MP=MEQ+1
+          DO 20 K=MP,M
+          MTOT=MTOT+1
+   20     IACT(MTOT)=K
+      END IF
+C
+C     Correct any constraint violations.
+C
+   30 CALL GETFES (N,M,A,IA,B,XL,XU,X,IACT,NACT,PAR,INFO,G,Z,U,XBIG,
+     1  RELACC,TOL,MEQL,MSAT,MTOT,BRES,D,ZTG,GM,RESKT,XS,GS)
+      IF (MSAT .LT. MTOT) THEN
+          IF (IPRINT .NE. 0) PRINT 1050
+ 1050     FORMAT (/5X,'ERROR RETURN FROM GETMIN BECAUSE THE',
+     1      ' CONSTRAINTS ARE INCONSISTENT')
+          INFO=7
+          GOTO 40
+      ELSE IF (MEQL .EQ. N) THEN
+          IF (IPRINT .NE. 0) PRINT 1060
+ 1060     FORMAT (/5X,'GETMIN FINDS THAT THE VARIABLES ARE',
+     1      ' DETERMINED BY THE EQUALITY CONSTRAINTS')
+          GOTO 40
+      END IF
+C
+C     Minimize the objective function in the case when constraints are
+C       treated as degenerate if their residuals are less than TOL.
+C
+      CALL MINFUN (N,M,A,IA,B,XL,XU,X,ACC,IACT,NACT,PAR,IPRINT,INFO,G,Z,
+     1  U,XBIG,RELACC,ZZNORM,TOL,MEQL,MTOT,ITERC,NFVALS,NFMAX,RESKT,
+     2  BRES,D,ZTG,GM,XS,GS)
+C
+C     Reduce TOL if necessary.
+C
+      IF (TOL .GT. RELACC .AND. NACT .GT. 0) THEN
+          IF (NFVALS .NE. NFMAX) THEN
+              CALL ADJTOL (N,M,A,IA,B,XL,XU,X,IACT,NACT,XBIG,RELACC,TOL,
+     1          MEQL)
+              GOTO 30
+          ELSE
+              INFO=8
+          END IF
+      END IF
+      IF (IPRINT .NE. 0) THEN
+          IF (INFO .EQ. 1) PRINT 1070
+ 1070     FORMAT (/5X,'GETMIN HAS ACHIEVED THE REQUIRED ACCURACY')
+          IF (INFO .EQ. 2) PRINT 1080
+ 1080     FORMAT (/5X,'GETMIN CAN MAKE NO FURTHER PROGRESS BECAUSE',
+     1      ' OF ROUNDING ERRORS')
+          IF (INFO .EQ. 3) PRINT 1090
+ 1090     FORMAT (/5X,'GETMIN CAN MAKE NO FURTHER PROGRESS BECAUSE',
+     1      ' F WILL NOT DECREASE ANY MORE')
+          IF (INFO .EQ. 8) PRINT 1100
+ 1100     FORMAT (/5X,'GETMIN HAS REACHED THE GIVEN LIMIT ON THE',
+     1      ' NUMBER OF CALLS OF FGCALC')
+      END IF
+   40 RETURN
+      END
+
+
++++ The file name of the following block should be minfun.f
+
+
+      SUBROUTINE MINFUN (N,M,A,IA,B,XL,XU,X,ACC,IACT,NACT,PAR,IPRINT,
+     1  INFO,G,Z,U,XBIG,RELACC,ZZNORM,TOL,MEQL,MTOT,ITERC,NFVALS,
+     2  NFMAX,RESKT,BRES,D,ZTG,GM,XS,GS)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION A(IA,*),B(*),XL(*),XU(*),X(*),IACT(*),PAR(*),G(*),Z(*),
+     1  U(*),XBIG(*),RESKT(*),BRES(*),D(*),ZTG(*),GM(*),XS(*),GS(*)
+      SAVE F
+C
+C     Initialize the minimization calculation.
+C
+      MSAT=MTOT
+      ITERK=ITERC
+      NFVALK=NFVALS
+      IF (NFVALS .EQ. 0 .OR. INFO .EQ. 1) THEN
+          CALL FGCALC (N,X,F,G)
+          NFVALS=NFVALS+1
+      END IF
+      FPREV=DABS(F+F+1.0)
+      ITERP=-1
+      IF (IPRINT .NE. 0) THEN
+          PRINT 1000, TOL
+ 1000     FORMAT (/5X,'NEW VALUE OF TOL =',1PD13.5)
+          ITERP=ITERC+IABS(IPRINT)
+          IF (ITERC .EQ. 0) ITERP=0
+      END IF
+C
+C     Calculate the next search direction.
+C
+   10 CALL CONRES (N,M,A,IA,B,XL,XU,X,IACT,NACT,PAR,G,Z,U,XBIG,BRES,D,
+     1  ZTG,RELACC,TOL,STEPCB,DDOTG,MEQL,MSAT,MTOT,INDXBD,GM,RESKT,XS,
+     2  GS)
+C
+C     Calculate the Kuhn Tucker residual vector.
+C
+      CALL KTVEC (N,M,A,IA,IACT,NACT,PAR,G,RESKT,Z,U,BRES,RELAXF,MEQL,
+     1  SSQKT,XS,GS)
+C
+C     Test for convergence.
+C
+      IF (SSQKT .LE. ACC*ACC) THEN
+          INFO=1
+          GOTO 70
+      END IF
+      IF (DDOTG .GE. 0.0) THEN
+          INFO=2
+          GOTO 70
+      END IF
+C
+C     Test for termination due to no decrease in F.
+C
+      IF (F .GE. FPREV) THEN
+          IF (TOL .EQ. RELACC .OR. NACT .EQ. 0) THEN
+              IF (DIFF .GT. 0.0) GOTO 20
+          END IF
+          INFO=3
+          GOTO 70
+      END IF
+   20 DIFF=FPREV-F
+      FPREV=F
+C
+C     Test that more calls of FGCALC are allowed.
+C
+      IF (NFVALS .EQ. NFMAX) THEN
+          INFO=8
+          GOTO 70
+      END IF
+C
+C     Test whether to reduce TOL and to provide printing.
+C
+      IF (TOL .GT. RELACC .AND. ITERC .GT. ITERK .AND.
+     1  0.1*RELAXF .GE. DMAX1(DIFF,-0.5D0*DDOTG)) GOTO 70
+      IF (ITERP .EQ. ITERC) GOTO 80
+C
+C     Calculate the step along the search direction.
+C
+   40 ITERC=ITERC+1
+      CALL LSRCH (N,X,G,D,XS,GS,RELACC,STEPCB,DDOTG,F,STEP,NFVALS,
+     1  NFMAX,BRES)
+      IF (STEP .EQ. 0.0) THEN
+          INFO=3
+          SUM=0.0
+          DO 50 I=1,N
+   50     SUM=SUM+DABS(D(I)*GS(I))
+          IF (DDOTG+RELACC*SUM .GE. 0.0) INFO=2
+          GOTO 70
+      END IF
+C
+C     Revise XBIG.
+C
+      DO 60 I=1,N
+   60 XBIG(I)=DMAX1(XBIG(I),DABS(X(I)))
+C
+C     Revise the second derivative approximation.
+C
+      CALL ZBFGS (N,X,NACT,G,Z,ZTG,XS,GS,ZZNORM)
+C
+C     Add a constraint to the active set if it restricts the step.
+C
+      IF (STEP .EQ. STEPCB) THEN
+          K=IACT(INDXBD)
+          IF (K .GT. M) THEN
+              K=K-M
+              IF (K .LE. N) THEN
+                  X(K)=XL(K)
+              ELSE
+                  X(K-N)=XU(K-N)
+              END IF
+          END IF
+          CALL ADDCON (N,M,A,IA,IACT,NACT,Z,U,RELACC,INDXBD,XS,GS)
+      END IF
+      GOTO 10
+C
+C     Printing from the subroutine.
+C
+   70 IF (IPRINT .EQ. 0) GOTO 90
+      ITERK=-1
+   80 PRINT 1010, ITERC,NFVALS,F
+ 1010 FORMAT (/5X,'ITERS =',I4,5X,'F.VALS =',I4,5X,'F =',1PD15.7)
+      PRINT 1020, (X(I),I=1,N)
+ 1020 FORMAT ('  X =',(1P5D14.5))
+      PRINT 1030, (G(I),I=1,N)
+ 1030 FORMAT ('  G =',(1P5D14.5))
+      IF (IPRINT .LT. 0) THEN
+          IF (NACT .EQ. 0) THEN
+              PRINT 1050
+ 1050         FORMAT (5X,'NO ACTIVE CONSTRAINTS')
+          ELSE
+              PRINT 1060, (IACT(I),I=1,NACT)
+ 1060         FORMAT (' IA =',(14I5))
+              PRINT 1070, (PAR(I),I=1,NACT)
+ 1070         FORMAT (' LP =',(1P5D14.5))
+          END IF
+          IF (NACT .EQ. N) THEN
+              PRINT 1080
+ 1080         FORMAT (5X,'KT RESIDUAL VECTOR IS ZERO')
+          ELSE
+              PRINT 1090,(RESKT(I),I=1,N)
+ 1090         FORMAT (' KT =',(1P5D14.5))
+          END IF
+      END IF
+      ITERP=ITERC+IABS(IPRINT)
+      IF (ITERK .GE. 0) GOTO 40
+   90 RETURN
+      END
+
+
++++ The file name of the following block should be newcon.f
+
+
+      SUBROUTINE NEWCON (N,M,A,IA,IACT,NACT,Z,U,D,RELACC,MDEG,ZZDIAG,
+     1  GMNEW,CGRAD)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION A(IA,*),IACT(*),Z(*),U(*),D(*),ZZDIAG(*),GMNEW(*),
+     1  CGRAD(*)
+C
+C     Initialization.
+C
+      NP=NACT+1
+      KHIGH=MDEG
+      IZ=0
+      DO 20 I=1,N
+      ZZDIAG(I)=0.0
+      DO 10 J=NP,N
+   10 ZZDIAG(I)=ZZDIAG(I)+Z(IZ+J)**2
+   20 IZ=IZ+N
+C
+C     Calculate the scalar products of D with its constraints.
+C
+   30 CVMAX=0.0
+      DO 50 K=NP,KHIGH
+      J=IACT(K)
+      IF (J .LE. M) THEN
+          SUM=0.0
+          SUMABS=0.0
+          SUMD=0.0
+          DO 40 I=1,N
+          TEMP=D(I)*A(I,J)
+          SUM=SUM+TEMP
+          SUMABS=SUMABS+DABS(TEMP)
+   40     SUMD=SUMD+ZZDIAG(I)*A(I,J)**2
+      ELSE
+          JM=J-M
+          IF (JM .LE. N) THEN
+              SUM=-D(JM)
+          ELSE
+              JM=JM-N
+              SUM=D(JM)
+          END IF
+          SUMABS=DABS(SUM)
+          SUMD=ZZDIAG(JM)
+      END IF
+C
+C     Pick out the most violated constraint, or return if the
+C       violation is negligible.
+C
+      IF (SUM .GT. RELACC*SUMABS) THEN
+          CVIOL=SUM*SUM/SUMD
+          IF (CVIOL .GT. CVMAX) THEN
+              CVMAX=CVIOL
+              IADD=K
+              SAVSUM=SUM
+              SAVABS=SUMABS
+          END IF
+      END IF
+   50 CONTINUE
+      IF (CVMAX .LE. 0.0) GOTO 140
+      IF (NACT .EQ. 0) GOTO 120
+C
+C     Set GMNEW to the gradient of the most violated constraint.
+C
+      J=IACT(IADD)
+      IF (J .LE. M) THEN
+          JMV=0
+          DO 60 I=1,N
+   60     GMNEW(I)=A(I,J)
+      ELSE
+          JMV=J-M
+          DO 70 I=1,N
+   70     GMNEW(I)=0.0
+          IF (JMV .LE. N) THEN
+              GMNEW(JMV)=-1.0
+          ELSE
+              JMV=JMV-N
+              GMNEW(JMV)=1.0
+          END IF
+      END IF
+C
+C     Modify GMNEW for the next active constraint.
+C
+      K=NACT
+   80 TEMP=0.0
+      IZ=K
+      DO 90 I=1,N
+      TEMP=TEMP+Z(IZ)*GMNEW(I)
+   90 IZ=IZ+N
+      TEMP=TEMP*U(K)
+      J=IACT(K)
+      IF (J .LE. M) THEN
+          DO 100 I=1,N
+  100     GMNEW(I)=GMNEW(I)-TEMP*A(I,J)
+      ELSE
+          JM=J-M
+          IF (JM .LE. N) THEN
+              GMNEW(JM)=GMNEW(JM)+TEMP
+          ELSE
+              GMNEW(JM-N)=GMNEW(JM-N)-TEMP
+          END IF
+      END IF
+C
+C     Revise the values of SAVSUM and SAVABS.
+C
+      SUM=0.0
+      SUMABS=0.0
+      DO 110 I=1,N
+      TEMP=D(I)*GMNEW(I)
+      SUM=SUM+TEMP
+  110 SUMABS=SUMABS+DABS(TEMP)
+      SAVSUM=DMIN1(SAVSUM,SUM)
+      SAVABS=DMAX1(SAVABS,SUMABS)
+      K=K-1
+      IF (K .GE. 1) GOTO 80
+C
+C     Add the new constraint to the active set if the constraint
+C       violation is still significant.
+C
+      IF (JMV .GT. 0) D(JMV)=0.0
+      IF (SAVSUM .LE. RELACC*SAVABS) GOTO 130
+  120 K=NACT
+      CALL ADDCON (N,M,A,IA,IACT,NACT,Z,U,RELACC,IADD,GMNEW,CGRAD)
+      IF (NACT .GT. K) GOTO 140
+C
+C     Seek another constraint violation.
+C
+      IADD=NP
+  130 IF (NP .LT. KHIGH) THEN
+          K=IACT(KHIGH)
+          IACT(KHIGH)=IACT(IADD)
+          IACT(IADD)=K
+          KHIGH=KHIGH-1
+          GOTO 30
+      END IF
+  140 RETURN
+      END
+
+
++++ The file name of the following block should be satact.f
+
+
+      SUBROUTINE SATACT (N,M,A,IA,B,XL,XU,X,IACT,NACT,INFO,Z,U,XBIG,
+     1  RELACC,TOL,MEQL)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION A(IA,*),B(*),XL(*),XU(*),X(*),IACT(*),Z(*),U(*),
+     1  XBIG(*)
+      IF (NACT .EQ. 0) GOTO 50
+      DO 30 K=1,NACT
+C
+C     Calculate the next constraint residual.
+C
+      J=IACT(K)
+      IF (J .LE. M) THEN
+          RES=B(J)
+          RESABS=DABS(B(J))
+          RESBIG=RESABS
+          DO 10 I=1,N
+          TEMPA=A(I,J)
+          TEMP=TEMPA*X(I)
+          RES=RES-TEMP
+          RESABS=RESABS+DABS(TEMP)
+   10     RESBIG=RESBIG+DABS(TEMPA)*XBIG(I)
+      ELSE
+          JX=J-M
+          IF (JX .LE. N) THEN
+              RES=X(JX)-XL(JX)
+              RESABS=DABS(X(JX))+DABS(XL(JX))
+              RESBIG=XBIG(JX)+DABS(XL(JX))
+              SAVEX=XL(JX)
+          ELSE
+              JX=JX-N
+              RES=XU(JX)-X(JX)
+              RESABS=DABS(X(JX))+DABS(XU(JX))
+              RESBIG=XBIG(JX)+DABS(XU(JX))
+              SAVEX=XU(JX)
+          END IF
+      END IF
+C
+C     Shift X if necessary.
+C
+      IF (RES .NE. 0.0) THEN
+          TEMP=RES/RESABS
+          IF (K .LE. MEQL) TEMP=-DABS(TEMP)
+          IF (TOL .EQ. RELACC .OR. TEMP+RELACC .LT. 0.0) THEN
+              INFO=1
+              SCALE=RES*U(K)
+              IZ=K
+              DO 20 I=1,N
+              X(I)=X(I)+SCALE*Z(IZ)
+              IZ=IZ+N
+   20         XBIG(I)=DMAX1(XBIG(I),DABS(X(I)))
+              IF (J .GT. M) X(JX)=SAVEX
+C
+C     Else flag a constraint deletion if necessary.
+C
+          ELSE IF (RES/RESBIG .GT. TOL) THEN
+              IACT(K)=-IACT(K)
+          END IF
+      END IF
+   30 CONTINUE
+C
+C     Delete any flagged constraints and then return.
+C
+      IDROP=NACT
+  40  IF (IACT(IDROP) .LT. 0) THEN
+          IACT(IDROP)=-IACT(IDROP)
+          CALL DELCON (N,M,A,IA,IACT,NACT,Z,U,RELACC,IDROP)
+      END IF
+      IDROP=IDROP-1
+      IF (IDROP .GT. MEQL) GOTO 40
+   50 RETURN
+      END
+
+
++++ The file name of the following block should be sdegen.f
+
+
+      SUBROUTINE SDEGEN (N,M,A,IA,IACT,NACT,PAR,Z,U,D,ZTG,GM,RELACC,
+     1  DDOTGM,MEQL,MDEG,GMNEW,PARNEW,CGRAD)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION A(IA,*),IACT(*),PAR(*),Z(*),U(*),D(*),ZTG(*),GM(*),
+     1  GMNEW(*),PARNEW(*),CGRAD(*)
+      MP=MEQL+1
+      DTEST=0.0
+C
+C     Calculate the search direction and branch if it is not downhill.
+C
+   10 CALL SDIRN (N,NACT,Z,D,ZTG,GM,RELACC,DDOTGM)
+      IF (DDOTGM .EQ. 0.0) GOTO 120
+C
+C     Branch if there is no need to consider any degenerate constraints.
+C     The test gives termination if two consecutive additions to the
+C       active set fail to increase the predicted new value of F.
+C
+      IF (NACT .EQ. MDEG) GOTO 120
+      NP=NACT+1
+      SUM=0.0
+      DO 20 J=NP,N
+   20 SUM=SUM+ZTG(J)**2
+      IF (DTEST .GT. 0.0 .AND. SUM .GE. DTEST) THEN
+          IF (ITEST .EQ. 1) GOTO 120
+          ITEST=1
+      ELSE
+          DTEST=SUM
+          ITEST=0
+      END IF
+C
+C     Add a constraint to the active set if there are any significant
+C       violations of degenerate constraints.
+C
+      K=NACT
+      CALL NEWCON (N,M,A,IA,IACT,NACT,Z,U,D,RELACC,MDEG,GMNEW,PARNEW,
+     1  CGRAD)
+      IF (NACT .EQ. K) GOTO 120
+      PAR(NACT)=0.0
+C
+C     Calculate the new reduced gradient and Lagrange parameters.
+C
+   30 DO 40 I=1,N
+   40 GMNEW(I)=GM(I)
+      K=NACT
+   50 TEMP=0.0
+      IZ=K
+      DO 60 I=1,N
+      TEMP=TEMP+Z(IZ)*GMNEW(I)
+   60 IZ=IZ+N
+      TEMP=TEMP*U(K)
+      PARNEW(K)=PAR(K)+TEMP
+      IF (K .EQ. NACT) PARNEW(K)=DMIN1(PARNEW(K),0.0D0)
+      J=IACT(K)
+      IF (J .LE. M) THEN
+          DO 70 I=1,N
+   70     GMNEW(I)=GMNEW(I)-TEMP*A(I,J)
+      ELSE
+          JM=J-M
+          IF (JM .LE. N) THEN
+              GMNEW(JM)=GMNEW(JM)+TEMP
+          ELSE
+              GMNEW(JM-N)=GMNEW(JM-N)-TEMP
+          END IF
+      END IF
+      K=K-1
+      IF (K .GT. MEQL) GOTO 50
+C
+C     Set RATIO for linear interpolation between PAR and PARNEW.
+C
+      RATIO=0.0
+      IF (MP .LT. NACT) THEN
+          KU=NACT-1
+          DO 80 K=MP,KU
+          IF (PARNEW(K) .GT. 0.0) THEN
+              RATIO=PARNEW(K)/(PARNEW(K)-PAR(K))
+              IDROP=K
+          END IF
+   80     CONTINUE
+      END IF
+C
+C     Apply the linear interpolation.
+C
+      THETA=1.0-RATIO
+      DO 90 K=MP,NACT
+   90 PAR(K)=DMIN1(THETA*PARNEW(K)+RATIO*PAR(K),0.0D0)
+      DO 100 I=1,N
+  100 GM(I)=THETA*GMNEW(I)+RATIO*GM(I)
+C
+C     Drop a constraint if RATIO is positive.
+C
+      IF (RATIO .GT. 0.0) THEN
+          CALL DELCON (N,M,A,IA,IACT,NACT,Z,U,RELACC,IDROP)
+          DO 110 K=IDROP,NACT
+  110     PAR(K)=PAR(K+1)
+          GOTO 30
+      END IF
+C
+C     Return if there is no freedom for a new search direction.
+C
+      IF (NACT .LT. N) GOTO 10
+      DDOTGM=0.0
+  120 RETURN
+      END
+
+
++++ The file name of the following block should be sdirn.f
+
+
+      SUBROUTINE SDIRN (N,NACT,Z,D,ZTG,GM,RELACC,DDOTGM)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION Z(*),D(*),ZTG(*),GM(*)
+      DDOTGM=0.0
+      IF (NACT .GE. N) GOTO 60
+C
+C     Premultiply GM by the transpose of Z.
+C
+      NP=NACT+1
+      DO 20 J=NP,N
+      SUM=0.0
+      SUMABS=0.0
+      IZ=J
+      DO 10 I=1,N
+      TEMP=Z(IZ)*GM(I)
+      SUM=SUM+TEMP
+      SUMABS=SUMABS+DABS(TEMP)
+   10 IZ=IZ+N
+      IF (DABS(SUM) .LE. RELACC*SUMABS) SUM=0.0
+   20 ZTG(J)=SUM
+C
+C     Form D by premultiplying ZTG by -Z.
+C
+      IZ=0
+      DO 40 I=1,N
+      SUM=0.0
+      SUMABS=0.0
+      DO 30 J=NP,N
+      TEMP=Z(IZ+J)*ZTG(J)
+      SUM=SUM-TEMP
+   30 SUMABS=SUMABS+DABS(TEMP)
+      IF (DABS(SUM) .LE. RELACC*SUMABS) SUM=0.0
+      D(I)=SUM
+   40 IZ=IZ+N
+C
+C     Test that the search direction is downhill.
+C
+      SUMABS=0.0
+      DO 50 I=1,N
+      TEMP=D(I)*GM(I)
+      DDOTGM=DDOTGM+TEMP
+   50 SUMABS=SUMABS+DABS(TEMP)
+      IF (DDOTGM+RELACC*SUMABS .GE. 0.0) DDOTGM=0.0
+   60 RETURN
+      END
+
+
++++ The file name of the following block should be stepbd.f
+
+
+      SUBROUTINE STEPBD (N,M,A,IA,IACT,BRES,D,STEPCB,DDOTG,MDEG,MSAT,
+     1  MTOT,INDXBD)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION A(IA,*),IACT(*),BRES(*),D(*)
+C
+C     Set steps to constraint boundaries and find the least positive one.
+C
+      IFLAG=0
+      STEPCB=0.0
+      INDXBD=0
+      K=MDEG
+   10 K=K+1
+      IF (K .GT. MTOT) GOTO 40
+C
+C     Form the scalar product of D with the current constraint normal.
+C
+   20     J=IACT(K)
+          IF (J .LE. M) THEN
+              SP=0.0
+              DO 30 I=1,N
+   30         SP=SP+D(I)*A(I,J)
+          ELSE
+              JM=J-M
+              IF (JM .LE. N) THEN
+                  SP=-D(JM)
+              ELSE
+                  SP=D(JM-N)
+              END IF
+          END IF
+C
+C     The next branch is taken if label 20 was reached via label 50.
+C
+          IF (IFLAG .EQ. 1) GOTO 60
+C
+C     Set BRES(J) to indicate the status of the j-th constraint.
+C
+          IF (SP*BRES(J) .LE. 0.0) THEN
+              BRES(J)=0.0
+          ELSE
+              BRES(J)=BRES(J)/SP
+              IF (STEPCB .EQ. 0.0 .OR. BRES(J) .LT. STEPCB) THEN
+                  STEPCB=BRES(J)
+                  INDXBD=K
+              END IF
+          END IF
+          GO TO 10
+   40 CONTINUE
+C
+C     Try to pass through the boundary of a violated constraint.
+C
+   50 IF (INDXBD .LE. MSAT) GOTO 80
+          IFLAG=1
+          K=INDXBD
+          GOTO 20
+   60     MSAT=MSAT+1
+          IACT(INDXBD)=IACT(MSAT)
+          IACT(MSAT)=J
+          BRES(J)=0.0
+          INDXBD=MSAT
+          DDOTG=DDOTG-SP
+          IF (DDOTG .LT. 0.0 .AND. MSAT .LT. MTOT) THEN
+C
+C     Seek the next constraint boundary along the search direction.
+C
+              TEMP=0.0
+              KL=MDEG+1
+              DO 70 K=KL,MTOT
+              J=IACT(K)
+              IF (BRES(J) .GT. 0.0) THEN
+                  IF (TEMP .EQ. 0.0 .OR. BRES(J) .LT. TEMP) THEN
+                      TEMP=BRES(J)
+                      INDXBD=K
+                  END IF
+              END IF
+   70         CONTINUE
+              IF (TEMP .GT. 0.0) THEN
+                  STEPCB=TEMP
+                  GOTO 50
+              END IF
+          END IF
+   80 CONTINUE
+      RETURN
+      END
+
+
++++ The file name of the following block should be zbfgs.f
+
+
+      SUBROUTINE ZBFGS (N,X,NACT,G,Z,ZTG,XS,GS,ZZNORM)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      DIMENSION X(*),G(*),Z(*),ZTG(*),XS(*),GS(*)
+C
+C     Test if there is sufficient convexity for the update.
+C
+      DD=0.0
+      DG=0.0
+      TEMP=0.0
+      DO 10 I=1,N
+      XS(I)=X(I)-XS(I)
+      DD=DD+XS(I)**2
+      TEMP=TEMP+GS(I)*XS(I)
+      GS(I)=G(I)-GS(I)
+   10 DG=DG+GS(I)*XS(I)
+      IF (DG .LT. 0.1*DABS(TEMP)) GOTO 90
+C
+C     Transform the Z matrix.
+C
+      K=N
+   20 KP=K
+      K=K-1
+      IF (K .GT. NACT) THEN
+          IF (ZTG(KP) .EQ. 0.0) GOTO 20
+          TEMP=DABS(ZTG(KP))*DSQRT(1.0+(ZTG(K)/ZTG(KP))**2)
+          WCOS=ZTG(K)/TEMP
+          WSIN=ZTG(KP)/TEMP
+          ZTG(K)=TEMP
+          IZ=K
+          DO 30 I=1,N
+          TEMP=WCOS*Z(IZ+1)-WSIN*Z(IZ)
+          Z(IZ)=WCOS*Z(IZ)+WSIN*Z(IZ+1)
+          Z(IZ+1)=TEMP
+   30     IZ=IZ+N
+          GOTO 20
+      END IF
+C
+C     Update the value of ZZNORM.
+C
+      IF (ZZNORM .LT. 0.0) THEN
+          ZZNORM=DD/DG
+      ELSE
+          TEMP=DSQRT(ZZNORM*DD/DG)
+          ZZNORM=DMIN1(ZZNORM,TEMP)
+          ZZNORM=DMAX1(ZZNORM,0.1D0*TEMP)
+      END IF
+C
+C     Complete the updating of Z.
+C
+      NP=NACT+1
+      TEMP=DSQRT(DG)
+      IZ=NP
+      DO 40 I=1,N
+      Z(IZ)=XS(I)/TEMP
+   40 IZ=IZ+N
+      IF (NP .LT. N) THEN
+          KM=NP+1
+          DO 80 K=KM,N
+          TEMP=0.0
+          IZ=K
+          DO 50 I=1,N
+          TEMP=TEMP+GS(I)*Z(IZ)
+   50     IZ=IZ+N
+          TEMP=TEMP/DG
+          SUM=0.0
+          IZ=K
+          DO 60 I=1,N
+          Z(IZ)=Z(IZ)-TEMP*XS(I)
+          SUM=SUM+Z(IZ)**2
+   60     IZ=IZ+N
+          IF (SUM .LT. ZZNORM) THEN
+              TEMP=DSQRT(ZZNORM/SUM)
+              IZ=K
+              DO 70 I=1,N
+              Z(IZ)=TEMP*Z(IZ)
+   70         IZ=IZ+N
+          END IF
+   80     CONTINUE
+      END IF
+   90 RETURN
+      END
+
+
++++ And here is the output from the test calculation.
+
+
+     CALL OF GETMIN WITH  ACC = 1.0000D-06  AND  IPRINT = 10
+
+     NEW VALUE OF TOL =  1.00000D-02
+
+     ITERS =   0     F.VALS =   1     F =  3.9336449D-03
+  X =  -1.00000D+00   0.00000D+00   0.00000D+00  -1.00000D+00   9.19633D-01
+   7.52655D-01
+  G =   3.13177D-02  -3.12235D-02  -3.11823D-02   3.13790D-02  -1.35389D-04
+  -1.55573D-04
+
+     ITERS =   7     F.VALS =  11     F =  1.6647698D-04
+  X =  -1.10457D+00   1.80995D-01   2.95328D-01  -9.45553D-01   9.30644D-01
+   7.49078D-01
+  G =   6.33436D-04  -4.59690D-04  -3.52972D-04   1.09749D-03  -2.80464D-04
+  -6.37803D-04
+
+     NEW VALUE OF TOL =  4.56740D-04
+
+     ITERS =  17     F.VALS =  28     F =  1.3766269D-04
+  X =  -9.13274D-01   4.44287D-01   2.26455D-01  -9.77882D-01   1.00000D+00
+   7.26543D-01
+  G =   5.84231D-04  -4.30863D-04  -2.14903D-04   8.05350D-04  -3.69328D-04
+  -3.74488D-04
+
+     ITERS =  23     F.VALS =  36     F =  1.3652167D-04
+  X =  -8.89191D-01   4.77435D-01   1.79316D-01  -9.93199D-01   1.00000D+00
+   7.26543D-01
+  G =   6.39355D-04  -4.64527D-04  -2.44217D-04   7.51639D-04  -3.95138D-04
+  -2.87113D-04
+
+     NEW VALUE OF TOL =  1.42109D-14
+
+     ITERS =  23     F.VALS =  37     F =  1.3652167D-04
+  X =  -8.89191D-01   4.77435D-01   1.79316D-01  -9.93199D-01   1.00000D+00
+   7.26543D-01
+  G =   6.39355D-04  -4.64527D-04  -2.44217D-04   7.51639D-04  -3.95138D-04
+  -2.87113D-04
+
+     GETMIN HAS ACHIEVED THE REQUIRED ACCURACY
+
+     RETURN FROM TOLMIN WITH INFO = 1
+
+     FINAL VALUE OF OBJECTIVE FUNCTION =  1.365216701027D-04
+
+     FINAL COMPONENTS OF X =
+
+     -8.891911911809D-01  4.774349373204D-01  1.793161233057D-01
+     -9.931988839241D-01  1.000000000000D+00  7.265425280054D-01
+
+     FINAL CONSTRAINT RESIDUALS =
+
+     1.8892D+00  8.2068D-01  0.0000D+00  8.2071D-01  1.8892D+00  0.0000D+00
+     0.0000D+00  1.7289D+00  1.3820D+00  5.6126D-01  5.6128D-01  2.2361D+00
+     1.7288D+00  1.1102D-16  1.3820D+00
+
+
+     CALL OF GETMIN WITH  ACC = 1.0000D-14  AND  IPRINT = 10
+
+     NEW VALUE OF TOL =  1.00000D-02
+
+     ITERS =   0     F.VALS =   1     F =  3.9336449D-03
+  X =  -1.00000D+00   0.00000D+00   0.00000D+00  -1.00000D+00   9.19633D-01
+   7.52655D-01
+  G =   3.13177D-02  -3.12235D-02  -3.11823D-02   3.13790D-02  -1.35389D-04
+  -1.55573D-04
+
+     ITERS =   7     F.VALS =  11     F =  1.6647698D-04
+  X =  -1.10457D+00   1.80995D-01   2.95328D-01  -9.45553D-01   9.30644D-01
+   7.49078D-01
+  G =   6.33436D-04  -4.59690D-04  -3.52972D-04   1.09749D-03  -2.80464D-04
+  -6.37803D-04
+
+     NEW VALUE OF TOL =  4.56740D-04
+
+     ITERS =  17     F.VALS =  28     F =  1.3766269D-04
+  X =  -9.13274D-01   4.44287D-01   2.26455D-01  -9.77882D-01   1.00000D+00
+   7.26543D-01
+  G =   5.84231D-04  -4.30863D-04  -2.14903D-04   8.05350D-04  -3.69328D-04
+  -3.74488D-04
+
+     ITERS =  25     F.VALS =  38     F =  1.3652167D-04
+  X =  -8.89184D-01   4.77445D-01   1.79305D-01  -9.93203D-01   1.00000D+00
+   7.26543D-01
+  G =   6.39369D-04  -4.64529D-04  -2.44217D-04   7.51624D-04  -3.95152D-04
+  -2.87095D-04
+
+     NEW VALUE OF TOL =  1.42109D-14
+
+     ITERS =  25     F.VALS =  39     F =  1.3652167D-04
+  X =  -8.89184D-01   4.77445D-01   1.79305D-01  -9.93203D-01   1.00000D+00
+   7.26543D-01
+  G =   6.39369D-04  -4.64529D-04  -2.44217D-04   7.51624D-04  -3.95152D-04
+  -2.87095D-04
+
+     GETMIN CAN MAKE NO FURTHER PROGRESS BECAUSE OF ROUNDING ERRORS
+
+     RETURN FROM TOLMIN WITH INFO = 2
+
+     FINAL VALUE OF OBJECTIVE FUNCTION =  1.365216700277D-04
+
+     FINAL COMPONENTS OF X =
+
+     -8.891837015132D-01  4.774452459637D-01  1.793045374598D-01
+     -9.932026483936D-01  1.000000000000D+00  7.265425280054D-01
+
+     FINAL CONSTRAINT RESIDUALS =
+
+     1.8892D+00  8.2070D-01  0.0000D+00  8.2070D-01  1.8892D+00  0.0000D+00
+    -5.5511D-17  1.7289D+00  1.3820D+00  5.6127D-01  5.6127D-01  2.2361D+00
+     1.7289D+00  2.2204D-16  1.3820D+00
