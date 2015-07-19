@@ -599,7 +599,7 @@ Subroutine lagmax (n, g, h, rho, d, v, vmax)
          vhv = ratio * ratio * vhv
          vhw = ratio * wsq
          temp = half * (whw-vhv)
-         temp = temp + dsign (sqrt(temp**2+vhw**2), whw+vhv)
+         temp = temp + sign (sqrt(temp**2+vhw**2), whw+vhv)
          Do 90 i = 1, n
 90       d (i) = vhw * v (i) + temp * d (i)
       End If
@@ -621,7 +621,7 @@ Subroutine lagmax (n, g, h, rho, d, v, vmax)
 110   dhd = dhd + sum * d (i)
       temp = gd / gg
       vv = zero
-      scale = dsign (rho/sqrt(dd), gd*dhd)
+      scale = sign (rho/sqrt(dd), gd*dhd)
       Do 120 i = 1, n
          v (i) = d (i) - temp * g (i)
          vv = vv + v (i) ** 2
@@ -659,7 +659,7 @@ Subroutine lagmax (n, g, h, rho, d, v, vmax)
          wsin = zero
       Else
          temp = half * (ghg-vhv)
-         vmu = temp + dsign (sqrt(temp**2+vhg**2), temp)
+         vmu = temp + sign (sqrt(temp**2+vhg**2), temp)
          temp = sqrt (vmu**2+vhg**2)
          wcos = vmu / temp
          wsin = vhg / temp
@@ -682,14 +682,14 @@ Subroutine lagmax (n, g, h, rho, d, v, vmax)
       tempc = halfrt * (abs(dlin)+abs(vlin)) + 0.25_wp * abs &
        (ghg+vhv)
       If (tempa >= tempb .And. tempa >= tempc) Then
-         tempd = dsign (rho, dlin*(vmu+vhv))
+         tempd = sign (rho, dlin*(vmu+vhv))
          tempv = zero
       Else If (tempb >= tempc) Then
          tempd = zero
-         tempv = dsign (rho, vlin*(ghg-vmu))
+         tempv = sign (rho, vlin*(ghg-vmu))
       Else
-         tempd = dsign (halfrt*rho, dlin*(ghg+vhv))
-         tempv = dsign (halfrt*rho, vlin*(ghg+vhv))
+         tempd = sign (halfrt*rho, dlin*(ghg+vhv))
+         tempv = sign (halfrt*rho, vlin*(ghg+vhv))
       End If
       Do 160 i = 1, n
 160   d (i) = tempd * d (i) + tempv * v (i)
@@ -758,7 +758,7 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
          h (kp, k) = zero
       Else
          temp = h (kp, k)
-         tn (k) = dsign (sqrt(sum+temp*temp), temp)
+         tn (k) = sign (sqrt(sum+temp*temp), temp)
          h (kp, k) = - sum / (temp+tn(k))
          temp = sqrt (two/(sum+h(kp, k)**2))
          Do 30 i = kp, n
@@ -868,7 +868,7 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
    Else
       temp = td (k+1) + par
       If (temp <= abs(piv(k))) Then
-         d (k+1) = dsign (one,-tn(k))
+         d (k+1) = sign (one,-tn(k))
          dhd = piv (k) + temp - two * abs (tn(k))
       Else
          d (k+1) = - tn (k) / temp
@@ -898,7 +898,7 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
       dtg = zero
       Do 200 i = 1, n
 200   dtg = dtg + d (i) * gg (i)
-      scale = - dsign (delta/sqrt(dsq), dtg)
+      scale = - sign (delta/sqrt(dsq), dtg)
       Do 210 i = 1, n
 210   d (i) = scale * d (i)
       Go To 370
@@ -973,7 +973,7 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
       w (1) = one / piv (1)
       Do 280 i = 2, n
          temp = - tn (i-1) * w (i-1)
-280   w (i) = (dsign(one, temp)+temp) / piv (i)
+280   w (i) = (sign(one, temp)+temp) / piv (i)
       z (n) = w (n)
       Do 290 i = nm, 1, - 1
 290   z (i) = w (i) - tn (i) * z (i+1) / piv (i)
@@ -989,7 +989,7 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
 !
       tempa = abs (delsq-dsq)
       tempb = sqrt (dtz*dtz+tempa*zsq)
-      gam = tempa / (dsign(tempb, dtz)+dtz)
+      gam = tempa / (sign(tempb, dtz)+dtz)
       temp = tol * (wsq+par*delsq) - gam * gam * wwsq
       If (temp >= zero) Then
          Do 310 i = 1, n
