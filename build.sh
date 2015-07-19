@@ -2,4 +2,4 @@
 
 # build the test program:
 
-FoBiS.py build -compiler gnu -s f90 -dbld bin
+FoBiS.py build -compiler gnu -s src -dbld bin
