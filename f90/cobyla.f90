@@ -1,42 +1,42 @@
 Subroutine calcfc (n, m, x, f, con)
       Common nprob
       Dimension x (*), con (*)
-      If (nprob .Eq. 1) Then
+      If (nprob == 1) Then
 !
 !     Test problem 1 (Simple quadratic)
 !
          f = 10.0 * (x(1)+1.0) ** 2 + x (2) ** 2
-      Else If (nprob .Eq. 2) Then
+      Else If (nprob == 2) Then
 !
 !    Test problem 2 (2D unit circle calculation)
 !
          f = x (1) * x (2)
          con (1) = 1.0 - x (1) ** 2 - x (2) ** 2
-      Else If (nprob .Eq. 3) Then
+      Else If (nprob == 3) Then
 !
 !     Test problem 3 (3D ellipsoid calculation)
 !
          f = x (1) * x (2) * x (3)
          con (1) = 1.0 - x (1) ** 2 - 2.0 * x (2) ** 2 - 3.0 * x (3) ** &
         & 2
-      Else If (nprob .Eq. 4) Then
+      Else If (nprob == 4) Then
 !
 !     Test problem 4 (Weak Rosenbrock)
 !
          f = (x(1)**2-x(2)) ** 2 + (1.0+x(1)) ** 2
-      Else If (nprob .Eq. 5) Then
+      Else If (nprob == 5) Then
 !
 !     Test problem 5 (Intermediate Rosenbrock)
 !
          f = 10.0 * (x(1)**2-x(2)) ** 2 + (1.0+x(1)) ** 2
-      Else If (nprob .Eq. 6) Then
+      Else If (nprob == 6) Then
 !
 !     Test problem 6 (Equation (9.1.15) in Fletcher's book)
 !
          f = - x (1) - x (2)
          con (1) = x (2) - x (1) ** 2
          con (2) = 1.0 - x (1) ** 2 - x (2) ** 2
-      Else If (nprob .Eq. 7) Then
+      Else If (nprob == 7) Then
 !
 !     Test problem 7 (Equation (14.4.2) in Fletcher's book)
 !
@@ -44,7 +44,7 @@ Subroutine calcfc (n, m, x, f, con)
          con (1) = 5.0 * x (1) - x (2) + x (3)
          con (2) = x (3) - x (1) ** 2 - x (2) ** 2 - 4.0 * x (2)
          con (3) = x (3) - 5.0 * x (1) - x (2)
-      Else If (nprob .Eq. 8) Then
+      Else If (nprob == 8) Then
 !
 !     Test problem 8 (Rosen-Suzuki)
 !
@@ -56,7 +56,7 @@ Subroutine calcfc (n, m, x, f, con)
         & 2.0 * x (4) ** 2 + x (1) + x (4)
          con (3) = 5.0 - 2.0 * x (1) ** 2 - x (2) ** 2 - x (3) ** 2 - &
         & 2.0 * x (1) + x (2) + x (4)
-      Else If (nprob .Eq. 9) Then
+      Else If (nprob == 9) Then
 !
 !     Test problem 9 (Hock and Schittkowski 100)
 !
@@ -72,7 +72,7 @@ Subroutine calcfc (n, m, x, f, con)
         & + 8.0 * x (7)
          con (4) = - 4.0 * x (1) ** 2 - x (2) ** 2 + 3.0 * x (1) * x &
         & (2) - 2.0 * x (3) ** 2 - 5.0 * x (6) + 11.0 * x (7)
-      Else If (nprob .Eq. 10) Then
+      Else If (nprob == 10) Then
 !
 !     Test problem 10 (Hexagon area)
 !
@@ -190,7 +190,7 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
       delta = 1.1
       rho = rhobeg
       parmu = 0.0
-      If (iprint .Ge. 2) Print 10, rho
+      If (iprint >= 2) Print 10, rho
 10    Format (/ 3 x, 'The initial value of RHO is', 1 pe13.6, 2 x, 'and&
      & PARMU is set to zero.')
       nfvals = 0
@@ -209,8 +209,8 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
 !     instructions are also used for calling CALCFC during the iterations of
 !     the algorithm.
 !
-40    If (nfvals .Ge. maxfun .And. nfvals .Gt. 0) Then
-         If (iprint .Ge. 1) Print 50
+40    If (nfvals >= maxfun .And. nfvals > 0) Then
+         If (iprint >= 1) Print 50
 50       Format (/ 3 x, 'Return from subroutine COBYLA because the ', '&
         &MAXFUN limit has been reached.')
          Go To 600
@@ -218,20 +218,20 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
       nfvals = nfvals + 1
       Call calcfc (n, m, x, f, con)
       resmax = 0.0
-      If (m .Gt. 0) Then
+      If (m > 0) Then
          Do 60 k = 1, m
 60       resmax = amax1 (resmax,-con(k))
       End If
-      If (nfvals .Eq. iprint-1 .Or. iprint .Eq. 3) Then
+      If (nfvals == iprint-1 .Or. iprint == 3) Then
          Print 70, nfvals, f, resmax, (x(i), i=1, iptem)
 70       Format (/ 3 x, 'NFVALS =', i5, 3 x, 'F =', 1 pe13.6, 4 x, 'MAX&
         &CV =', 1 pe13.6 / 3 x, 'X =', 1 pe13.6, 1 p4e15.6)
-         If (iptem .Lt. n) Print 80, (x(i), i=iptemp, n)
+         If (iptem < n) Print 80, (x(i), i=iptemp, n)
 80       Format (1 pe19.6, 1 p4e15.6)
       End If
       con (mp) = f
       con (mpp) = resmax
-      If (ibrnch .Eq. 1) Go To 440
+      If (ibrnch == 1) Go To 440
 !
 !     Set the recently calculated function values in a column of DATMAT. This
 !     array has a column for each vertex of the current simplex, the entries of
@@ -241,14 +241,14 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
 !
       Do 90 k = 1, mpp
 90    datmat (k, jdrop) = con (k)
-      If (nfvals .Gt. np) Go To 130
+      If (nfvals > np) Go To 130
 !
 !     Exchange the new vertex of the initial simplex with the optimal vertex if
 !     necessary. Then, if the initial simplex is not complete, pick its next
 !     vertex and calculate the function values there.
 !
-      If (jdrop .Le. n) Then
-         If (datmat(mp, np) .Le. f) Then
+      If (jdrop <= n) Then
+         If (datmat(mp, np) <= f) Then
             x (jdrop) = sim (jdrop, np)
          Else
             sim (jdrop, np) = x (jdrop)
@@ -263,7 +263,7 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
 120         simi (jdrop, k) = temp
          End If
       End If
-      If (nfvals .Le. n) Then
+      If (nfvals <= n) Then
          jdrop = nfvals
          x (jdrop) = x (jdrop) + rho
          Go To 40
@@ -276,18 +276,18 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
       nbest = np
       Do 150 j = 1, n
          temp = datmat (mp, j) + parmu * datmat (mpp, j)
-         If (temp .Lt. phimin) Then
+         If (temp < phimin) Then
             nbest = j
             phimin = temp
-         Else If (temp .Eq. phimin .And. parmu .Eq. 0.0) Then
-            If (datmat(mpp, j) .Lt. datmat(mpp, nbest)) nbest = j
+         Else If (temp == phimin .And. parmu == 0.0) Then
+            If (datmat(mpp, j) < datmat(mpp, nbest)) nbest = j
          End If
 150   Continue
 !
 !     Switch the best vertex into pole position if it is not there already,
 !     and also update SIM, SIMI and DATMAT.
 !
-      If (nbest .Le. n) Then
+      If (nbest <= n) Then
          Do 160 i = 1, mpp
             temp = datmat (i, np)
             datmat (i, np) = datmat (i, nbest)
@@ -310,12 +310,12 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
       Do 200 i = 1, n
          Do 200 j = 1, n
             temp = 0.0
-            If (i .Eq. j) temp = temp - 1.0
+            If (i == j) temp = temp - 1.0
             Do 190 k = 1, n
 190         temp = temp + simi (i, k) * sim (k, j)
 200   error = amax1 (error, Abs(temp))
-      If (error .Gt. 0.1) Then
-         If (iprint .Ge. 1) Print 210
+      If (error > 0.1) Then
+         If (iprint >= 1) Print 210
 210      Format (/ 3 x, 'Return from subroutine COBYLA because ', 'roun&
         &ding errors are becoming damaging.')
          Go To 600
@@ -334,7 +334,7 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
             temp = 0.0
             Do 230 j = 1, n
 230         temp = temp + w (j) * simi (j, i)
-            If (k .Eq. mp) temp = - temp
+            If (k == mp) temp = - temp
 240   a (i, k) = temp
 !
 !     Calculate the values of sigma and eta, and set IFLAG=0 if the current
@@ -351,24 +351,24 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
 250      weta = weta + sim (i, j) ** 2
          vsig (j) = 1.0 / Sqrt (wsig)
          veta (j) = Sqrt (weta)
-         If (vsig(j) .Lt. parsig .Or. veta(j) .Gt. pareta) iflag = 0
+         If (vsig(j) < parsig .Or. veta(j) > pareta) iflag = 0
 260   Continue
 !
 !     If a new vertex is needed to improve acceptability, then decide which
 !     vertex to drop from the simplex.
 !
-      If (ibrnch .Eq. 1 .Or. iflag .Eq. 1) Go To 370
+      If (ibrnch == 1 .Or. iflag == 1) Go To 370
       jdrop = 0
       temp = pareta
       Do 270 j = 1, n
-         If (veta(j) .Gt. temp) Then
+         If (veta(j) > temp) Then
             jdrop = j
             temp = veta (j)
          End If
 270   Continue
-      If (jdrop .Eq. 0) Then
+      If (jdrop == 0) Then
          Do 280 j = 1, n
-            If (vsig(j) .Lt. temp) Then
+            If (vsig(j) < temp) Then
                jdrop = j
                temp = vsig (j)
             End If
@@ -386,14 +386,14 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
          sum = 0.0
          Do 300 i = 1, n
 300      sum = sum + a (i, k) * dx (i)
-         If (k .Lt. mp) Then
+         If (k < mp) Then
             temp = datmat (k, np)
             cvmaxp = amax1 (cvmaxp,-sum-temp)
             cvmaxm = amax1 (cvmaxm, sum-temp)
          End If
 310   Continue
       dxsign = 1.0
-      If (parmu*(cvmaxp-cvmaxm) .Gt. sum+sum) dxsign = - 1.0
+      If (parmu*(cvmaxp-cvmaxm) > sum+sum) dxsign = - 1.0
 !
 !     Update the elements of SIM and SIMI, and set the next X.
 !
@@ -405,7 +405,7 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
       Do 330 i = 1, n
 330   simi (jdrop, i) = simi (jdrop, i) / temp
       Do 360 j = 1, n
-         If (j .Ne. jdrop) Then
+         If (j /= jdrop) Then
             temp = 0.0
             Do 340 i = 1, n
 340         temp = temp + simi (j, i) * dx (i)
@@ -425,11 +425,11 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
       ivmd = idxnew + n
       Call trstlp (n, m, a, con, rho, dx, ifull, iact, w(iz), &
      & w(izdota), w(ivmc), w(isdirn), w(idxnew), w(ivmd))
-      If (ifull .Eq. 0) Then
+      If (ifull == 0) Then
          temp = 0.0
          Do 380 i = 1, n
 380      temp = temp + dx (i) ** 2
-         If (temp .Lt. 0.25*rho*rho) Then
+         If (temp < 0.25*rho*rho) Then
             ibrnch = 1
             Go To 550
          End If
@@ -444,7 +444,7 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
          sum = con (k)
          Do 390 i = 1, n
 390      sum = sum - a (i, k) * dx (i)
-         If (k .Lt. mp) resnew = amax1 (resnew, sum)
+         If (k < mp) resnew = amax1 (resnew, sum)
 400   Continue
 !
 !     Increase PARMU if necessary and branch back if this change alters the
@@ -454,17 +454,17 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
 !
       barmu = 0.0
       prerec = datmat (mpp, np) - resnew
-      If (prerec .Gt. 0.0) barmu = sum / prerec
-      If (parmu .Lt. 1.5*barmu) Then
+      If (prerec > 0.0) barmu = sum / prerec
+      If (parmu < 1.5*barmu) Then
          parmu = 2.0 * barmu
-         If (iprint .Ge. 2) Print 410, parmu
+         If (iprint >= 2) Print 410, parmu
 410      Format (/ 3 x, 'Increase in PARMU to', 1 pe13.6)
          phi = datmat (mp, np) + parmu * datmat (mpp, np)
          Do 420 j = 1, n
             temp = datmat (mp, j) + parmu * datmat (mpp, j)
-            If (temp .Lt. phi) Go To 140
-            If (temp .Eq. phi .And. parmu .Eq. 0.0) Then
-               If (datmat(mpp, j) .Lt. datmat(mpp, np)) Go To 140
+            If (temp < phi) Go To 140
+            If (temp == phi .And. parmu == 0.0) Then
+               If (datmat(mpp, j) < datmat(mpp, np)) Go To 140
             End If
 420      Continue
       End If
@@ -480,7 +480,7 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
 440   vmold = datmat (mp, np) + parmu * datmat (mpp, np)
       vmnew = f + parmu * resmax
       trured = vmold - vmnew
-      If (parmu .Eq. 0.0 .And. f .Eq. datmat(mp, np)) Then
+      If (parmu == 0.0 .And. f == datmat(mp, np)) Then
          prerem = prerec
          trured = datmat (mpp, np) - resmax
       End If
@@ -491,14 +491,14 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
 !     replaced.
 !
       ratio = 0.0
-      If (trured .Le. 0.0) ratio = 1.0
+      If (trured <= 0.0) ratio = 1.0
       jdrop = 0
       Do 460 j = 1, n
          temp = 0.0
          Do 450 i = 1, n
 450      temp = temp + simi (j, i) * dx (i)
          temp = Abs (temp)
-         If (temp .Gt. ratio) Then
+         If (temp > ratio) Then
             jdrop = j
             ratio = temp
          End If
@@ -509,22 +509,22 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
       edgmax = delta * rho
       l = 0
       Do 480 j = 1, n
-         If (sigbar(j) .Ge. parsig .Or. sigbar(j) .Ge. vsig(j)) Then
+         If (sigbar(j) >= parsig .Or. sigbar(j) >= vsig(j)) Then
             temp = veta (j)
-            If (trured .Gt. 0.0) Then
+            If (trured > 0.0) Then
                temp = 0.0
                Do 470 i = 1, n
 470            temp = temp + (dx(i)-sim(i, j)) ** 2
                temp = Sqrt (temp)
             End If
-            If (temp .Gt. edgmax) Then
+            If (temp > edgmax) Then
                l = j
                edgmax = temp
             End If
          End If
 480   Continue
-      If (l .Gt. 0) jdrop = l
-      If (jdrop .Eq. 0) Go To 550
+      If (l > 0) jdrop = l
+      If (jdrop == 0) Go To 550
 !
 !     Revise the simplex by updating the elements of SIM, SIMI and DATMAT.
 !
@@ -535,7 +535,7 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
       Do 500 i = 1, n
 500   simi (jdrop, i) = simi (jdrop, i) / temp
       Do 530 j = 1, n
-         If (j .Ne. jdrop) Then
+         If (j /= jdrop) Then
             temp = 0.0
             Do 510 i = 1, n
 510         temp = temp + simi (j, i) * dx (i)
@@ -548,18 +548,18 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
 !
 !     Branch back for further iterations with the current RHO.
 !
-      If (trured .Gt. 0.0 .And. trured .Ge. 0.1*prerem) Go To 140
-550   If (iflag .Eq. 0) Then
+      If (trured > 0.0 .And. trured >= 0.1*prerem) Go To 140
+550   If (iflag == 0) Then
          ibrnch = 0
          Go To 140
       End If
 !
 !     Otherwise reduce RHO if it is not at its least value and reset PARMU.
 !
-      If (rho .Gt. rhoend) Then
+      If (rho > rhoend) Then
          rho = 0.5 * rho
-         If (rho .Le. 1.5*rhoend) rho = rhoend
-         If (parmu .Gt. 0.0) Then
+         If (rho <= 1.5*rhoend) rho = rhoend
+         If (parmu > 0.0) Then
             denom = 0.0
             Do 570 k = 1, mp
                cmin = datmat (k, np)
@@ -567,44 +567,44 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
                Do 560 i = 1, n
                   cmin = amin1 (cmin, datmat(k, i))
 560            cmax = amax1 (cmax, datmat(k, i))
-               If (k .Le. m .And. cmin .Lt. 0.5*cmax) Then
+               If (k <= m .And. cmin < 0.5*cmax) Then
                   temp = amax1 (cmax, 0.0) - cmin
-                  If (denom .Le. 0.0) Then
+                  If (denom <= 0.0) Then
                      denom = temp
                   Else
                      denom = amin1 (denom, temp)
                   End If
                End If
 570         Continue
-            If (denom .Eq. 0.0) Then
+            If (denom == 0.0) Then
                parmu = 0.0
-            Else If (cmax-cmin .Lt. parmu*denom) Then
+            Else If (cmax-cmin < parmu*denom) Then
                parmu = (cmax-cmin) / denom
             End If
          End If
-         If (iprint .Ge. 2) Print 580, rho, parmu
+         If (iprint >= 2) Print 580, rho, parmu
 580      Format (/ 3 x, 'Reduction in RHO to', 1 pe13.6, '  and PARMU =&
         &', 1 pe13.6)
-         If (iprint .Eq. 2) Then
+         If (iprint == 2) Then
             Print 70, nfvals, datmat (mp, np), datmat (mpp, np), &
            & (sim(i, np), i=1, iptem)
-            If (iptem .Lt. n) Print 80, (x(i), i=iptemp, n)
+            If (iptem < n) Print 80, (x(i), i=iptemp, n)
          End If
          Go To 140
       End If
 !
 !     Return the best calculated values of the variables.
 !
-      If (iprint .Ge. 1) Print 590
+      If (iprint >= 1) Print 590
 590   Format (/ 3 x, 'Normal return from subroutine COBYLA')
-      If (ifull .Eq. 1) Go To 620
+      If (ifull == 1) Go To 620
 600   Do 610 i = 1, n
 610   x (i) = sim (i, np)
       f = datmat (mp, np)
       resmax = datmat (mpp, np)
-620   If (iprint .Ge. 1) Then
+620   If (iprint >= 1) Then
          Print 70, nfvals, f, resmax, (x(i), i=1, iptem)
-         If (iptem .Lt. n) Print 80, (x(i), i=iptemp, n)
+         If (iptem < n) Print 80, (x(i), i=iptemp, n)
       End If
       maxfun = nfvals
       Return
@@ -615,7 +615,7 @@ End
 Common nprob
 Dimension x (10), xopt (10), w (3000), iact (51)
 Do 180 nprob = 1, 10
-   If (nprob .Eq. 1) Then
+   If (nprob == 1) Then
 !
 !     Minimization of a simple quadratic function of two variables.
 !
@@ -625,7 +625,7 @@ Do 180 nprob = 1, 10
       m = 0
       xopt (1) = - 1.0
       xopt (2) = 0.0
-   Else If (nprob .Eq. 2) Then
+   Else If (nprob == 2) Then
 !
 !     Easy two dimensional minimization in unit circle.
 !
@@ -636,7 +636,7 @@ Do 180 nprob = 1, 10
       m = 1
       xopt (1) = Sqrt (0.5)
       xopt (2) = - xopt (1)
-   Else If (nprob .Eq. 3) Then
+   Else If (nprob == 3) Then
 !
 !     Easy three dimensional minimization in ellipsoid.
 !
@@ -648,7 +648,7 @@ Do 180 nprob = 1, 10
       xopt (1) = 1.0 / Sqrt (3.0)
       xopt (2) = 1.0 / Sqrt (6.0)
       xopt (3) = - 1.0 / 3.0
-   Else If (nprob .Eq. 4) Then
+   Else If (nprob == 4) Then
 !
 !     Weak version of Rosenbrock's problem.
 !
@@ -658,7 +658,7 @@ Do 180 nprob = 1, 10
       m = 0
       xopt (1) = - 1.0
       xopt (2) = 1.0
-   Else If (nprob .Eq. 5) Then
+   Else If (nprob == 5) Then
 !
 !     Intermediate version of Rosenbrock's problem.
 !
@@ -669,7 +669,7 @@ Do 180 nprob = 1, 10
       m = 0
       xopt (1) = - 1.0
       xopt (2) = 1.0
-   Else If (nprob .Eq. 6) Then
+   Else If (nprob == 6) Then
 !
 !     This problem is taken from Fletcher's book Practical Methods of
 !     Optimization and has the equation number (9.1.15).
@@ -681,7 +681,7 @@ Do 180 nprob = 1, 10
       m = 2
       xopt (1) = Sqrt (0.5)
       xopt (2) = xopt (1)
-   Else If (nprob .Eq. 7) Then
+   Else If (nprob == 7) Then
 !
 !     This problem is taken from Fletcher's book Practical Methods of
 !     Optimization and has the equation number (14.4.2).
@@ -694,7 +694,7 @@ Do 180 nprob = 1, 10
       xopt (1) = 0.0
       xopt (2) = - 3.0
       xopt (3) = - 3.0
-   Else If (nprob .Eq. 8) Then
+   Else If (nprob == 8) Then
 !
 !     This problem is taken from page 66 of Hock and Schittkowski's book Test
 !     Examples for Nonlinear Programming Codes. It is their test problem Number
@@ -708,7 +708,7 @@ Do 180 nprob = 1, 10
       xopt (2) = 1.0
       xopt (3) = 2.0
       xopt (4) = - 1.0
-   Else If (nprob .Eq. 9) Then
+   Else If (nprob == 9) Then
 !
 !     This problem is taken from page 111 of Hock and Schittkowski's
 !     book Test Examples for Nonlinear Programming Codes. It is their
@@ -726,7 +726,7 @@ Do 180 nprob = 1, 10
       xopt (5) = - 0.624487
       xopt (6) = 1.038131
       xopt (7) = 1.594227
-   Else If (nprob .Eq. 10) Then
+   Else If (nprob == 10) Then
 !
 !     This problem is taken from page 415 of Luenberger's book Applied
 !     Nonlinear Programming. It is to maximize the area of a hexagon of
@@ -742,11 +742,11 @@ Do 180 nprob = 1, 10
 120   x (i) = 1.0
       rhobeg = 0.5
       rhoend = 0.001
-      If (icase .Eq. 2) rhoend = 0.0001
+      If (icase == 2) rhoend = 0.0001
       iprint = 1
       maxfun = 2000
       Call cobyla (n, m, x, rhobeg, rhoend, iprint, maxfun, w, iact)
-      If (nprob .Eq. 10) Then
+      If (nprob == 10) Then
          tempa = x (1) + x (3) + x (5) + x (7)
          tempb = x (2) + x (4) + x (6) + x (8)
          tempc = 0.5 / Sqrt (tempa*tempa+tempb*tempb)
@@ -821,9 +821,9 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
 10    z (i, j) = 0.0
       z (i, i) = 1.0
 20 dx (i) = 0.0
-   If (m .Ge. 1) Then
+   If (m >= 1) Then
       Do 30 k = 1, m
-         If (b(k) .Gt. resmax) Then
+         If (b(k) > resmax) Then
             resmax = b (k)
             icon = k
          End If
@@ -832,7 +832,7 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
          iact (k) = k
 40    vmultc (k) = resmax - b (k)
    End If
-   If (resmax .Eq. 0.0) Go To 480
+   If (resmax == 0.0) Go To 480
    Do 50 i = 1, n
 50 sdirn (i) = 0.0
 !
@@ -844,23 +844,23 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
 !
 60 optold = 0.0
    icount = 0
-70 If (mcon .Eq. m) Then
+70 If (mcon == m) Then
       optnew = resmax
    Else
       optnew = 0.0
       Do 80 i = 1, n
 80    optnew = optnew - dx (i) * a (i, mcon)
    End If
-   If (icount .Eq. 0 .Or. optnew .Lt. optold) Then
+   If (icount == 0 .Or. optnew < optold) Then
       optold = optnew
       nactx = nact
       icount = 3
-   Else If (nact .Gt. nactx) Then
+   Else If (nact > nactx) Then
       nactx = nact
       icount = 3
    Else
       icount = icount - 1
-      If (icount .Eq. 0) Go To 490
+      If (icount == 0) Go To 490
    End If
 !
 !     If ICON exceeds NACT, then we add the constraint with index IACT(ICON) to
@@ -869,13 +869,13 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
 !     product being set to zero if its nonzero value could be due to computer
 !     rounding errors. The array DXNEW is used for working space.
 !
-   If (icon .Le. nact) Go To 260
+   If (icon <= nact) Go To 260
    kk = iact (icon)
    Do 90 i = 1, n
 90 dxnew (i) = a (i, kk)
    tot = 0.0
    k = n
-100 If (k .Gt. nact) Then
+100 If (k > nact) Then
       sp = 0.0
       spabs = 0.0
       Do 110 i = 1, n
@@ -884,8 +884,8 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
 110   spabs = spabs + Abs (temp)
       acca = spabs + 0.1 * Abs (sp)
       accb = spabs + 0.2 * Abs (sp)
-      If (spabs .Ge. acca .Or. acca .Ge. accb) sp = 0.0
-      If (tot .Eq. 0.0) Then
+      If (spabs >= acca .Or. acca >= accb) sp = 0.0
+      If (tot == 0.0) Then
          tot = sp
       Else
          kp = k + 1
@@ -905,7 +905,7 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
 !     Add the new constraint if this can be done without a deletion from the
 !     active set.
 !
-   If (tot .Ne. 0.0) Then
+   If (tot /= 0.0) Then
       nact = nact + 1
       zdota (nact) = tot
       vmultc (icon) = vmultc (nact)
@@ -930,16 +930,16 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
 140 zdvabs = zdvabs + Abs (temp)
    acca = zdvabs + 0.1 * Abs (zdotv)
    accb = zdvabs + 0.2 * Abs (zdotv)
-   If (zdvabs .Lt. acca .And. acca .Lt. accb) Then
+   If (zdvabs < acca .And. acca < accb) Then
       temp = zdotv / zdota (k)
-      If (temp .Gt. 0.0 .And. iact(k) .Le. m) Then
+      If (temp > 0.0 .And. iact(k) <= m) Then
          tempa = vmultc (k) / temp
-         If (ratio .Lt. 0.0 .Or. tempa .Lt. ratio) Then
+         If (ratio < 0.0 .Or. tempa < ratio) Then
             ratio = tempa
             iout = k
          End If
       End If
-      If (k .Ge. 2) Then
+      If (k >= 2) Then
          kw = iact (k)
          Do 150 i = 1, n
 150      dxnew (i) = dxnew (i) - temp * a (i, kw)
@@ -949,8 +949,8 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
       vmultd (k) = 0.0
    End If
    k = k - 1
-   If (k .Gt. 0) Go To 130
-   If (ratio .Lt. 0.0) Go To 490
+   If (k > 0) Go To 130
+   If (ratio < 0.0) Go To 490
 !
 !     Revise the Lagrange multipliers and reorder the active constraints so
 !     that the one to be replaced is at the end of the list. Also calculate the
@@ -958,7 +958,7 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
 !
    Do 160 k = 1, nact
 160 vmultc (k) = amax1 (0.0, vmultc(k)-ratio*vmultd(k))
-   If (icon .Lt. nact) Then
+   If (icon < nact) Then
       isave = iact (icon)
       vsave = vmultc (icon)
       k = icon
@@ -979,14 +979,14 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
       iact (k) = kw
       vmultc (k) = vmultc (kp)
       k = kp
-      If (k .Lt. nact) Go To 170
+      If (k < nact) Go To 170
       iact (k) = isave
       vmultc (k) = vsave
    End If
    temp = 0.0
    Do 200 i = 1, n
 200 temp = temp + z (i, nact) * a (i, kk)
-   If (temp .Eq. 0.0) Go To 490
+   If (temp == 0.0) Go To 490
    zdota (nact) = temp
    vmultc (icon) = 0.0
    vmultc (nact) = ratio
@@ -996,7 +996,7 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
 !
 210 iact (icon) = iact (nact)
    iact (nact) = kk
-   If (mcon .Gt. m .And. kk .Ne. mcon) Then
+   If (mcon > m .And. kk /= mcon) Then
       k = nact - 1
       sp = 0.0
       Do 220 i = 1, n
@@ -1020,7 +1020,7 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
 !     If stage one is in progress, then set SDIRN to the direction of the next
 !     change to the current vector of variables.
 !
-   If (mcon .Gt. m) Go To 320
+   If (mcon > m) Go To 320
    kk = iact (nact)
    temp = 0.0
    Do 240 i = 1, n
@@ -1033,7 +1033,7 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
 !
 !     Delete the constraint that has the index IACT(ICON) from the active set.
 !
-260 If (icon .Lt. nact) Then
+260 If (icon < nact) Then
       isave = iact (icon)
       vsave = vmultc (icon)
       k = icon
@@ -1054,7 +1054,7 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
       iact (k) = kk
       vmultc (k) = vmultc (kp)
       k = kp
-      If (k .Lt. nact) Go To 270
+      If (k < nact) Go To 270
       iact (k) = isave
       vmultc (k) = vsave
    End If
@@ -1063,7 +1063,7 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
 !     If stage one is in progress, then set SDIRN to the direction of the next
 !     change to the current vector of variables.
 !
-   If (mcon .Gt. m) Go To 320
+   If (mcon > m) Go To 320
    temp = 0.0
    Do 300 i = 1, n
 300 temp = temp + sdirn (i) * z (i, nact+1)
@@ -1087,18 +1087,18 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
    sd = 0.0
    ss = 0.0
    Do 350 i = 1, n
-      If (Abs(dx(i)) .Ge. 1.0e-6*rho) dd = dd - dx (i) ** 2
+      If (Abs(dx(i)) >= 1.0e-6*rho) dd = dd - dx (i) ** 2
       sd = sd + dx (i) * sdirn (i)
 350 ss = ss + sdirn (i) ** 2
-   If (dd .Le. 0.0) Go To 490
+   If (dd <= 0.0) Go To 490
    temp = Sqrt (ss*dd)
-   If (Abs(sd) .Ge. 1.0e-6*temp) temp = Sqrt (ss*dd+sd*sd)
+   If (Abs(sd) >= 1.0e-6*temp) temp = Sqrt (ss*dd+sd*sd)
    stpful = dd / (temp+sd)
    step = stpful
-   If (mcon .Eq. m) Then
+   If (mcon == m) Then
       acca = step + 0.1 * resmax
       accb = step + 0.2 * resmax
-      If (step .Ge. acca .Or. acca .Ge. accb) Go To 480
+      If (step >= acca .Or. acca >= accb) Go To 480
       step = amin1 (step, resmax)
    End If
 !
@@ -1109,7 +1109,7 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
 !
    Do 360 i = 1, n
 360 dxnew (i) = dx (i) + step * sdirn (i)
-   If (mcon .Eq. m) Then
+   If (mcon == m) Then
       resold = resmax
       resmax = 0.0
       Do 380 k = 1, nact
@@ -1135,22 +1135,22 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
 400 zdwabs = zdwabs + Abs (temp)
    acca = zdwabs + 0.1 * Abs (zdotw)
    accb = zdwabs + 0.2 * Abs (zdotw)
-   If (zdwabs .Ge. acca .Or. acca .Ge. accb) zdotw = 0.0
+   If (zdwabs >= acca .Or. acca >= accb) zdotw = 0.0
    vmultd (k) = zdotw / zdota (k)
-   If (k .Ge. 2) Then
+   If (k >= 2) Then
       kk = iact (k)
       Do 410 i = 1, n
 410   dxnew (i) = dxnew (i) - vmultd (k) * a (i, kk)
       k = k - 1
       Go To 390
    End If
-   If (mcon .Gt. m) vmultd (nact) = amax1 (0.0, vmultd(nact))
+   If (mcon > m) vmultd (nact) = amax1 (0.0, vmultd(nact))
 !
 !     Complete VMULTC by finding the new constraint residuals.
 !
    Do 420 i = 1, n
 420 dxnew (i) = dx (i) + step * sdirn (i)
-   If (mcon .Gt. nact) Then
+   If (mcon > nact) Then
       kl = nact + 1
       Do 440 k = kl, mcon
          kk = iact (k)
@@ -1162,7 +1162,7 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
 430      sumabs = sumabs + Abs (temp)
          acca = sumabs + 0.1 * Abs (sum)
          accb = sumabs + 0.2 * Abs (sum)
-         If (sumabs .Ge. acca .Or. acca .Ge. accb) sum = 0.0
+         If (sumabs >= acca .Or. acca >= accb) sum = 0.0
 440   vmultd (k) = sum
    End If
 !
@@ -1171,9 +1171,9 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
    ratio = 1.0
    icon = 0
    Do 450 k = 1, mcon
-      If (vmultd(k) .Lt. 0.0) Then
+      If (vmultd(k) < 0.0) Then
          temp = vmultc (k) / (vmultc(k)-vmultd(k))
-         If (temp .Lt. ratio) Then
+         If (temp < ratio) Then
             ratio = temp
             icon = k
          End If
@@ -1187,13 +1187,13 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
 460 dx (i) = temp * dx (i) + ratio * dxnew (i)
    Do 470 k = 1, mcon
 470 vmultc (k) = amax1 (0.0, temp*vmultc(k)+ratio*vmultd(k))
-   If (mcon .Eq. m) resmax = resold + ratio * (resmax-resold)
+   If (mcon == m) resmax = resold + ratio * (resmax-resold)
 !
 !     If the full step is not acceptable then begin another iteration.
 !     Otherwise switch to stage two or end the calculation.
 !
-   If (icon .Gt. 0) Go To 70
-   If (step .Eq. stpful) Go To 500
+   If (icon > 0) Go To 70
+   If (step == stpful) Go To 500
 480 mcon = m + 1
    icon = mcon
    iact (mcon) = mcon
@@ -1203,7 +1203,7 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
 !     We employ any freedom that may be available to reduce the objective
 !     function before returning a DX whose length is less than RHO.
 !
-490 If (mcon .Eq. m) Go To 480
+490 If (mcon == m) Go To 480
    ifull = 0
 500 Return
 End

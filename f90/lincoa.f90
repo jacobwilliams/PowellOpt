@@ -11,13 +11,13 @@ Subroutine calfun (n, x, f)
       v24 = x (4) * x (11) - x (10) * x (5)
       v34 = x (7) * x (11) - x (10) * x (8)
       del1 = v23 * x (12) - v24 * x (9) + v34 * x (6)
-      If (del1 .Le. zero) Go To 10
+      If (del1 <= zero) Go To 10
       del2 = - v34 * x (3) - v13 * x (12) + v14 * x (9)
-      If (del2 .Le. zero) Go To 10
+      If (del2 <= zero) Go To 10
       del3 = - v14 * x (6) + v24 * x (3) + v12 * x (12)
-      If (del3 .Le. zero) Go To 10
+      If (del3 <= zero) Go To 10
       del4 = - v12 * x (9) + v13 * x (6) - v23 * x (3)
-      If (del4 .Le. zero) Go To 10
+      If (del4 <= zero) Go To 10
       temp = (del1+del2+del3+del4) ** 3 / (del1*del2*del3*del4)
       f = dmin1 (temp/6.0d0, fmax)
 10    Continue
@@ -64,7 +64,7 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
 !
 !     Set the initial QFAC to the identity matrix in the case NACT=0.
 !
-      If (nact .Eq. 0) Then
+      If (nact == 0) Then
          Do 30 i = 1, n
             Do 20 j = 1, n
 20          qfac (i, j) = zero
@@ -77,37 +77,37 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
 !
       iflag = 1
       ic = nact
-40    If (resact(ic) .Gt. tdel) Go To 800
+40    If (resact(ic) > tdel) Go To 800
 50    ic = ic - 1
-      If (ic .Gt. 0) Go To 40
+      If (ic > 0) Go To 40
 !
 !     Remove any constraints from the initial active set whose Lagrange
 !       multipliers are nonnegative, and set the surviving multipliers.
 !
       iflag = 2
-60    If (nact .Eq. 0) Go To 100
+60    If (nact == 0) Go To 100
       ic = nact
 70    temp = zero
       Do 80 i = 1, n
 80    temp = temp + qfac (i, ic) * g (i)
       idiag = (ic*ic+ic) / 2
-      If (ic .Lt. nact) Then
+      If (ic < nact) Then
          jw = idiag + ic
          Do 90 j = ic + 1, nact
             temp = temp - rfac (jw) * vlam (j)
 90       jw = jw + j
       End If
-      If (temp .Ge. zero) Go To 800
+      If (temp >= zero) Go To 800
       vlam (ic) = temp / rfac (idiag)
       ic = ic - 1
-      If (ic .Gt. 0) Go To 70
+      If (ic > 0) Go To 70
 !
 !     Set the new search direction D. Terminate if the 2-norm of D is zero
 !       or does not decrease, or if NACT=N holds. The situation NACT=N
 !       occurs for sufficiently large SNORM if the origin is in the convex
 !       hull of the constraint gradients.
 !
-100   If (nact .Eq. n) Go To 290
+100   If (nact == n) Go To 290
       Do 110 j = nact + 1, n
          w (j) = zero
          Do 110 i = 1, n
@@ -118,8 +118,8 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
          Do 120 j = nact + 1, n
 120      dw (i) = dw (i) - w (j) * qfac (i, j)
 130   dd = dd + dw (i) ** 2
-      If (dd .Ge. ddsav) Go To 290
-      If (dd .Eq. zero) Go To 300
+      If (dd >= ddsav) Go To 290
+      If (dd == zero) Go To 300
       ddsav = dd
       dnorm = dsqrt (dd)
 !
@@ -129,16 +129,16 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
 !       due to computer rounding errors.
 !
       l = 0
-      If (m .Gt. 0) Then
+      If (m > 0) Then
          test = dnorm / snorm
          violmx = zero
          Do 150 j = 1, m
-            If (resnew(j) .Gt. zero .And. resnew(j) .Le. tdel) Then
+            If (resnew(j) > zero .And. resnew(j) <= tdel) Then
                sum = zero
                Do 140 i = 1, n
 140            sum = sum + amat (i, j) * dw (i)
-               If (sum .Gt. test*resnew(j)) Then
-                  If (sum .Gt. violmx) Then
+               If (sum > test*resnew(j)) Then
+                  If (sum > violmx) Then
                      l = j
                      violmx = sum
                   End If
@@ -147,8 +147,8 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
 150      Continue
          ctol = zero
          temp = 0.01d0 * dnorm
-         If (violmx .Gt. zero .And. violmx .Lt. temp) Then
-            If (nact .Gt. 0) Then
+         If (violmx > zero .And. violmx < temp) Then
+            If (nact > 0) Then
                Do 170 k = 1, nact
                   j = iact (k)
                   sum = zero
@@ -159,8 +159,8 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
          End If
       End If
       w (1) = one
-      If (l .Eq. 0) Go To 300
-      If (violmx .Le. 10.0d0*ctol) Go To 300
+      If (l == 0) Go To 300
+      If (violmx <= 10.0d0*ctol) Go To 300
 !
 !     Apply Givens rotations to the last (N-NACT) columns of QFAC so that
 !       the first (NACT+1) columns of QFAC are the ones required for the
@@ -174,10 +174,10 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
          sprod = zero
          Do 180 i = 1, n
 180      sprod = sprod + qfac (i, j) * amat (i, l)
-         If (j .Le. nact) Then
+         If (j <= nact) Then
             rfac (idiag+j) = sprod
          Else
-            If (dabs(rdiag) .Le. 1.0d-20*dabs(sprod)) Then
+            If (dabs(rdiag) <= 1.0d-20*dabs(sprod)) Then
                rdiag = sprod
             Else
                temp = dsqrt (sprod*sprod+rdiag*rdiag)
@@ -192,7 +192,7 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
             End If
          End If
 200   Continue
-      If (rdiag .Lt. zero) Then
+      If (rdiag < zero) Then
          Do 210 i = 1, n
 210      qfac (i, nactp) = - qfac (i, nactp)
       End If
@@ -206,7 +206,7 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
 !     Set the components of the vector VMU in W.
 !
 220   w (nact) = one / rfac ((nact*nact+nact)/2) ** 2
-      If (nact .Gt. 1) Then
+      If (nact > 1) Then
          Do 240 i = nact - 1, 1, - 1
             idiag = (i*i+i) / 2
             jw = idiag + i
@@ -222,8 +222,8 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
       vmult = violmx
       ic = 0
       j = 1
-250   If (j .Lt. nact) Then
-         If (vlam(j) .Ge. vmult*w(j)) Then
+250   If (j < nact) Then
+         If (vlam(j) >= vmult*w(j)) Then
             ic = j
             vmult = vlam (j) / w (j)
          End If
@@ -232,9 +232,9 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
       End If
       Do 260 j = 1, nact
 260   vlam (j) = vlam (j) - vmult * w (j)
-      If (ic .Gt. 0) vlam (ic) = zero
+      If (ic > 0) vlam (ic) = zero
       violmx = dmax1 (violmx-vmult, zero)
-      If (ic .Eq. 0) violmx = zero
+      If (ic == 0) violmx = zero
 !
 !     Reduce the active set if necessary, so that all components of the
 !       new VLAM are negative, with resetting of the residuals of the
@@ -242,18 +242,18 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
 !
       iflag = 3
       ic = nact
-270   If (vlam(ic) .Lt. zero) Go To 280
+270   If (vlam(ic) < zero) Go To 280
       resnew (iact(ic)) = dmax1 (resact(ic), tiny)
       Go To 800
 280   ic = ic - 1
-      If (ic .Gt. 0) Go To 270
+      If (ic > 0) Go To 270
 !
 !     Calculate the next VMU if VIOLMX is positive. Return if NACT=N holds,
 !       as then the active constraints imply D=0. Otherwise, go to label
 !       100, to calculate the new D and to test for termination.
 !
-      If (violmx .Gt. zero) Go To 220
-      If (nact .Lt. n) Go To 100
+      If (violmx > zero) Go To 220
+      If (nact < n) Go To 100
 290   dd = zero
 300   w (1) = dd
       Return
@@ -265,7 +265,7 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
 !
 800   resnew (iact(ic)) = dmax1 (resact(ic), tiny)
       jc = ic
-810   If (jc .Lt. nact) Then
+810   If (jc < nact) Then
          jcp = jc + 1
          idiag = jc * jcp / 2
          jw = idiag + jcp
@@ -275,7 +275,7 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
          rfac (jw-1) = sval * rfac (idiag)
          rfac (jw) = cval * rfac (idiag)
          rfac (idiag) = temp
-         If (jcp .Lt. nact) Then
+         If (jcp < nact) Then
             Do 820 j = jcp + 1, nact
                temp = sval * rfac (jw+jc) + cval * rfac (jw+jcp)
                rfac (jw+jcp) = cval * rfac (jw+jc) - sval * rfac &
@@ -285,7 +285,7 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
          End If
          jdiag = idiag - jc
          Do 830 i = 1, n
-            If (i .Lt. jc) Then
+            If (i < jc) Then
                temp = rfac (idiag+i)
                rfac (idiag+i) = rfac (jdiag+i)
                rfac (jdiag+i) = temp
@@ -370,18 +370,18 @@ Subroutine lincoa (n, npt, m, a, ia, b, x, rhobeg, rhoend, iprint, &
       smallx = 1.0d-6 * rhoend
       np = n + 1
       nptm = npt - np
-      If (n .Le. 1) Then
+      If (n <= 1) Then
          Print 10
 10       Format (/ 4 x, 'Return from LINCOA because N is less than 2.')
          Go To 80
       End If
-      If (npt .Lt. n+2 .Or. npt .Gt. ((n+2)*np)/2) Then
+      If (npt < n+2 .Or. npt > ((n+2)*np)/2) Then
          Print 20
 20       Format (/ 4 x, 'Return from LINCOA because NPT is not in', ' t&
         &he required interval.')
          Go To 80
       End If
-      If (maxfun .Le. npt) Then
+      If (maxfun <= npt) Then
          Print 30
 30       Format (/ 4 x, 'Return from LINCOA because MAXFUN is less', ' &
         &than NPT+1.')
@@ -395,7 +395,7 @@ Subroutine lincoa (n, npt, m, a, ia, b, x, rhobeg, rhoend, iprint, &
       iamat = max0 (m+3*n, 2*m+n, 2*npt) + 1
       ib = iamat + m * n
       iflag = 0
-      If (m .Gt. 0) Then
+      If (m > 0) Then
          iw = iamat - 1
          Do 60 j = 1, m
             sum = zero
@@ -403,21 +403,21 @@ Subroutine lincoa (n, npt, m, a, ia, b, x, rhobeg, rhoend, iprint, &
             Do 40 i = 1, n
                sum = sum + a (i, j) * x (i)
 40          temp = temp + a (i, j) ** 2
-            If (temp .Eq. zero) Then
+            If (temp == zero) Then
                Print 50
 50             Format (/ 4 x, 'Return from LINCOA because the gradient &
               &of', ' a constraint is zero.')
                Go To 80
             End If
             temp = dsqrt (temp)
-            If (sum-b(j) .Gt. smallx*temp) iflag = 1
+            If (sum-b(j) > smallx*temp) iflag = 1
             w (ib+j-1) = dmax1 (b(j), sum) / temp
             Do 60 i = 1, n
                iw = iw + 1
 60       w (iw) = a (i, j) / temp
       End If
-      If (iflag .Eq. 1) Then
-         If (iprint .Gt. 0) Print 70
+      If (iflag == 1) Then
+         If (iprint > 0) Print 70
 70       Format (/ 4 x, 'LINCOA has made the initial X feasible by', ' &
         &increasing part(s) of B.')
       End If
@@ -555,7 +555,7 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
       xoptsq = zero
       Do 30 i = 1, n
 30    xoptsq = xoptsq + xopt (i) ** 2
-      If (xoptsq .Ge. 1.0d4*delta*delta) Then
+      If (xoptsq >= 1.0d4*delta*delta) Then
          qoptsq = 0.25d0 * xoptsq
          Do 50 k = 1, npt
             sum = zero
@@ -585,19 +585,19 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
                Do 70 i = 1, npt
 70             sum = sum + w (i) * xpt (i, j)
                step (j) = sum
-               If (k .Lt. idz) sum = - sum
+               If (k < idz) sum = - sum
                Do 80 i = 1, npt
 80          bmat (i, j) = bmat (i, j) + sum * zmat (i, k)
             Do 90 i = 1, n
                ip = i + npt
                temp = step (i)
-               If (k .Lt. idz) temp = - temp
+               If (k < idz) temp = - temp
                Do 90 j = 1, i
 90       bmat (ip, j) = bmat (ip, j) + temp * step (j)
 !
 !     Update the right hand sides of the constraints.
 !
-         If (m .Gt. 0) Then
+         If (m > 0) Then
             Do 110 j = 1, m
                temp = zero
                Do 100 i = 1, n
@@ -632,7 +632,7 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
 !
       delsav = delta
       ksave = knew
-      If (knew .Eq. 0) Then
+      If (knew == 0) Then
          snorm = delta
          Do 150 i = 1, n
 150      xnew (i) = gopt (i)
@@ -646,19 +646,19 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
 !       active set. Otherwise there is a branch below to label 530 or 560.
 !
          temp = half * delta
-         If (xnew(1) .Ge. half) temp = 0.1999d0 * delta
-         If (snorm .Le. temp) Then
+         If (xnew(1) >= half) temp = 0.1999d0 * delta
+         If (snorm <= temp) Then
             delta = half * delta
-            If (delta .Le. 1.4d0*rho) delta = rho
+            If (delta <= 1.4d0*rho) delta = rho
             nvala = nvala + 1
             nvalb = nvalb + 1
             temp = snorm / rho
-            If (delsav .Gt. rho) temp = one
-            If (temp .Ge. half) nvala = zero
-            If (temp .Ge. tenth) nvalb = zero
-            If (delsav .Gt. rho) Go To 530
-            If (nvala .Lt. 5 .And. nvalb .Lt. 3) Go To 530
-            If (snorm .Gt. zero) ksave = - 1
+            If (delsav > rho) temp = one
+            If (temp >= half) nvala = zero
+            If (temp >= tenth) nvalb = zero
+            If (delsav > rho) Go To 530
+            If (nvala < 5 .And. nvalb < 3) Go To 530
+            If (snorm > zero) ksave = - 1
             Go To 560
          End If
          nvala = zero
@@ -677,7 +677,7 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
 170      pqw (k) = zero
          Do 180 j = 1, nptm
             temp = zmat (knew, j)
-            If (j .Lt. idz) temp = - temp
+            If (j < idz) temp = - temp
             Do 180 k = 1, npt
 180      pqw (k) = pqw (k) + temp * zmat (k, j)
          Call qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, &
@@ -697,7 +697,7 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
          Do 190 i = 1, j
             ih = ih + 1
             temp = step (i) * step (j)
-            If (i .Eq. j) temp = half * temp
+            If (i == j) temp = half * temp
 190   vquad = vquad + temp * hq (ih)
       Do 210 k = 1, npt
          temp = zero
@@ -705,16 +705,16 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
             temp = temp + xpt (k, j) * step (j)
 200      sp (npt+k) = temp
 210   vquad = vquad + half * pq (k) * temp * temp
-      If (ksave .Eq. 0 .And. vquad .Ge. zero) Go To 530
+      If (ksave == 0 .And. vquad >= zero) Go To 530
 !
 !     Calculate the next value of the objective function. The difference
 !       between the actual new value of F and the value predicted by the
 !       model is recorded in DIFF.
 !
 220   nf = nf + 1
-      If (nf .Gt. maxfun) Then
+      If (nf > maxfun) Then
          nf = nf - 1
-         If (iprint .Gt. 0) Print 230
+         If (iprint > 0) Print 230
 230      Format (/ 4 x, 'Return from LINCOA because CALFUN has been', '&
         & called MAXFUN times.')
          Go To 600
@@ -725,29 +725,29 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
          x (i) = xbase (i) + xnew (i)
 240   xdiff = xdiff + (x(i)-xsav(i)) ** 2
       xdiff = dsqrt (xdiff)
-      If (ksave .Eq.-1) xdiff = rho
-      If (xdiff .Le. tenth*rho .Or. xdiff .Ge. delta+delta) Then
+      If (ksave ==-1) xdiff = rho
+      If (xdiff <= tenth*rho .Or. xdiff >= delta+delta) Then
          ifeas = 0
-         If (iprint .Gt. 0) Print 250
+         If (iprint > 0) Print 250
 250      Format (/ 4 x, 'Return from LINCOA because rounding errors', '&
         & prevent reasonable changes to X.')
          Go To 600
       End If
-      If (ksave .Le. 0) ifeas = 1
+      If (ksave <= 0) ifeas = 1
       f = dfloat (ifeas)
       Call calfun (n, x, f)
-      If (iprint .Eq. 3) Then
+      If (iprint == 3) Then
          Print 260, nf, f, (x(i), i=1, n)
 260      Format (/ 4 x, 'Function number', i6, '    F =', 1 pd18.10, ' &
         &   The corresponding X is:' / (2 x, 5d15.6))
       End If
-      If (ksave .Eq.-1) Go To 600
+      If (ksave ==-1) Go To 600
       diff = f - fopt - vquad
 !
 !     If X is feasible, then set DFFALT to the difference between the new
 !       value of F and the value predicted by the alternative model.
 !
-      If (ifeas .Eq. 1 .And. itest .Lt. 3) Then
+      If (ifeas == 1 .And. itest < 3) Then
          Do 270 k = 1, npt
             pqw (k) = zero
 270      w (k) = fval (k) - fval (kopt)
@@ -755,7 +755,7 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
             sum = zero
             Do 280 i = 1, npt
 280         sum = sum + w (i) * zmat (i, j)
-            If (j .Lt. idz) sum = - sum
+            If (j < idz) sum = - sum
             Do 290 k = 1, npt
 290      pqw (k) = pqw (k) + sum * zmat (k, j)
          vqalt = zero
@@ -767,25 +767,25 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
 310      vqalt = vqalt + pqw (k) * sp (npt+k) * (half*sp(npt+k)+sp(k))
          dffalt = f - fopt - vqalt
       End If
-      If (itest .Eq. 3) Then
+      If (itest == 3) Then
          dffalt = diff
          itest = 0
       End If
 !
 !     Pick the next value of DELTA after a trust region step.
 !
-      If (ksave .Eq. 0) Then
+      If (ksave == 0) Then
          ratio = (f-fopt) / vquad
-         If (ratio .Le. tenth) Then
+         If (ratio <= tenth) Then
             delta = half * delta
-         Else If (ratio .Le. 0.7d0) Then
+         Else If (ratio <= 0.7d0) Then
             delta = dmax1 (half*delta, snorm)
          Else
             temp = dsqrt (2.0d0) * delta
             delta = dmax1 (half*delta, snorm+snorm)
             delta = dmin1 (delta, temp)
          End If
-         If (delta .Le. 1.4d0*rho) delta = rho
+         If (delta <= 1.4d0*rho) delta = rho
       End If
 !
 !     Update BMAT, ZMAT and IDZ, so that the KNEW-th interpolation point
@@ -794,8 +794,8 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
 !
       Call update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, &
      & knew, pqw, w)
-      If (knew .Eq. 0) Then
-         If (iprint .Gt. 0) Print 320
+      If (knew == 0) Then
+         If (iprint > 0) Print 320
 320      Format (/ 4 x, 'Return from LINCOA because the denominator'' o&
         &f the updating formula is zero.')
          Go To 600
@@ -806,9 +806,9 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
 !       interpolation conditions. Otherwise the new model is constructed
 !       by the symmetric Broyden method in the usual way.
 !
-      If (ifeas .Eq. 1) Then
+      If (ifeas == 1) Then
          itest = itest + 1
-         If (dabs(dffalt) .Ge. tenth*dabs(diff)) itest = 0
+         If (dabs(dffalt) >= tenth*dabs(diff)) itest = 0
       End If
 !
 !     Update the second derivatives of the model by the symmetric Broyden
@@ -817,13 +817,13 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
 !       PQ(KNEW) is included in the second derivative matrix HQ. W is used
 !       later for the gradient of the new KNEW-th Lagrange function.
 !
-      If (itest .Lt. 3) Then
+      If (itest < 3) Then
          Do 330 k = 1, npt
 330      pqw (k) = zero
          Do 350 j = 1, nptm
             temp = zmat (knew, j)
-            If (temp .Ne. zero) Then
-               If (j .Lt. idz) temp = - temp
+            If (temp /= zero) Then
+               If (j < idz) temp = - temp
                Do 340 k = 1, npt
 340            pqw (k) = pqw (k) + temp * zmat (k, j)
             End If
@@ -851,7 +851,7 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
          xpt (knew, i) = xnew (i)
 380   ssq = ssq + step (i) ** 2
       sp (npt+knew) = sp (npt+kopt) + ssq
-      If (itest .Lt. 3) Then
+      If (itest < 3) Then
          Do 390 k = 1, npt
             temp = pqw (k) * sp (k)
             Do 390 i = 1, n
@@ -863,7 +863,7 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
 !     Update FOPT, XSAV, XOPT, KOPT, RESCON and SP if the new F is the
 !       least calculated value so far with a feasible vector of variables.
 !
-      If (f .Lt. fopt .And. ifeas .Eq. 1) Then
+      If (f < fopt .And. ifeas == 1) Then
          fopt = f
          Do 410 j = 1, n
             xsav (j) = x (j)
@@ -871,16 +871,16 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
          kopt = knew
          snorm = dsqrt (ssq)
          Do 430 j = 1, m
-            If (rescon(j) .Ge. delta+snorm) Then
+            If (rescon(j) >= delta+snorm) Then
                rescon (j) = snorm - rescon (j)
             Else
                rescon (j) = rescon (j) + snorm
-               If (rescon(j)+delta .Gt. zero) Then
+               If (rescon(j)+delta > zero) Then
                   temp = b (j)
                   Do 420 i = 1, n
 420               temp = temp - xopt (i) * amat (i, j)
                   temp = dmax1 (temp, zero)
-                  If (temp .Ge. delta) temp = - temp
+                  If (temp >= delta) temp = - temp
                   rescon (j) = temp
                End If
             End If
@@ -890,12 +890,12 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
 !
 !     Also revise GOPT when symmetric Broyden updating is applied.
 !
-         If (itest .Lt. 3) Then
+         If (itest < 3) Then
             ih = 0
             Do 450 j = 1, n
                Do 450 i = 1, j
                   ih = ih + 1
-                  If (i .Lt. j) gopt (j) = gopt (j) + hq (ih) * step &
+                  If (i < j) gopt (j) = gopt (j) + hq (ih) * step &
                  & (i)
 450         gopt (i) = gopt (i) + hq (ih) * step (j)
             Do 460 k = 1, npt
@@ -909,7 +909,7 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
 !       this interpolant gives substantial reductions in the predictions
 !       of values of F at feasible points.
 !
-      If (itest .Eq. 3) Then
+      If (itest == 3) Then
          Do 470 k = 1, npt
             pq (k) = zero
 470      w (k) = fval (k) - fval (kopt)
@@ -917,7 +917,7 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
             sum = zero
             Do 480 i = 1, npt
 480         sum = sum + w (i) * zmat (i, j)
-            If (j .Lt. idz) sum = - sum
+            If (j < idz) sum = - sum
             Do 490 k = 1, npt
 490      pq (k) = pq (k) + sum * zmat (k, j)
          Do 500 j = 1, n
@@ -938,8 +938,8 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
 !       step.
 !
       knew = 0
-      If (ksave .Gt. 0) Go To 20
-      If (ratio .Ge. tenth) Go To 20
+      If (ksave > 0) Go To 20
+      If (ratio >= tenth) Go To 20
 !
 !     Alternatively, find out if the interpolation points are close enough
 !       to the best point so far.
@@ -949,7 +949,7 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
          sum = zero
          Do 540 j = 1, n
 540      sum = sum + (xpt(k, j)-xopt(j)) ** 2
-         If (sum .Gt. distsq) Then
+         If (sum > distsq) Then
             knew = k
             distsq = sum
          End If
@@ -961,26 +961,26 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
 !       trust region step was calculated, then try a "trust region" step
 !       instead.
 !
-      If (knew .Gt. 0) Go To 20
+      If (knew > 0) Go To 20
       knew = 0
-      If (fopt .Lt. fsave) Go To 20
-      If (delsav .Gt. rho) Go To 20
+      If (fopt < fsave) Go To 20
+      If (delsav > rho) Go To 20
 !
 !     The calculations with the current value of RHO are complete.
 !       Pick the next value of RHO.
 !
-560   If (rho .Gt. rhoend) Then
+560   If (rho > rhoend) Then
          delta = half * rho
-         If (rho .Gt. 250.0d0*rhoend) Then
+         If (rho > 250.0d0*rhoend) Then
             rho = tenth * rho
-         Else If (rho .Le. 16.0d0*rhoend) Then
+         Else If (rho <= 16.0d0*rhoend) Then
             rho = rhoend
          Else
             rho = dsqrt (rho*rhoend)
          End If
          delta = dmax1 (delta, rho)
-         If (iprint .Ge. 2) Then
-            If (iprint .Ge. 3) Print 570
+         If (iprint >= 2) Then
+            If (iprint >= 3) Print 570
 570         Format (5 x)
             Print 580, rho, nf
 580         Format (/ 4 x, 'New RHO =', 1 pd11.4, 5 x, 'Number of', ' f&
@@ -995,13 +995,13 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
 !     Return from the calculation, after branching to label 220 for another
 !       Newton-Raphson step if it has not been tried before.
 !
-      If (ksave .Eq.-1) Go To 220
-600   If (fopt .Le. f .Or. ifeas .Eq. 0) Then
+      If (ksave ==-1) Go To 220
+600   If (fopt <= f .Or. ifeas == 0) Then
          Do 610 i = 1, n
 610      x (i) = xsav (i)
          f = fopt
       End If
-      If (iprint .Ge. 1) Then
+      If (iprint >= 1) Then
          Print 620, nf
 620      Format (/ 4 x, 'At the return from LINCOA', 5 x, 'Number of fu&
         &nction values =', i6)
@@ -1182,7 +1182,7 @@ Subroutine prelim (n, npt, m, amat, b, x, rhobeg, iprint, xbase, xpt, &
 !
    Do 40 j = 1, n
       xpt (j+1, j) = rhobeg
-      If (j .Lt. npt-n) Then
+      If (j < npt-n) Then
          jp = n + j + 1
          xpt (jp, j) = - rhobeg
          bmat (j+1, j) = half / rhobeg
@@ -1200,12 +1200,12 @@ Subroutine prelim (n, npt, m, amat, b, x, rhobeg, iprint, xbase, xpt, &
 !     Set the remaining initial nonzero elements of XPT and ZMAT when the
 !       number of interpolation points exceeds 2*N+1.
 !
-   If (npt .Gt. 2*n+1) Then
+   If (npt > 2*n+1) Then
       Do 50 k = n + 1, npt - n - 1
          itemp = (k-1) / n
          ipt = k - itemp * n
          jpt = ipt + itemp
-         If (jpt .Gt. n) jpt = jpt - n
+         If (jpt > n) jpt = jpt - n
          xpt (n+k+1, ipt) = rhobeg
          xpt (n+k+1, jpt) = rhobeg
          zmat (1, k) = recip
@@ -1216,7 +1216,7 @@ Subroutine prelim (n, npt, m, amat, b, x, rhobeg, iprint, xbase, xpt, &
 !
 !     Update the constraint right hand sides to allow for the shift XBASE.
 !
-   If (m .Gt. 0) Then
+   If (m > 0) Then
       Do 70 j = 1, m
          temp = zero
          Do 60 i = 1, n
@@ -1232,20 +1232,20 @@ Subroutine prelim (n, npt, m, amat, b, x, rhobeg, iprint, xbase, xpt, &
       bigv = zero
       j = 0
 80    j = j + 1
-      If (j .Le. m .And. nf .Ge. 2) Then
+      If (j <= m .And. nf >= 2) Then
          resid = - b (j)
          Do 90 i = 1, n
 90       resid = resid + xpt (nf, i) * amat (i, j)
-         If (resid .Le. bigv) Go To 80
+         If (resid <= bigv) Go To 80
          bigv = resid
          jsav = j
-         If (resid .Le. test) Then
+         If (resid <= test) Then
             feas = - one
             Go To 80
          End If
          feas = zero
       End If
-      If (feas .Lt. zero) Then
+      If (feas < zero) Then
          Do 100 i = 1, n
 100      step (i) = xpt (nf, i) + (test-bigv) * amat (i, jsav)
          Do 110 k = 1, npt
@@ -1265,14 +1265,14 @@ Subroutine prelim (n, npt, m, amat, b, x, rhobeg, iprint, xbase, xpt, &
 130   x (j) = xbase (j) + xpt (nf, j)
       f = feas
       Call calfun (n, x, f)
-      If (iprint .Eq. 3) Then
+      If (iprint == 3) Then
          Print 140, nf, f, (x(i), i=1, n)
 140      Format (/ 4 x, 'Function number', i6, '    F =', 1 pd18.10, ' &
         &   The corresponding X is:' / (2 x, 5d15.6))
       End If
-      If (nf .Eq. 1) Then
+      If (nf == 1) Then
          kopt = 1
-      Else If (f .Lt. fval(kopt) .And. feas .Gt. zero) Then
+      Else If (f < fval(kopt) .And. feas > zero) Then
          kopt = nf
       End If
 150 fval (nf) = f
@@ -1311,7 +1311,7 @@ Subroutine prelim (n, npt, m, amat, b, x, rhobeg, iprint, xbase, xpt, &
       Do 220 i = 1, n
 220   temp = temp - xopt (i) * amat (i, j)
       temp = dmax1 (temp, zero)
-      If (temp .Ge. rhobeg) temp = - temp
+      If (temp >= rhobeg) temp = - temp
 230 rescon (j) = temp
    Return
 End
@@ -1366,10 +1366,10 @@ Subroutine qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, rescon, &
       temp = pqw (k) * temp
       Do 20 i = 1, n
 20 gl (i) = gl (i) + temp * xpt (k, i)
-   If (m .Gt. 0) Then
+   If (m > 0) Then
       Do 30 j = 1, m
          rstat (j) = one
-30    If (dabs(rescon(j)) .Ge. del) rstat (j) = - one
+30    If (dabs(rescon(j)) >= del) rstat (j) = - one
       Do 40 k = 1, nact
 40    rstat (iact(k)) = zero
    End If
@@ -1380,7 +1380,7 @@ Subroutine qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, rescon, &
    iflag = 0
    vbig = zero
    Do 60 k = 1, npt
-      If (k .Eq. kopt) Go To 60
+      If (k == kopt) Go To 60
       ss = zero
       sp = zero
       Do 50 i = 1, n
@@ -1388,13 +1388,13 @@ Subroutine qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, rescon, &
          ss = ss + temp * temp
 50    sp = sp + gl (i) * temp
       stp = - del / dsqrt (ss)
-      If (k .Eq. knew) Then
-         If (sp*(sp-one) .Lt. zero) stp = - stp
+      If (k == knew) Then
+         If (sp*(sp-one) < zero) stp = - stp
          vlag = dabs (stp*sp) + stp * stp * dabs (sp-one)
       Else
          vlag = dabs (stp*(one-stp)*sp)
       End If
-      If (vlag .Gt. vbig) Then
+      If (vlag > vbig) Then
          ksav = k
          stpsav = stp
          vbig = vlag
@@ -1409,7 +1409,7 @@ Subroutine qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, rescon, &
       gg = gg + gl (i) ** 2
 70 step (i) = stpsav * (xpt(ksav, i)-xopt(i))
    vgrad = del * dsqrt (gg)
-   If (vgrad .Le. tenth*vbig) Go To 220
+   If (vgrad <= tenth*vbig) Go To 220
 !
 !     Make the replacement if it provides a larger value of VBIG.
 !
@@ -1420,14 +1420,14 @@ Subroutine qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, rescon, &
 80    temp = temp + xpt (k, j) * gl (j)
 90 ghg = ghg + pqw (k) * temp * temp
    vnew = vgrad + dabs (half*del*del*ghg/gg)
-   If (vnew .Gt. vbig) Then
+   If (vnew > vbig) Then
       vbig = vnew
       stp = del / dsqrt (gg)
-      If (ghg .Lt. zero) stp = - stp
+      If (ghg < zero) stp = - stp
       Do 100 i = 1, n
 100   step (i) = stp * gl (i)
    End If
-   If (nact .Eq. 0 .Or. nact .Eq. n) Go To 220
+   If (nact == 0 .Or. nact == n) Go To 220
 !
 !     Overwrite GL by its projection. Then set VNEW to the greatest
 !       value of |LFUNC| on the projected gradient from XOPT subject to
@@ -1445,7 +1445,7 @@ Subroutine qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, rescon, &
 120   gl (i) = gl (i) + qfac (i, k) * w (k)
 130 gg = gg + gl (i) ** 2
    vgrad = del * dsqrt (gg)
-   If (vgrad .Le. tenth*vbig) Go To 220
+   If (vgrad <= tenth*vbig) Go To 220
    ghg = zero
    Do 150 k = 1, npt
       temp = zero
@@ -1457,7 +1457,7 @@ Subroutine qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, rescon, &
 !     Set W to the possible move along the projected gradient.
 !
    stp = del / dsqrt (gg)
-   If (ghg .Lt. zero) stp = - stp
+   If (ghg < zero) stp = - stp
    ww = zero
    Do 160 i = 1, n
       w (i) = stp * gl (i)
@@ -1469,24 +1469,24 @@ Subroutine qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, rescon, &
 !       of CTOL below is to provide a check on feasibility that includes
 !       a tolerance for contributions from computer rounding errors.
 !
-   If (vnew/vbig .Ge. 0.2d0) Then
+   If (vnew/vbig >= 0.2d0) Then
       ifeas = 1
       bigv = zero
       j = 0
 170   j = j + 1
-      If (j .Le. m) Then
-         If (rstat(j) .Eq. one) Then
+      If (j <= m) Then
+         If (rstat(j) == one) Then
             temp = - rescon (j)
             Do 180 i = 1, n
 180         temp = temp + w (i) * amat (i, j)
             bigv = dmax1 (bigv, temp)
          End If
-         If (bigv .Lt. test) Go To 170
+         If (bigv < test) Go To 170
          ifeas = 0
       End If
       ctol = zero
       temp = 0.01d0 * dsqrt (ww)
-      If (bigv .Gt. zero .And. bigv .Lt. temp) Then
+      If (bigv > zero .And. bigv < temp) Then
          Do 200 k = 1, nact
             j = iact (k)
             sum = zero
@@ -1494,7 +1494,7 @@ Subroutine qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, rescon, &
 190         sum = sum + w (i) * amat (i, j)
 200      ctol = dmax1 (ctol, dabs(sum))
       End If
-      If (bigv .Le. 10.0d0*ctol .Or. bigv .Ge. test) Then
+      If (bigv <= 10.0d0*ctol .Or. bigv >= test) Then
          Do 210 i = 1, n
 210      step (i) = w (i)
          Go To 260
@@ -1509,14 +1509,14 @@ Subroutine qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, rescon, &
    resmax = zero
    j = 0
 230 j = j + 1
-   If (j .Le. m) Then
-      If (rstat(j) .Lt. zero) Go To 230
+   If (j <= m) Then
+      If (rstat(j) < zero) Go To 230
       temp = - rescon (j)
       Do 240 i = 1, n
 240   temp = temp + step (i) * amat (i, j)
       resmax = dmax1 (resmax, temp)
-      If (temp .Lt. test) Then
-         If (temp .Le. bigv) Go To 230
+      If (temp < test) Then
+         If (temp <= bigv) Go To 230
          bigv = temp
          jsav = j
          ifeas = - 1
@@ -1524,7 +1524,7 @@ Subroutine qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, rescon, &
       End If
       ifeas = 0
    End If
-   If (ifeas .Eq.-1) Then
+   If (ifeas ==-1) Then
       Do 250 i = 1, n
 250   step (i) = step (i) + (test-bigv) * amat (i, jsav)
       ifeas = 0
@@ -1578,16 +1578,16 @@ Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
 !
 !     Set the initial elements of RESNEW, RESACT and STEP.
 !
-   If (m .Gt. 0) Then
+   If (m > 0) Then
       Do 10 j = 1, m
          resnew (j) = rescon (j)
-         If (rescon(j) .Ge. snorm) Then
+         If (rescon(j) >= snorm) Then
             resnew (j) = - one
-         Else If (rescon(j) .Ge. zero) Then
+         Else If (rescon(j) >= zero) Then
             resnew (j) = dmax1 (resnew(j), tiny)
          End If
 10    Continue
-      If (nact .Gt. 0) Then
+      If (nact > 0) Then
          Do 20 k = 1, nact
             resact (k) = rescon (iact(k))
 20       resnew (iact(k)) = zero
@@ -1607,7 +1607,7 @@ Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
 40 ncall = ncall + 1
    Call getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, resnew, &
   & resact, g, dw, w, w(n+1))
-   If (w(n+1) .Eq. zero) Go To 320
+   If (w(n+1) == zero) Go To 320
    scale = 0.2d0 * snorm / dsqrt (w(n+1))
    Do 50 i = 1, n
 50 dw (i) = scale * dw (i)
@@ -1617,16 +1617,16 @@ Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
 !       active constraints.
 !
    resmax = zero
-   If (nact .Gt. 0) Then
+   If (nact > 0) Then
       Do 60 k = 1, nact
 60    resmax = dmax1 (resmax, resact(k))
    End If
    gamma = zero
-   If (resmax .Gt. 1.0d-4*snorm) Then
+   If (resmax > 1.0d-4*snorm) Then
       ir = 0
       Do 80 k = 1, nact
          temp = resact (k)
-         If (k .Ge. 2) Then
+         If (k >= 2) Then
             Do 70 i = 1, k - 1
                ir = ir + 1
 70          temp = temp - rfac (ir) * w (i)
@@ -1651,9 +1651,9 @@ Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
          rhs = rhs - sum * sum
          ds = ds + d (i) * sum
 100   dd = dd + d (i) ** 2
-      If (rhs .Gt. zero) Then
+      If (rhs > zero) Then
          temp = dsqrt (ds*ds+dd*rhs)
-         If (ds .Le. zero) Then
+         If (ds <= zero) Then
             gamma = (temp-ds) / dd
          Else
             gamma = rhs / (temp+ds)
@@ -1664,20 +1664,20 @@ Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
 !       also satisfies the linear constraints.
 !
       j = 0
-110   If (gamma .Gt. zero) Then
+110   If (gamma > zero) Then
          j = j + 1
-         If (resnew(j) .Gt. zero) Then
+         If (resnew(j) > zero) Then
             ad = zero
             adw = zero
             Do 120 i = 1, n
                ad = ad + amat (i, j) * d (i)
 120         adw = adw + amat (i, j) * dw (i)
-            If (ad .Gt. zero) Then
+            If (ad > zero) Then
                temp = dmax1 ((resnew(j)-adw)/ad, zero)
                gamma = dmin1 (gamma, temp)
             End If
          End If
-         If (j .Lt. m) Go To 110
+         If (j < m) Go To 110
       End If
       gamma = dmin1 (gamma, one)
    End If
@@ -1685,7 +1685,7 @@ Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
 !     Set the next direction for seeking a reduction in the model function
 !       subject to the trust region bound and the linear constraints.
 !
-   If (gamma .Le. zero) Then
+   If (gamma <= zero) Then
       Do 130 i = 1, n
 130   d (i) = dw (i)
       icount = nact
@@ -1702,7 +1702,7 @@ Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
 !
 150 icount = icount + 1
    rhs = snsq - ss
-   If (rhs .Le. zero) Go To 320
+   If (rhs <= zero) Go To 320
    dg = zero
    ds = zero
    dd = zero
@@ -1710,14 +1710,14 @@ Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
       dg = dg + d (i) * g (i)
       ds = ds + d (i) * step (i)
 160 dd = dd + d (i) ** 2
-   If (dg .Ge. zero) Go To 320
+   If (dg >= zero) Go To 320
    temp = dsqrt (rhs*dd+ds*ds)
-   If (ds .Le. zero) Then
+   If (ds <= zero) Then
       alpha = (temp-ds) / dd
    Else
       alpha = rhs / (temp+ds)
    End If
-   If (-alpha*dg .Le. ctest*reduct) Go To 320
+   If (-alpha*dg <= ctest*reduct) Go To 320
 !
 !     Set DW to the change in gradient along D.
 !
@@ -1726,7 +1726,7 @@ Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
       dw (j) = zero
       Do 170 i = 1, j
          ih = ih + 1
-         If (i .Lt. j) dw (j) = dw (j) + hq (ih) * d (i)
+         If (i < j) dw (j) = dw (j) + hq (ih) * d (i)
 170 dw (i) = dw (i) + hq (ih) * d (j)
    Do 190 k = 1, npt
       temp = zero
@@ -1743,7 +1743,7 @@ Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
    Do 200 i = 1, n
 200 dgd = dgd + d (i) * dw (i)
    alpht = alpha
-   If (dg+alpha*dgd .Gt. zero) Then
+   If (dg+alpha*dgd > zero) Then
       alpha = - dg / dgd
    End If
 !
@@ -1752,13 +1752,13 @@ Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
 !
    alphm = alpha
    jsav = 0
-   If (m .Gt. 0) Then
+   If (m > 0) Then
       Do 220 j = 1, m
          ad = zero
-         If (resnew(j) .Gt. zero) Then
+         If (resnew(j) > zero) Then
             Do 210 i = 1, n
 210         ad = ad + amat (i, j) * d (i)
-            If (alpha*ad .Gt. resnew(j)) Then
+            If (alpha*ad > resnew(j)) Then
                alpha = resnew (j) / ad
                jsav = j
             End If
@@ -1767,7 +1767,7 @@ Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
    End If
    alpha = dmax1 (alpha, alpbd)
    alpha = dmin1 (alpha, alphm)
-   If (icount .Eq. nact) alpha = dmin1 (alpha, one)
+   If (icount == nact) alpha = dmin1 (alpha, one)
 !
 !     Update STEP, G, RESNEW, RESACT and REDUCT.
 !
@@ -1776,14 +1776,14 @@ Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
       step (i) = step (i) + alpha * d (i)
       ss = ss + step (i) ** 2
 230 g (i) = g (i) + alpha * dw (i)
-   If (m .Gt. 0) Then
+   If (m > 0) Then
       Do 240 j = 1, m
-         If (resnew(j) .Gt. zero) Then
+         If (resnew(j) > zero) Then
             resnew (j) = dmax1 (resnew(j)-alpha*w(j), tiny)
          End If
 240   Continue
    End If
-   If (icount .Eq. nact .And. nact .Gt. 0) Then
+   If (icount == nact .And. nact > 0) Then
       Do 250 k = 1, nact
 250   resact (k) = (one-gamma) * resact (k)
    End If
@@ -1793,19 +1793,19 @@ Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
 !       constraint and if the distance from STEP to the trust region
 !       boundary is at least 0.2*SNORM.
 !
-   If (alpha .Eq. alpht) Go To 320
+   If (alpha == alpht) Go To 320
    temp = - alphm * (dg+half*alphm*dgd)
-   If (temp .Le. ctest*reduct) Go To 320
-   If (jsav .Gt. 0) Then
-      If (ss .Le. 0.64d0*snsq) Go To 40
+   If (temp <= ctest*reduct) Go To 320
+   If (jsav > 0) Then
+      If (ss <= 0.64d0*snsq) Go To 40
       Go To 320
    End If
-   If (icount .Eq. n) Go To 320
+   If (icount == n) Go To 320
 !
 !     Calculate the next search direction, which is conjugate to the
 !       previous one except in the case ICOUNT=NACT.
 !
-   If (nact .Gt. 0) Then
+   If (nact > 0) Then
       Do 260 j = nact + 1, n
          w (j) = zero
          Do 260 i = 1, n
@@ -1819,7 +1819,7 @@ Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
       Do 290 i = 1, n
 290   w (n+i) = g (i)
    End If
-   If (icount .Eq. nact) Then
+   If (icount == nact) Then
       beta = zero
    Else
       wgd = zero
@@ -1835,9 +1835,9 @@ Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
 !     Return from the subroutine.
 !
 320 snorm = zero
-   If (reduct .Gt. zero) snorm = dsqrt (ss)
+   If (reduct > zero) snorm = dsqrt (ss)
    g (1) = zero
-   If (ncall .Gt. 1) g (1) = one
+   If (ncall > 1) g (1) = one
    Return
 End
 Subroutine update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, &
@@ -1886,7 +1886,7 @@ Subroutine update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, &
       sum = zero
       Do 30 i = 1, npt
 30    sum = sum + zmat (i, k) * w (i)
-      If (k .Lt. idz) Then
+      If (k < idz) Then
          beta = beta + sum * sum
          sum = - sum
       Else
@@ -1917,20 +1917,20 @@ Subroutine update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, &
 !       denominator of the updating formula times a weighting factor.
 !
 !
-   If (knew .Eq. 0) Then
+   If (knew == 0) Then
       denmax = zero
       Do 100 k = 1, npt
          hdiag = zero
          Do 80 j = 1, nptm
             temp = one
-            If (j .Lt. idz) temp = - one
+            If (j < idz) temp = - one
 80       hdiag = hdiag + temp * zmat (k, j) ** 2
          denabs = dabs (beta*hdiag+vlag(k)**2)
          distsq = zero
          Do 90 j = 1, n
 90       distsq = distsq + (xpt(k, j)-xpt(kopt, j)) ** 2
          temp = denabs * distsq * distsq
-         If (temp .Gt. denmax) Then
+         If (temp > denmax) Then
             denmax = temp
             knew = k
          End If
@@ -1940,11 +1940,11 @@ Subroutine update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, &
 !     Apply the rotations that put zeros in the KNEW-th row of ZMAT.
 !
    jl = 1
-   If (nptm .Ge. 2) Then
+   If (nptm >= 2) Then
       Do 120 j = 2, nptm
-         If (j .Eq. idz) Then
+         If (j == idz) Then
             jl = idz
-         Else If (zmat(knew, j) .Ne. zero) Then
+         Else If (zmat(knew, j) /= zero) Then
             temp = dsqrt (zmat(knew, jl)**2+zmat(knew, j)**2)
             tempa = zmat (knew, jl) / temp
             tempb = zmat (knew, j) / temp
@@ -1961,18 +1961,18 @@ Subroutine update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, &
 !       into W, and calculate the parameters of the updating formula.
 !
    tempa = zmat (knew, 1)
-   If (idz .Ge. 2) tempa = - tempa
-   If (jl .Gt. 1) tempb = zmat (knew, jl)
+   If (idz >= 2) tempa = - tempa
+   If (jl > 1) tempb = zmat (knew, jl)
    Do 130 i = 1, npt
       w (i) = tempa * zmat (i, 1)
-      If (jl .Gt. 1) w (i) = w (i) + tempb * zmat (i, jl)
+      If (jl > 1) w (i) = w (i) + tempb * zmat (i, jl)
 130 Continue
    alpha = w (knew)
    tau = vlag (knew)
    tausq = tau * tau
    denom = alpha * beta + tausq
    vlag (knew) = vlag (knew) - one
-   If (denom .Eq. zero) Then
+   If (denom == zero) Then
       knew = 0
       Go To 180
    End If
@@ -1983,13 +1983,13 @@ Subroutine update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, &
 !       the value of IDZ is going to be reduced.
 !
    iflag = 0
-   If (jl .Eq. 1) Then
+   If (jl == 1) Then
       tempa = tau / sqrtdn
       tempb = zmat (knew, 1) / sqrtdn
       Do 140 i = 1, npt
 140   zmat (i, 1) = tempa * zmat (i, 1) - tempb * vlag (i)
-      If (denom .Lt. zero) Then
-         If (idz .Eq. 1) Then
+      If (denom < zero) Then
+         If (idz == 1) Then
             idz = 2
          Else
             iflag = 1
@@ -2000,7 +2000,7 @@ Subroutine update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, &
 !     Complete the updating of ZMAT in the alternative case.
 !
       ja = 1
-      If (beta .Ge. zero) ja = jl
+      If (beta >= zero) ja = jl
       jb = jl + 1 - ja
       temp = zmat (knew, jb) / denom
       tempa = temp * beta
@@ -2011,8 +2011,8 @@ Subroutine update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, &
       Do 150 i = 1, npt
          zmat (i, ja) = scala * (tau*zmat(i, ja)-temp*vlag(i))
 150   zmat (i, jb) = scalb * (zmat(i, jb)-tempa*w(i)-tempb*vlag(i))
-      If (denom .Le. zero) Then
-         If (beta .Lt. zero) Then
+      If (denom <= zero) Then
+         If (beta < zero) Then
             idz = idz + 1
          Else
             iflag = 1
@@ -2024,7 +2024,7 @@ Subroutine update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, &
 !       ZMAT^T factorization gains another positive element. Then exchange
 !       the first and IDZ-th columns of ZMAT.
 !
-   If (iflag .Eq. 1) Then
+   If (iflag == 1) Then
       idz = idz - 1
       Do 160 i = 1, npt
          temp = zmat (i, 1)
@@ -2041,7 +2041,7 @@ Subroutine update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, &
       tempb = (-beta*w(jp)-tau*vlag(jp)) / denom
       Do 170 i = 1, jp
          bmat (i, j) = bmat (i, j) + tempa * vlag (i) + tempb * w (i)
-         If (i .Gt. npt) bmat (jp, i-npt) = bmat (i, j)
+         If (i > npt) bmat (jp, i-npt) = bmat (i, j)
 170 Continue
 180 Return
 End

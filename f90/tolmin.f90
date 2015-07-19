@@ -9,9 +9,9 @@ Subroutine addcon (n, m, a, ia, iact, nact, z, u, relacc, indxbd, ztc, &
 !
 !     Form ZTC when the new constraint is a bound.
 !
-      If (icon .Gt. m) Then
+      If (icon > m) Then
          inewbd = icon - m
-         If (inewbd .Le. n) Then
+         If (inewbd <= n) Then
             temp = - 1.0
          Else
             inewbd = inewbd - n
@@ -39,11 +39,11 @@ Subroutine addcon (n, m, a, ia, iact, nact, z, u, relacc, indxbd, ztc, &
       j = n
 40    jp = j
       j = j - 1
-      If (j .Gt. nact) Then
-         If (ztc(jp) .Eq. 0.0) Go To 40
-         If (dabs(ztc(jp)) .Le. relacc*dabs(ztc(j))) Then
+      If (j > nact) Then
+         If (ztc(jp) == 0.0) Go To 40
+         If (dabs(ztc(jp)) <= relacc*dabs(ztc(j))) Then
             temp = dabs (ztc(j))
-         Else If (dabs(ztc(j)) .Le. relacc*dabs(ztc(jp))) Then
+         Else If (dabs(ztc(j)) <= relacc*dabs(ztc(jp))) Then
             temp = dabs (ztc(jp))
          Else
             temp = dabs (ztc(jp)) * dsqrt (1.0+(ztc(j)/ztc(jp))**2)
@@ -55,7 +55,7 @@ Subroutine addcon (n, m, a, ia, iact, nact, z, u, relacc, indxbd, ztc, &
 !     Apply the rotation when the new constraint is a bound.
 !
          iz = j
-         If (icon .Gt. m) Then
+         If (icon > m) Then
             Do 50 i = 1, n
                temp = wcos * z (iz+1) - wsin * z (iz)
                z (iz) = wcos * z (iz) + wsin * z (iz+1)
@@ -71,7 +71,7 @@ Subroutine addcon (n, m, a, ia, iact, nact, z, u, relacc, indxbd, ztc, &
                tempa = wcos * z (iz+1)
                tempb = wsin * z (iz)
                temp = dabs (cgrad(i)) * (dabs(tempa)+dabs(tempb))
-               If (temp .Gt. wpiv) Then
+               If (temp > wpiv) Then
                   wpiv = temp
                   ipiv = i
                End If
@@ -86,7 +86,7 @@ Subroutine addcon (n, m, a, ia, iact, nact, z, u, relacc, indxbd, ztc, &
             Do 70 i = 1, n
                sum = sum + z (iz) * cgrad (i)
 70          iz = iz + n
-            If (sum .Ne. 0.0) Then
+            If (sum /= 0.0) Then
                iz = ipiv * n - n + jp
                z (iz) = z (iz) - sum / cgrad (ipiv)
             End If
@@ -96,8 +96,8 @@ Subroutine addcon (n, m, a, ia, iact, nact, z, u, relacc, indxbd, ztc, &
 !
 !     Test for linear independence in the proposed new active set.
 !
-      If (ztc(np) .Eq. 0.0) Go To 90
-      If (icon .Le. m) Then
+      If (ztc(np) == 0.0) Go To 90
+      If (icon <= m) Then
          sum = 0.0
          sumabs = 0.0
          iz = np
@@ -106,7 +106,7 @@ Subroutine addcon (n, m, a, ia, iact, nact, z, u, relacc, indxbd, ztc, &
             sum = sum + temp
             sumabs = sumabs + dabs (temp)
 80       iz = iz + n
-         If (dabs(sum) .Le. relacc*sumabs) Go To 90
+         If (dabs(sum) <= relacc*sumabs) Go To 90
       End If
 !
 !     Set the new diagonal element of U and return.
@@ -125,11 +125,11 @@ Subroutine adjtol (n, m, a, ia, b, xl, xu, x, iact, nact, xbig, relacc, &
 !       NACT constraints.
 !
       viol = 0.0
-      If (nact .Gt. meql) Then
+      If (nact > meql) Then
          kl = meql + 1
          Do 20 k = kl, nact
             j = iact (k)
-            If (j .Le. m) Then
+            If (j <= m) Then
                res = b (j)
                resabs = dabs (b(j))
                Do 10 i = 1, n
@@ -137,7 +137,7 @@ Subroutine adjtol (n, m, a, ia, b, xl, xu, x, iact, nact, xbig, relacc, &
 10             resabs = resabs + dabs (a(i, j)*xbig(i))
             Else
                jm = j - m
-               If (jm .Le. n) Then
+               If (jm <= n) Then
                   res = x (jm) - xl (jm)
                   resabs = xbig (jm) + dabs (xl(jm))
                Else
@@ -146,14 +146,14 @@ Subroutine adjtol (n, m, a, ia, b, xl, xu, x, iact, nact, xbig, relacc, &
                   resabs = xbig (jm) + dabs (xu(jm))
                End If
             End If
-            If (res .Gt. 0.0) viol = dmax1 (viol, res/resabs)
+            If (res > 0.0) viol = dmax1 (viol, res/resabs)
 20       Continue
       End If
 !
 !     Adjust TOL.
 !
       tol = 0.1 * dmin1 (tol, viol)
-      If (tol .Le. relacc+relacc) Then
+      If (tol <= relacc+relacc) Then
          tol = relacc
          Do 30 i = 1, n
 30       xbig (i) = dabs (x(i))
@@ -172,7 +172,7 @@ Subroutine conres (n, m, a, ia, b, xl, xu, x, iact, nact, par, g, z, u, &
 !     Calculate and partition the residuals of the inactive constraints,
 !       and set the gradient vector when seeking feasibility.
 !
-      If (idiff .Gt. 0.0) Then
+      If (idiff > 0.0) Then
          Do 10 i = 1, n
 10       g (i) = 0.0
          sumres = 0.0
@@ -186,7 +186,7 @@ Subroutine conres (n, m, a, ia, b, xl, xu, x, iact, nact, par, g, z, u, &
 !
 !     Calculate the residual of the current constraint.
 !
-         If (j .Le. m) Then
+         If (j <= m) Then
             res = b (j)
             resabs = dabs (b(j))
             Do 20 i = 1, n
@@ -194,7 +194,7 @@ Subroutine conres (n, m, a, ia, b, xl, xu, x, iact, nact, par, g, z, u, &
 20          resabs = resabs + dabs (xbig(i)*a(i, j))
          Else
             jm = j - m
-            If (jm .Le. n) Then
+            If (jm <= n) Then
                res = x (jm) - xl (jm)
                resabs = dabs (xbig(jm)) + dabs (xl(jm))
             Else
@@ -208,34 +208,34 @@ Subroutine conres (n, m, a, ia, b, xl, xu, x, iact, nact, par, g, z, u, &
 !     Set TEMP to the relative residual.
 !
          temp = 0.0
-         If (resabs .Ne. 0.0) temp = res / resabs
-         If (k .Gt. msatk .And. temp .Lt. 0.0) Then
-            If (temp+relacc .Ge. 0.0) Then
-               If (j .Le. m) Then
+         If (resabs /= 0.0) temp = res / resabs
+         If (k > msatk .And. temp < 0.0) Then
+            If (temp+relacc >= 0.0) Then
+               If (j <= m) Then
                   sum = dabs (b(j))
                   Do 30 i = 1, n
 30                sum = sum + dabs (x(i)*a(i, j))
                Else
                   jm = j - m
-                  If (jm .Le. n) Then
+                  If (jm <= n) Then
                      sum = dabs (x(jm)) + dabs (xl(jm))
                   Else
                      sum = dabs (x(jm-n)) + dabs (xu(jm-n))
                   End If
                End If
-               If (dabs(res) .Le. sum*relacc) temp = 0.0
+               If (dabs(res) <= sum*relacc) temp = 0.0
             End If
          End If
 !
 !     Place the residual in the appropriate position.
 !
-         If (k .Le. nact) Go To 50
-         If (k .Le. msatk .Or. temp .Ge. 0.0) Then
+         If (k <= nact) Go To 50
+         If (k <= msatk .Or. temp >= 0.0) Then
             msat = msat + 1
-            If (msat .Lt. k) Then
+            If (msat < k) Then
                iact (k) = iact (msat)
             End If
-            If (temp .Gt. tol) Then
+            If (temp > tol) Then
                iact (msat) = j
             Else
                mdeg = mdeg + 1
@@ -247,12 +247,12 @@ Subroutine conres (n, m, a, ia, b, xl, xu, x, iact, nact, par, g, z, u, &
 !       seeking feasibility.
 !
          Else
-            If (j .Le. m) Then
+            If (j <= m) Then
                Do 40 i = 1, n
 40             g (i) = g (i) + a (i, j)
             Else
                j = j - m
-               If (j .Le. n) Then
+               If (j <= n) Then
                   g (j) = g (j) - 1.0
                Else
                   g (j-n) = g (j-n) + 1.0
@@ -266,24 +266,24 @@ Subroutine conres (n, m, a, ia, b, xl, xu, x, iact, nact, par, g, z, u, &
 !       and feasibility has been achieved.
 !
       stepcb = 0.0
-      If (idiff .Gt. 0 .And. msat .Eq. mtot) Go To 60
+      If (idiff > 0 .And. msat == mtot) Go To 60
       Call getd (n, m, a, ia, iact, nact, par, g, z, u, d, ztg, relacc, &
      & ddotg, meql, mdeg, gm, gmnew, parnew, cgrad)
 !
 !     Calculate the (bound on the) step-length due to the constraints.
 !
-      If (ddotg .Lt. 0.0) Then
+      If (ddotg < 0.0) Then
          Call stepbd (n, m, a, ia, iact, bres, d, stepcb, ddotg, mdeg, &
         & msat, mtot, indxbd)
       End If
-      If (idiff .Eq. 0) sumres = ddotg
+      If (idiff == 0) sumres = ddotg
 60    Return
 End
 Subroutine delcon (n, m, a, ia, iact, nact, z, u, relacc, idrop)
       Implicit real * 8 (a-h, o-z)
       Dimension a (ia,*), iact (*), z (*), u (*)
       nm = nact - 1
-      If (idrop .Eq. nact) Go To 60
+      If (idrop == nact) Go To 60
       isave = iact (idrop)
 !
 !     Cycle through the constraint exchanges that are needed.
@@ -295,7 +295,7 @@ Subroutine delcon (n, m, a, ia, iact, nact, z, u, relacc, idrop)
 !
 !     Calculate the (J,JP) element of R.
 !
-         If (icon .Le. m) Then
+         If (icon <= m) Then
             rjjp = 0.0
             iz = j
             Do 10 i = 1, n
@@ -303,7 +303,7 @@ Subroutine delcon (n, m, a, ia, iact, nact, z, u, relacc, idrop)
 10          iz = iz + n
          Else
             ibd = icon - m
-            If (ibd .Le. n) Then
+            If (ibd <= n) Then
                izbd = ibd * n - n
                rjjp = - z (izbd+j)
             Else
@@ -318,14 +318,14 @@ Subroutine delcon (n, m, a, ia, iact, nact, z, u, relacc, idrop)
          ujp = u (jp)
          temp = rjjp * ujp
          denom = dabs (temp)
-         If (denom*relacc .Lt. 1.0) denom = dsqrt (1.0+denom*denom)
+         If (denom*relacc < 1.0) denom = dsqrt (1.0+denom*denom)
          wcos = temp / denom
          wsin = 1.0 / denom
 !
 !     Rotate Z when a bound constraint is promoted.
 !
          iz = j
-         If (icon .Gt. m) Then
+         If (icon > m) Then
             Do 20 i = 1, n
                temp = wcos * z (iz+1) - wsin * z (iz)
                z (iz) = wcos * z (iz) + wsin * z (iz+1)
@@ -341,7 +341,7 @@ Subroutine delcon (n, m, a, ia, iact, nact, z, u, relacc, idrop)
                tempa = wcos * z (iz+1)
                tempb = wsin * z (iz)
                temp = dabs (a(i, icon)) * (dabs(tempa)+dabs(tempb))
-               If (temp .Gt. wpiv) Then
+               If (temp > wpiv) Then
                   wpiv = temp
                   ipiv = i
                End If
@@ -356,7 +356,7 @@ Subroutine delcon (n, m, a, ia, iact, nact, z, u, relacc, idrop)
             Do 40 i = 1, n
                sum = sum + z (iz) * a (i, icon)
 40          iz = iz + n
-            If (sum .Ne. 0.0) Then
+            If (sum /= 0.0) Then
                iz = ipiv * n - n + jp
                z (iz) = z (iz) - sum / a (ipiv, icon)
             End If
@@ -383,12 +383,12 @@ Subroutine eqcons (n, m, meq, a, ia, b, xu, iact, meql, info, z, u, &
 !     Try to add the next equality constraint to the active set.
 !
       Do 50 keq = 1, meq
-         If (meql .Lt. n) Then
+         If (meql < n) Then
             np = meql + 1
             iact (np) = keq
             Call addcon (n, m, a, ia, iact, meql, z, u, relacc, np, am, &
            & cgrad)
-            If (meql .Eq. np) Go To 50
+            If (meql == np) Go To 50
          End If
 !
 !     If linear dependence occurs then find the multipliers of the
@@ -396,7 +396,7 @@ Subroutine eqcons (n, m, meq, a, ia, b, xu, iact, meql, info, z, u, &
 !
          sum = b (keq)
          sumabs = dabs (b(keq))
-         If (meql .Gt. 0) Then
+         If (meql > 0) Then
             Do 10 i = 1, n
 10          am (i) = a (i, keq)
             k = meql
@@ -407,7 +407,7 @@ Subroutine eqcons (n, m, meq, a, ia, b, xu, iact, meql, info, z, u, &
 30          iz = iz + n
             vmult = vmult * u (k)
             j = iact (k)
-            If (j .Le. m) Then
+            If (j <= m) Then
                Do 40 i = 1, n
 40             am (i) = am (i) - vmult * a (i, j)
                rhs = b (j)
@@ -419,12 +419,12 @@ Subroutine eqcons (n, m, meq, a, ia, b, xu, iact, meql, info, z, u, &
             sum = sum - rhs * vmult
             sumabs = sumabs + dabs (rhs*vmult)
             k = k - 1
-            If (k .Ge. 1) Go To 20
+            If (k >= 1) Go To 20
          End If
 !
 !     Error return if the constraints are inconsistent.
 !
-         If (dabs(sum) .Gt. relacc*sumabs) Then
+         If (dabs(sum) > relacc*sumabs) Then
             info = 5
             Go To 60
          End If
@@ -461,7 +461,7 @@ Subroutine getd (n, m, a, ia, iact, nact, par, g, z, u, d, ztg, relacc, &
 10    Do 20 i = 1, n
 20    gm (i) = g (i)
       k = nact
-30    If (k .Gt. 0) Then
+30    If (k > 0) Then
 !
 !     Set TEMP to the next multiplier, but reduce the active set if
 !       TEMP has an unacceptable sign.
@@ -472,7 +472,7 @@ Subroutine getd (n, m, a, ia, iact, nact, par, g, z, u, d, ztg, relacc, &
             temp = temp + z (iz) * gm (i)
 40       iz = iz + n
          temp = temp * u (k)
-         If (k .Gt. meql .And. temp .Gt. 0.0) Then
+         If (k > meql .And. temp > 0.0) Then
             Call delcon (n, m, a, ia, iact, nact, z, u, relacc, k)
             Go To 10
          End If
@@ -480,12 +480,12 @@ Subroutine getd (n, m, a, ia, iact, nact, par, g, z, u, d, ztg, relacc, &
 !     Update GM using the multiplier that has just been calculated.
 !
          j = iact (k)
-         If (j .Le. m) Then
+         If (j <= m) Then
             Do 50 i = 1, n
 50          gm (i) = gm (i) - temp * a (i, j)
          Else
             jm = j - m
-            If (jm .Le. n) Then
+            If (jm <= n) Then
                gm (jm) = gm (jm) + temp
             Else
                gm (jm-n) = gm (jm-n) - temp
@@ -499,10 +499,10 @@ Subroutine getd (n, m, a, ia, iact, nact, par, g, z, u, d, ztg, relacc, &
 !     Calculate the search direction and DDOTG.
 !
       ddotg = 0.0
-      If (nact .Lt. n) Then
+      If (nact < n) Then
          Call sdegen (n, m, a, ia, iact, nact, par, z, u, d, ztg, gm, &
         & relacc, ddotgm, meql, mdeg, gmnew, parnew, cgrad)
-         If (ddotgm .Lt. 0.0) Then
+         If (ddotgm < 0.0) Then
             Do 60 i = 1, n
 60          ddotg = ddotg + d (i) * g (i)
          End If
@@ -522,8 +522,8 @@ Subroutine getfes (n, m, a, ia, b, xl, xu, x, iact, nact, par, info, g, &
       info = 0
 10    Call satact (n, m, a, ia, b, xl, xu, x, iact, nact, info, z, u, &
      & xbig, relacc, tol, meql)
-      If (info .Gt. 0) msat = nact
-      If (msat .Eq. mtot) Go To 60
+      If (info > 0) msat = nact
+      If (msat == mtot) Go To 60
 !
 !     Try to correct the infeasibility.
 !
@@ -535,7 +535,7 @@ Subroutine getfes (n, m, a, ia, b, xl, xu, x, iact, nact, par, info, g, &
 !
 !     Include the new constraint in the active set.
 !
-      If (stepcb .Gt. 0.0) Then
+      If (stepcb > 0.0) Then
          Do 40 i = 1, n
             x (i) = x (i) + stepcb * d (i)
 40       xbig (i) = dmax1 (xbig(i), dabs(x(i)))
@@ -545,19 +545,19 @@ Subroutine getfes (n, m, a, ia, b, xl, xu, x, iact, nact, par, info, g, &
 !
 !     Test whether to continue the search for feasibility.
 !
-      If (msat .Lt. mtot) Then
-         If (stepcb .Eq. 0.0) Go To 50
-         If (msatk .Lt. msat) Go To 20
-         If (sumrsk .Eq. 0.0 .Or. sumres .Lt. sumrsk) Then
+      If (msat < mtot) Then
+         If (stepcb == 0.0) Go To 50
+         If (msatk < msat) Go To 20
+         If (sumrsk == 0.0 .Or. sumres < sumrsk) Then
             sumrsk = sumres
             itest = 0
          End If
          itest = itest + 1
-         If (itest .Le. 2) Go To 30
+         If (itest <= 2) Go To 30
 !
 !     Reduce TOL if it may be too large to allow feasibility.
 !
-50       If (tol .Gt. relacc) Then
+50       If (tol > relacc) Then
             Call adjtol (n, m, a, ia, b, xl, xu, x, iact, nact, xbig, &
            & relacc, tol, meql)
             Go To 10
@@ -737,14 +737,14 @@ Subroutine initzu (n, m, xl, xu, x, iact, meql, info, z, u, xbig, &
 10    relacc = 0.5 * relacc
       tempa = ztpar + 0.5 * relacc
       tempb = ztpar + relacc
-      If (ztpar .Lt. tempa .And. tempa .Lt. tempb) Go To 10
+      If (ztpar < tempa .And. tempa < tempb) Go To 10
 !
 !     Seek bound inconsistencies and bound equality constraints.
 !
       meql = 0
       Do 20 i = 1, n
-         If (xl(i) .Gt. xu(i)) Go To 50
-         If (xl(i) .Eq. xu(i)) meql = meql + 1
+         If (xl(i) > xu(i)) Go To 50
+         If (xl(i) == xu(i)) meql = meql + 1
 20    Continue
 !
 !     Initialize U, Z and XBIG.
@@ -755,7 +755,7 @@ Subroutine initzu (n, m, xl, xu, x, iact, meql, info, z, u, xbig, &
 30    z (i) = 0.0
       iz = 0
       Do 40 i = 1, n
-         If (xl(i) .Eq. xu(i)) Then
+         If (xl(i) == xu(i)) Then
             x (i) = xu (i)
             jact = jact + 1
             u (jact) = 1.0
@@ -780,7 +780,7 @@ Subroutine ktvec (n, m, a, ia, iact, nact, par, g, reskt, z, u, bres, &
 !
       Do 10 i = 1, n
 10    reskt (i) = g (i)
-      If (nact .Gt. 0) Then
+      If (nact > 0) Then
          icase = 0
 20       Do 50 kk = 1, nact
             k = nact + 1 - kk
@@ -791,20 +791,20 @@ Subroutine ktvec (n, m, a, ia, iact, nact, par, g, reskt, z, u, bres, &
                temp = temp + z (iz) * reskt (i)
 30          iz = iz + n
             temp = temp * u (k)
-            If (icase .Eq. 0) par (k) = 0.0
-            If (k .Le. meql .Or. par(k)+temp .Lt. 0.0) Then
+            If (icase == 0) par (k) = 0.0
+            If (k <= meql .Or. par(k)+temp < 0.0) Then
                par (k) = par (k) + temp
             Else
                temp = - par (k)
                par (k) = 0.0
             End If
-            If (temp .Ne. 0.0) Then
-               If (j .Le. m) Then
+            If (temp /= 0.0) Then
+               If (j <= m) Then
                   Do 40 i = 1, n
 40                reskt (i) = reskt (i) - temp * a (i, j)
                Else
                   jm = j - m
-                  If (jm .Le. n) Then
+                  If (jm <= n) Then
                      reskt (jm) = reskt (jm) + temp
                   Else
                      reskt (jm-n) = reskt (jm-n) - temp
@@ -816,13 +816,13 @@ Subroutine ktvec (n, m, a, ia, iact, nact, par, g, reskt, z, u, bres, &
 !     Calculate the sum of squares of the KT residual vector.
 !
          ssqkt = 0.0
-         If (nact .Eq. n) Go To 130
+         If (nact == n) Go To 130
          Do 60 i = 1, n
 60       ssqkt = ssqkt + reskt (i) ** 2
 !
 !     Apply iterative refinement to the residual vector.
 !
-         If (icase .Eq. 0) Then
+         If (icase == 0) Then
             icase = 1
             Do 70 k = 1, nact
 70          parw (k) = par (k)
@@ -834,7 +834,7 @@ Subroutine ktvec (n, m, a, ia, iact, nact, par, g, reskt, z, u, bres, &
 !
 !     Undo the iterative refinement if it does not reduce SSQKT.
 !
-         If (ssqktw .Lt. ssqkt) Then
+         If (ssqktw < ssqkt) Then
             Do 90 k = 1, nact
 90          par (k) = parw (k)
             Do 100 i = 1, n
@@ -854,11 +854,11 @@ Subroutine ktvec (n, m, a, ia, iact, nact, par, g, reskt, z, u, bres, &
 !       of active inequality constraints.
 !
       relaxf = 0.0
-      If (meql .Lt. nact) Then
+      If (meql < nact) Then
          kl = meql + 1
          Do 120 k = kl, nact
             j = iact (k)
-            If (bres(j) .Gt. 0.0) Then
+            If (bres(j) > 0.0) Then
                relaxf = relaxf - par (k) * bres (j)
             End If
 120      Continue
@@ -879,9 +879,9 @@ Subroutine lsrch (n, x, g, d, xs, gs, relacc, stepcb, ddotg, f, step, &
          xs (i) = x (i)
          gs (i) = g (i)
          gopt (i) = g (i)
-         If (d(i) .Ne. 0.0) Then
+         If (d(i) /= 0.0) Then
             temp = dabs (x(i)/d(i))
-            If (ratio .Lt. 0.0 .Or. temp .Lt. ratio) ratio = temp
+            If (ratio < 0.0 .Or. temp < ratio) ratio = temp
          End If
 10    Continue
       step = dmin1 (1.0d0, stepcb)
@@ -911,8 +911,8 @@ Subroutine lsrch (n, x, g, d, xs, gs, relacc, stepcb, ddotg, f, step, &
       dgmid = 0.0
       Do 40 i = 1, n
 40    dgmid = dgmid + d (i) * g (i)
-      If (f .Le. fopt) Then
-         If (f .Lt. fopt .Or. dabs(dgmid) .Lt. dgopt) Then
+      If (f <= fopt) Then
+         If (f < fopt .Or. dabs(dgmid) < dgopt) Then
             stpopt = step
             fopt = f
             Do 50 i = 1, n
@@ -920,12 +920,12 @@ Subroutine lsrch (n, x, g, d, xs, gs, relacc, stepcb, ddotg, f, step, &
             dgopt = dabs (dgmid)
          End If
       End If
-      If (nfvals+icount .Eq. nfmax) Go To 70
+      If (nfvals+icount == nfmax) Go To 70
 !
 !      Modify the bounds on the steplength or convergence.
 !
-      If (f .Ge. fbase+0.1*(step-sbase)*ddotgb) Then
-         If (stphgh .Gt. 0.0 .Or. f .Gt. fbase .Or. dgmid .Gt. &
+      If (f >= fbase+0.1*(step-sbase)*ddotgb) Then
+         If (stphgh > 0.0 .Or. f > fbase .Or. dgmid > &
         & 0.5*ddotg) Then
             stphgh = step
             fhgh = f
@@ -936,24 +936,24 @@ Subroutine lsrch (n, x, g, d, xs, gs, relacc, stepcb, ddotg, f, step, &
          fbase = f
          ddotgb = dgmid
       End If
-      If (dgmid .Ge. 0.7*ddotgb) Go To 70
+      If (dgmid >= 0.7*ddotgb) Go To 70
       stplow = step
       flow = f
       dglow = dgmid
-60    If (stphgh .Gt. 0.0 .And. stplow .Ge. relint*stphgh) Go To 70
+60    If (stphgh > 0.0 .And. stplow >= relint*stphgh) Go To 70
 !
 !     Calculate the next step length or end the iterations.
 !
-      If (stphgh .Eq. 0.0) Then
-         If (step .Eq. stepcb) Go To 70
+      If (stphgh == 0.0) Then
+         If (step == stepcb) Go To 70
          temp = 10.0
-         If (dgmid .Gt. 0.9*ddotg) temp = ddotg / (ddotg-dgmid)
+         If (dgmid > 0.9*ddotg) temp = ddotg / (ddotg-dgmid)
          step = dmin1 (temp*step, stepcb)
          Go To 20
-      Else If (icount .Eq. 1 .Or. stplow .Gt. 0.0) Then
+      Else If (icount == 1 .Or. stplow > 0.0) Then
          dgknot = 2.0 * (fhgh-flow) / (stphgh-stplow) - 0.5 * &
         & (dglow+dghgh)
-         If (dgknot .Ge. 0.0) Then
+         If (dgknot >= 0.0) Then
             ratio = dmax1 (0.1d0, 0.5d0*dglow/(dglow-dgknot))
          Else
             ratio = (0.5*dghgh-dgknot) / (dghgh-dgknot)
@@ -962,12 +962,12 @@ Subroutine lsrch (n, x, g, d, xs, gs, relacc, stepcb, ddotg, f, step, &
          Go To 20
       Else
          step = 0.1 * step
-         If (step .Ge. stpmin) Go To 20
+         If (step >= stpmin) Go To 20
       End If
 !
 !     Return from subroutine.
 !
-70    If (step .Ne. stpopt) Then
+70    If (step /= stpopt) Then
          step = stpopt
          f = fopt
          Do 80 i = 1, n
@@ -995,7 +995,7 @@ ia = 10
 n = 6
 Do 100 icase = 1, 2
    acc = 1.0d-6
-   If (icase .Eq. 2) acc = 1.0d-14
+   If (icase == 2) acc = 1.0d-14
 !
 !     Set the components of XL, XU and X.
 !
@@ -1060,13 +1060,13 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
    iterc = 0
    nfvals = 0
    nfmax = 0
-   If (info .Gt. 0) nfmax = info
+   If (info > 0) nfmax = info
 !
 !     Check the bounds on N, M and MEQ.
 !
    info = 4
-   If (max0(1-n,-m, meq*(meq-m)) .Gt. 0) Then
-      If (iprint .Ne. 0) Print 1010
+   If (max0(1-n,-m, meq*(meq-m)) > 0) Then
+      If (iprint /= 0) Print 1010
 1010  Format (/ 5 x, 'ERROR RETURN FROM GETMIN BECAUSE A CONDITION', ' &
      &ON N, M OR MEQ IS VIOLATED')
       Go To 40
@@ -1076,8 +1076,8 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
 !
    Call initzu (n, m, xl, xu, x, iact, meql, info, z, u, xbig, relacc)
    tol = dmax1 (0.01d0, 10.0d0*relacc)
-   If (info .Eq. 4) Then
-      If (iprint .Ne. 0) Print 1020
+   If (info == 4) Then
+      If (iprint /= 0) Print 1020
 1020  Format (/ 5 x, 'ERROR RETURN FROM GETMIN BECAUSE A LOWER', ' BOUN&
      &D EXCEEDS AN UPPER BOUND')
       Go To 40
@@ -1085,11 +1085,11 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
 !
 !     Add any equality constraints to the active set.
 !
-   If (meq .Gt. 0) Then
+   If (meq > 0) Then
       Call eqcons (n, m, meq, a, ia, b, xu, iact, meql, info, z, u, &
      & relacc, xs, gs)
-      If (info .Eq. 5) Then
-         If (iprint .Ne. 0) Print 1030
+      If (info == 5) Then
+         If (iprint /= 0) Print 1030
 1030     Format (/ 5 x, 'ERROR RETURN FROM GETMIN BECAUSE THE', ' EQUAL&
         &ITY CONSTRAINTS ARE INCONSISTENT')
          Go To 40
@@ -1102,7 +1102,7 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
 !
    mtot = nact
    Do 10 i = 1, n
-      If (xl(i) .Lt. xu(i)) Then
+      If (xl(i) < xu(i)) Then
          mtot = mtot + 2
          iact (mtot-1) = m + i
          iact (mtot) = m + n + i
@@ -1114,8 +1114,8 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
    Call getfes (n, m, a, ia, b, xl, xu, x, iact, nact, par, info, g, z, &
   & u, xbig, relacc, tol, meql, msat, mtot, bres, d, ztg, gm, reskt, &
   & xs, gs)
-   If (msat .Lt. mtot) Then
-      If (iprint .Ne. 0) Print 1040
+   If (msat < mtot) Then
+      If (iprint /= 0) Print 1040
 1040  Format (/ 5 x, 'ERROR RETURN FROM GETMIN BECAUSE THE', ' EQUALITI&
      &ES AND BOUNDS ARE INCONSISTENT')
       info = 6
@@ -1124,7 +1124,7 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
 !
 !     Add the ordinary inequalities to the list of constraints.
 !
-   If (m .Gt. meq) Then
+   If (m > meq) Then
       mp = meq + 1
       Do 20 k = mp, m
          mtot = mtot + 1
@@ -1136,14 +1136,14 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
 30 Call getfes (n, m, a, ia, b, xl, xu, x, iact, nact, par, info, g, z, &
   & u, xbig, relacc, tol, meql, msat, mtot, bres, d, ztg, gm, reskt, &
   & xs, gs)
-   If (msat .Lt. mtot) Then
-      If (iprint .Ne. 0) Print 1050
+   If (msat < mtot) Then
+      If (iprint /= 0) Print 1050
 1050  Format (/ 5 x, 'ERROR RETURN FROM GETMIN BECAUSE THE', ' CONSTRAI&
      &NTS ARE INCONSISTENT')
       info = 7
       Go To 40
-   Else If (meql .Eq. n) Then
-      If (iprint .Ne. 0) Print 1060
+   Else If (meql == n) Then
+      If (iprint /= 0) Print 1060
 1060  Format (/ 5 x, 'GETMIN FINDS THAT THE VARIABLES ARE', ' DETERMINE&
      &D BY THE EQUALITY CONSTRAINTS')
       Go To 40
@@ -1158,8 +1158,8 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
 !
 !     Reduce TOL if necessary.
 !
-   If (tol .Gt. relacc .And. nact .Gt. 0) Then
-      If (nfvals .Ne. nfmax) Then
+   If (tol > relacc .And. nact > 0) Then
+      If (nfvals /= nfmax) Then
          Call adjtol (n, m, a, ia, b, xl, xu, x, iact, nact, xbig, &
         & relacc, tol, meql)
          Go To 30
@@ -1167,16 +1167,16 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
          info = 8
       End If
    End If
-   If (iprint .Ne. 0) Then
-      If (info .Eq. 1) Print 1070
+   If (iprint /= 0) Then
+      If (info == 1) Print 1070
 1070  Format (/ 5 x, 'GETMIN HAS ACHIEVED THE REQUIRED ACCURACY')
-      If (info .Eq. 2) Print 1080
+      If (info == 2) Print 1080
 1080  Format (/ 5 x, 'GETMIN CAN MAKE NO FURTHER PROGRESS BECAUSE', ' O&
      &F ROUNDING ERRORS')
-      If (info .Eq. 3) Print 1090
+      If (info == 3) Print 1090
 1090  Format (/ 5 x, 'GETMIN CAN MAKE NO FURTHER PROGRESS BECAUSE', ' F&
      & WILL NOT DECREASE ANY MORE')
-      If (info .Eq. 8) Print 1100
+      If (info == 8) Print 1100
 1100  Format (/ 5 x, 'GETMIN HAS REACHED THE GIVEN LIMIT ON THE', ' NUM&
      &BER OF CALLS OF FGCALC')
    End If
@@ -1196,17 +1196,17 @@ Subroutine minfun (n, m, a, ia, b, xl, xu, x, acc, iact, nact, par, &
    msat = mtot
    iterk = iterc
    nfvalk = nfvals
-   If (nfvals .Eq. 0 .Or. info .Eq. 1) Then
+   If (nfvals == 0 .Or. info == 1) Then
       Call fgcalc (n, x, f, g)
       nfvals = nfvals + 1
    End If
    fprev = dabs (f+f+1.0)
    iterp = - 1
-   If (iprint .Ne. 0) Then
+   If (iprint /= 0) Then
       Print 1000, tol
 1000  Format (/ 5 x, 'NEW VALUE OF TOL =', 1 pd13.5)
       iterp = iterc + iabs (iprint)
-      If (iterc .Eq. 0) iterp = 0
+      If (iterc == 0) iterp = 0
    End If
 !
 !     Calculate the next search direction.
@@ -1222,20 +1222,20 @@ Subroutine minfun (n, m, a, ia, b, xl, xu, x, acc, iact, nact, par, &
 !
 !     Test for convergence.
 !
-   If (ssqkt .Le. acc*acc) Then
+   If (ssqkt <= acc*acc) Then
       info = 1
       Go To 70
    End If
-   If (ddotg .Ge. 0.0) Then
+   If (ddotg >= 0.0) Then
       info = 2
       Go To 70
    End If
 !
 !     Test for termination due to no decrease in F.
 !
-   If (f .Ge. fprev) Then
-      If (tol .Eq. relacc .Or. nact .Eq. 0) Then
-         If (diff .Gt. 0.0) Go To 20
+   If (f >= fprev) Then
+      If (tol == relacc .Or. nact == 0) Then
+         If (diff > 0.0) Go To 20
       End If
       info = 3
       Go To 70
@@ -1245,28 +1245,28 @@ Subroutine minfun (n, m, a, ia, b, xl, xu, x, acc, iact, nact, par, &
 !
 !     Test that more calls of FGCALC are allowed.
 !
-   If (nfvals .Eq. nfmax) Then
+   If (nfvals == nfmax) Then
       info = 8
       Go To 70
    End If
 !
 !     Test whether to reduce TOL and to provide printing.
 !
-   If (tol .Gt. relacc .And. iterc .Gt. iterk .And. 0.1*relaxf .Ge. &
+   If (tol > relacc .And. iterc > iterk .And. 0.1*relaxf >= &
   & dmax1(diff,-0.5d0*ddotg)) Go To 70
-   If (iterp .Eq. iterc) Go To 80
+   If (iterp == iterc) Go To 80
 !
 !     Calculate the step along the search direction.
 !
 40 iterc = iterc + 1
    Call lsrch (n, x, g, d, xs, gs, relacc, stepcb, ddotg, f, step, &
   & nfvals, nfmax, bres)
-   If (step .Eq. 0.0) Then
+   If (step == 0.0) Then
       info = 3
       sum = 0.0
       Do 50 i = 1, n
 50    sum = sum + dabs (d(i)*gs(i))
-      If (ddotg+relacc*sum .Ge. 0.0) info = 2
+      If (ddotg+relacc*sum >= 0.0) info = 2
       Go To 70
    End If
 !
@@ -1281,11 +1281,11 @@ Subroutine minfun (n, m, a, ia, b, xl, xu, x, acc, iact, nact, par, &
 !
 !     Add a constraint to the active set if it restricts the step.
 !
-   If (step .Eq. stepcb) Then
+   If (step == stepcb) Then
       k = iact (indxbd)
-      If (k .Gt. m) Then
+      If (k > m) Then
          k = k - m
-         If (k .Le. n) Then
+         If (k <= n) Then
             x (k) = xl (k)
          Else
             x (k-n) = xu (k-n)
@@ -1298,7 +1298,7 @@ Subroutine minfun (n, m, a, ia, b, xl, xu, x, acc, iact, nact, par, &
 !
 !     Printing from the subroutine.
 !
-70 If (iprint .Eq. 0) Go To 90
+70 If (iprint == 0) Go To 90
    iterk = - 1
 80 Print 1010, iterc, nfvals, f
 1010 Format (/ 5 x, 'ITERS =', i4, 5 x, 'F.VALS =', i4, 5 x, 'F =', 1 &
@@ -1307,8 +1307,8 @@ Subroutine minfun (n, m, a, ia, b, xl, xu, x, acc, iact, nact, par, &
 1020 Format ('  X =', (1 p5d14.5))
    Print 1030, (g(i), i=1, n)
 1030 Format ('  G =', (1 p5d14.5))
-   If (iprint .Lt. 0) Then
-      If (nact .Eq. 0) Then
+   If (iprint < 0) Then
+      If (nact == 0) Then
          Print 1050
 1050     Format (5 x, 'NO ACTIVE CONSTRAINTS')
       Else
@@ -1317,7 +1317,7 @@ Subroutine minfun (n, m, a, ia, b, xl, xu, x, acc, iact, nact, par, &
          Print 1070, (par(i), i=1, nact)
 1070     Format (' LP =', (1 p5d14.5))
       End If
-      If (nact .Eq. n) Then
+      If (nact == n) Then
          Print 1080
 1080     Format (5 x, 'KT RESIDUAL VECTOR IS ZERO')
       Else
@@ -1326,7 +1326,7 @@ Subroutine minfun (n, m, a, ia, b, xl, xu, x, acc, iact, nact, par, &
       End If
    End If
    iterp = iterc + iabs (iprint)
-   If (iterk .Ge. 0) Go To 40
+   If (iterk >= 0) Go To 40
 90 Return
 End
 Subroutine newcon (n, m, a, ia, iact, nact, z, u, d, relacc, mdeg, &
@@ -1351,7 +1351,7 @@ Subroutine newcon (n, m, a, ia, iact, nact, z, u, d, relacc, mdeg, &
 30 cvmax = 0.0
    Do 50 k = np, khigh
       j = iact (k)
-      If (j .Le. m) Then
+      If (j <= m) Then
          sum = 0.0
          sumabs = 0.0
          sumd = 0.0
@@ -1362,7 +1362,7 @@ Subroutine newcon (n, m, a, ia, iact, nact, z, u, d, relacc, mdeg, &
 40       sumd = sumd + zzdiag (i) * a (i, j) ** 2
       Else
          jm = j - m
-         If (jm .Le. n) Then
+         If (jm <= n) Then
             sum = - d (jm)
          Else
             jm = jm - n
@@ -1375,9 +1375,9 @@ Subroutine newcon (n, m, a, ia, iact, nact, z, u, d, relacc, mdeg, &
 !     Pick out the most violated constraint, or return if the
 !       violation is negligible.
 !
-      If (sum .Gt. relacc*sumabs) Then
+      If (sum > relacc*sumabs) Then
          cviol = sum * sum / sumd
-         If (cviol .Gt. cvmax) Then
+         If (cviol > cvmax) Then
             cvmax = cviol
             iadd = k
             savsum = sum
@@ -1385,13 +1385,13 @@ Subroutine newcon (n, m, a, ia, iact, nact, z, u, d, relacc, mdeg, &
          End If
       End If
 50 Continue
-   If (cvmax .Le. 0.0) Go To 140
-   If (nact .Eq. 0) Go To 120
+   If (cvmax <= 0.0) Go To 140
+   If (nact == 0) Go To 120
 !
 !     Set GMNEW to the gradient of the most violated constraint.
 !
    j = iact (iadd)
-   If (j .Le. m) Then
+   If (j <= m) Then
       jmv = 0
       Do 60 i = 1, n
 60    gmnew (i) = a (i, j)
@@ -1399,7 +1399,7 @@ Subroutine newcon (n, m, a, ia, iact, nact, z, u, d, relacc, mdeg, &
       jmv = j - m
       Do 70 i = 1, n
 70    gmnew (i) = 0.0
-      If (jmv .Le. n) Then
+      If (jmv <= n) Then
          gmnew (jmv) = - 1.0
       Else
          jmv = jmv - n
@@ -1417,12 +1417,12 @@ Subroutine newcon (n, m, a, ia, iact, nact, z, u, d, relacc, mdeg, &
 90 iz = iz + n
    temp = temp * u (k)
    j = iact (k)
-   If (j .Le. m) Then
+   If (j <= m) Then
       Do 100 i = 1, n
 100   gmnew (i) = gmnew (i) - temp * a (i, j)
    Else
       jm = j - m
-      If (jm .Le. n) Then
+      If (jm <= n) Then
          gmnew (jm) = gmnew (jm) + temp
       Else
          gmnew (jm-n) = gmnew (jm-n) - temp
@@ -1440,22 +1440,22 @@ Subroutine newcon (n, m, a, ia, iact, nact, z, u, d, relacc, mdeg, &
    savsum = dmin1 (savsum, sum)
    savabs = dmax1 (savabs, sumabs)
    k = k - 1
-   If (k .Ge. 1) Go To 80
+   If (k >= 1) Go To 80
 !
 !     Add the new constraint to the active set if the constraint
 !       violation is still significant.
 !
-   If (jmv .Gt. 0) d (jmv) = 0.0
-   If (savsum .Le. relacc*savabs) Go To 130
+   If (jmv > 0) d (jmv) = 0.0
+   If (savsum <= relacc*savabs) Go To 130
 120 k = nact
    Call addcon (n, m, a, ia, iact, nact, z, u, relacc, iadd, gmnew, &
   & cgrad)
-   If (nact .Gt. k) Go To 140
+   If (nact > k) Go To 140
 !
 !     Seek another constraint violation.
 !
    iadd = np
-130 If (np .Lt. khigh) Then
+130 If (np < khigh) Then
       k = iact (khigh)
       iact (khigh) = iact (iadd)
       iact (iadd) = k
@@ -1469,13 +1469,13 @@ Subroutine satact (n, m, a, ia, b, xl, xu, x, iact, nact, info, z, u, &
    Implicit real * 8 (a-h, o-z)
    Dimension a (ia,*), b (*), xl (*), xu (*), x (*), iact (*), z (*), u &
   & (*), xbig (*)
-   If (nact .Eq. 0) Go To 50
+   If (nact == 0) Go To 50
    Do 30 k = 1, nact
 !
 !     Calculate the next constraint residual.
 !
       j = iact (k)
-      If (j .Le. m) Then
+      If (j <= m) Then
          res = b (j)
          resabs = dabs (b(j))
          resbig = resabs
@@ -1487,7 +1487,7 @@ Subroutine satact (n, m, a, ia, b, xl, xu, x, iact, nact, info, z, u, &
 10       resbig = resbig + dabs (tempa) * xbig (i)
       Else
          jx = j - m
-         If (jx .Le. n) Then
+         If (jx <= n) Then
             res = x (jx) - xl (jx)
             resabs = dabs (x(jx)) + dabs (xl(jx))
             resbig = xbig (jx) + dabs (xl(jx))
@@ -1503,10 +1503,10 @@ Subroutine satact (n, m, a, ia, b, xl, xu, x, iact, nact, info, z, u, &
 !
 !     Shift X if necessary.
 !
-      If (res .Ne. 0.0) Then
+      If (res /= 0.0) Then
          temp = res / resabs
-         If (k .Le. meql) temp = - dabs (temp)
-         If (tol .Eq. relacc .Or. temp+relacc .Lt. 0.0) Then
+         If (k <= meql) temp = - dabs (temp)
+         If (tol == relacc .Or. temp+relacc < 0.0) Then
             info = 1
             scale = res * u (k)
             iz = k
@@ -1514,11 +1514,11 @@ Subroutine satact (n, m, a, ia, b, xl, xu, x, iact, nact, info, z, u, &
                x (i) = x (i) + scale * z (iz)
                iz = iz + n
 20          xbig (i) = dmax1 (xbig(i), dabs(x(i)))
-            If (j .Gt. m) x (jx) = savex
+            If (j > m) x (jx) = savex
 !
 !     Else flag a constraint deletion if necessary.
 !
-         Else If (res/resbig .Gt. tol) Then
+         Else If (res/resbig > tol) Then
             iact (k) = - iact (k)
          End If
       End If
@@ -1527,12 +1527,12 @@ Subroutine satact (n, m, a, ia, b, xl, xu, x, iact, nact, info, z, u, &
 !     Delete any flagged constraints and then return.
 !
    idrop = nact
-40 If (iact(idrop) .Lt. 0) Then
+40 If (iact(idrop) < 0) Then
       iact (idrop) = - iact (idrop)
       Call delcon (n, m, a, ia, iact, nact, z, u, relacc, idrop)
    End If
    idrop = idrop - 1
-   If (idrop .Gt. meql) Go To 40
+   If (idrop > meql) Go To 40
 50 Return
 End
 Subroutine sdegen (n, m, a, ia, iact, nact, par, z, u, d, ztg, gm, &
@@ -1546,19 +1546,19 @@ Subroutine sdegen (n, m, a, ia, iact, nact, par, z, u, d, ztg, gm, &
 !     Calculate the search direction and branch if it is not downhill.
 !
 10 Call sdirn (n, nact, z, d, ztg, gm, relacc, ddotgm)
-   If (ddotgm .Eq. 0.0) Go To 120
+   If (ddotgm == 0.0) Go To 120
 !
 !     Branch if there is no need to consider any degenerate constraints.
 !     The test gives termination if two consecutive additions to the
 !       active set fail to increase the predicted new value of F.
 !
-   If (nact .Eq. mdeg) Go To 120
+   If (nact == mdeg) Go To 120
    np = nact + 1
    sum = 0.0
    Do 20 j = np, n
 20 sum = sum + ztg (j) ** 2
-   If (dtest .Gt. 0.0 .And. sum .Ge. dtest) Then
-      If (itest .Eq. 1) Go To 120
+   If (dtest > 0.0 .And. sum >= dtest) Then
+      If (itest == 1) Go To 120
       itest = 1
    Else
       dtest = sum
@@ -1571,7 +1571,7 @@ Subroutine sdegen (n, m, a, ia, iact, nact, par, z, u, d, ztg, gm, &
    k = nact
    Call newcon (n, m, a, ia, iact, nact, z, u, d, relacc, mdeg, gmnew, &
   & parnew, cgrad)
-   If (nact .Eq. k) Go To 120
+   If (nact == k) Go To 120
    par (nact) = 0.0
 !
 !     Calculate the new reduced gradient and Lagrange parameters.
@@ -1586,29 +1586,29 @@ Subroutine sdegen (n, m, a, ia, iact, nact, par, z, u, d, ztg, gm, &
 60 iz = iz + n
    temp = temp * u (k)
    parnew (k) = par (k) + temp
-   If (k .Eq. nact) parnew (k) = dmin1 (parnew(k), 0.0d0)
+   If (k == nact) parnew (k) = dmin1 (parnew(k), 0.0d0)
    j = iact (k)
-   If (j .Le. m) Then
+   If (j <= m) Then
       Do 70 i = 1, n
 70    gmnew (i) = gmnew (i) - temp * a (i, j)
    Else
       jm = j - m
-      If (jm .Le. n) Then
+      If (jm <= n) Then
          gmnew (jm) = gmnew (jm) + temp
       Else
          gmnew (jm-n) = gmnew (jm-n) - temp
       End If
    End If
    k = k - 1
-   If (k .Gt. meql) Go To 50
+   If (k > meql) Go To 50
 !
 !     Set RATIO for linear interpolation between PAR and PARNEW.
 !
    ratio = 0.0
-   If (mp .Lt. nact) Then
+   If (mp < nact) Then
       ku = nact - 1
       Do 80 k = mp, ku
-         If (parnew(k) .Gt. 0.0) Then
+         If (parnew(k) > 0.0) Then
             ratio = parnew (k) / (parnew(k)-par(k))
             idrop = k
          End If
@@ -1625,7 +1625,7 @@ Subroutine sdegen (n, m, a, ia, iact, nact, par, z, u, d, ztg, gm, &
 !
 !     Drop a constraint if RATIO is positive.
 !
-   If (ratio .Gt. 0.0) Then
+   If (ratio > 0.0) Then
       Call delcon (n, m, a, ia, iact, nact, z, u, relacc, idrop)
       Do 110 k = idrop, nact
 110   par (k) = par (k+1)
@@ -1634,7 +1634,7 @@ Subroutine sdegen (n, m, a, ia, iact, nact, par, z, u, d, ztg, gm, &
 !
 !     Return if there is no freedom for a new search direction.
 !
-   If (nact .Lt. n) Go To 10
+   If (nact < n) Go To 10
    ddotgm = 0.0
 120 Return
 End
@@ -1642,7 +1642,7 @@ Subroutine sdirn (n, nact, z, d, ztg, gm, relacc, ddotgm)
    Implicit real * 8 (a-h, o-z)
    Dimension z (*), d (*), ztg (*), gm (*)
    ddotgm = 0.0
-   If (nact .Ge. n) Go To 60
+   If (nact >= n) Go To 60
 !
 !     Premultiply GM by the transpose of Z.
 !
@@ -1656,7 +1656,7 @@ Subroutine sdirn (n, nact, z, d, ztg, gm, relacc, ddotgm)
          sum = sum + temp
          sumabs = sumabs + dabs (temp)
 10    iz = iz + n
-      If (dabs(sum) .Le. relacc*sumabs) sum = 0.0
+      If (dabs(sum) <= relacc*sumabs) sum = 0.0
 20 ztg (j) = sum
 !
 !     Form D by premultiplying ZTG by -Z.
@@ -1669,7 +1669,7 @@ Subroutine sdirn (n, nact, z, d, ztg, gm, relacc, ddotgm)
          temp = z (iz+j) * ztg (j)
          sum = sum - temp
 30    sumabs = sumabs + dabs (temp)
-      If (dabs(sum) .Le. relacc*sumabs) sum = 0.0
+      If (dabs(sum) <= relacc*sumabs) sum = 0.0
       d (i) = sum
 40 iz = iz + n
 !
@@ -1680,7 +1680,7 @@ Subroutine sdirn (n, nact, z, d, ztg, gm, relacc, ddotgm)
       temp = d (i) * gm (i)
       ddotgm = ddotgm + temp
 50 sumabs = sumabs + dabs (temp)
-   If (ddotgm+relacc*sumabs .Ge. 0.0) ddotgm = 0.0
+   If (ddotgm+relacc*sumabs >= 0.0) ddotgm = 0.0
 60 Return
 End
 Subroutine stepbd (n, m, a, ia, iact, bres, d, stepcb, ddotg, mdeg, &
@@ -1695,18 +1695,18 @@ Subroutine stepbd (n, m, a, ia, iact, bres, d, stepcb, ddotg, mdeg, &
    indxbd = 0
    k = mdeg
 10 k = k + 1
-   If (k .Gt. mtot) Go To 40
+   If (k > mtot) Go To 40
 !
 !     Form the scalar product of D with the current constraint normal.
 !
 20 j = iact (k)
-   If (j .Le. m) Then
+   If (j <= m) Then
       sp = 0.0
       Do 30 i = 1, n
 30    sp = sp + d (i) * a (i, j)
    Else
       jm = j - m
-      If (jm .Le. n) Then
+      If (jm <= n) Then
          sp = - d (jm)
       Else
          sp = d (jm-n)
@@ -1715,15 +1715,15 @@ Subroutine stepbd (n, m, a, ia, iact, bres, d, stepcb, ddotg, mdeg, &
 !
 !     The next branch is taken if label 20 was reached via label 50.
 !
-   If (iflag .Eq. 1) Go To 60
+   If (iflag == 1) Go To 60
 !
 !     Set BRES(J) to indicate the status of the j-th constraint.
 !
-   If (sp*bres(j) .Le. 0.0) Then
+   If (sp*bres(j) <= 0.0) Then
       bres (j) = 0.0
    Else
       bres (j) = bres (j) / sp
-      If (stepcb .Eq. 0.0 .Or. bres(j) .Lt. stepcb) Then
+      If (stepcb == 0.0 .Or. bres(j) < stepcb) Then
          stepcb = bres (j)
          indxbd = k
       End If
@@ -1733,7 +1733,7 @@ Subroutine stepbd (n, m, a, ia, iact, bres, d, stepcb, ddotg, mdeg, &
 !
 !     Try to pass through the boundary of a violated constraint.
 !
-50 If (indxbd .Le. msat) Go To 80
+50 If (indxbd <= msat) Go To 80
    iflag = 1
    k = indxbd
    Go To 20
@@ -1743,7 +1743,7 @@ Subroutine stepbd (n, m, a, ia, iact, bres, d, stepcb, ddotg, mdeg, &
    bres (j) = 0.0
    indxbd = msat
    ddotg = ddotg - sp
-   If (ddotg .Lt. 0.0 .And. msat .Lt. mtot) Then
+   If (ddotg < 0.0 .And. msat < mtot) Then
 !
 !     Seek the next constraint boundary along the search direction.
 !
@@ -1751,14 +1751,14 @@ Subroutine stepbd (n, m, a, ia, iact, bres, d, stepcb, ddotg, mdeg, &
       kl = mdeg + 1
       Do 70 k = kl, mtot
          j = iact (k)
-         If (bres(j) .Gt. 0.0) Then
-            If (temp .Eq. 0.0 .Or. bres(j) .Lt. temp) Then
+         If (bres(j) > 0.0) Then
+            If (temp == 0.0 .Or. bres(j) < temp) Then
                temp = bres (j)
                indxbd = k
             End If
          End If
 70    Continue
-      If (temp .Gt. 0.0) Then
+      If (temp > 0.0) Then
          stepcb = temp
          Go To 50
       End If
@@ -1781,15 +1781,15 @@ Subroutine zbfgs (n, x, nact, g, z, ztg, xs, gs, zznorm)
       temp = temp + gs (i) * xs (i)
       gs (i) = g (i) - gs (i)
 10 dg = dg + gs (i) * xs (i)
-   If (dg .Lt. 0.1*dabs(temp)) Go To 90
+   If (dg < 0.1*dabs(temp)) Go To 90
 !
 !     Transform the Z matrix.
 !
    k = n
 20 kp = k
    k = k - 1
-   If (k .Gt. nact) Then
-      If (ztg(kp) .Eq. 0.0) Go To 20
+   If (k > nact) Then
+      If (ztg(kp) == 0.0) Go To 20
       temp = dabs (ztg(kp)) * dsqrt (1.0+(ztg(k)/ztg(kp))**2)
       wcos = ztg (k) / temp
       wsin = ztg (kp) / temp
@@ -1805,7 +1805,7 @@ Subroutine zbfgs (n, x, nact, g, z, ztg, xs, gs, zznorm)
 !
 !     Update the value of ZZNORM.
 !
-   If (zznorm .Lt. 0.0) Then
+   If (zznorm < 0.0) Then
       zznorm = dd / dg
    Else
       temp = dsqrt (zznorm*dd/dg)
@@ -1821,7 +1821,7 @@ Subroutine zbfgs (n, x, nact, g, z, ztg, xs, gs, zznorm)
    Do 40 i = 1, n
       z (iz) = xs (i) / temp
 40 iz = iz + n
-   If (np .Lt. n) Then
+   If (np < n) Then
       km = np + 1
       Do 80 k = km, n
          temp = 0.0
@@ -1836,7 +1836,7 @@ Subroutine zbfgs (n, x, nact, g, z, ztg, xs, gs, zznorm)
             z (iz) = z (iz) - temp * xs (i)
             sum = sum + z (iz) ** 2
 60       iz = iz + n
-         If (sum .Lt. zznorm) Then
+         If (sum < zznorm) Then
             temp = dsqrt (zznorm/sum)
             iz = k
             Do 70 i = 1, n
