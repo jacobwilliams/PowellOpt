@@ -1,102 +1,26 @@
-Subroutine calcfc (n, m, x, f, con)
-      Common nprob
-      Dimension x (*), con (*)
-      If (nprob == 1) Then
-!
-!     Test problem 1 (Simple quadratic)
-!
-         f = 10.0 * (x(1)+1.0) ** 2 + x (2) ** 2
-      Else If (nprob == 2) Then
-!
-!    Test problem 2 (2D unit circle calculation)
-!
-         f = x (1) * x (2)
-         con (1) = 1.0 - x (1) ** 2 - x (2) ** 2
-      Else If (nprob == 3) Then
-!
-!     Test problem 3 (3D ellipsoid calculation)
-!
-         f = x (1) * x (2) * x (3)
-         con (1) = 1.0 - x (1) ** 2 - 2.0 * x (2) ** 2 - 3.0 * x (3) ** &
-        & 2
-      Else If (nprob == 4) Then
-!
-!     Test problem 4 (Weak Rosenbrock)
-!
-         f = (x(1)**2-x(2)) ** 2 + (1.0+x(1)) ** 2
-      Else If (nprob == 5) Then
-!
-!     Test problem 5 (Intermediate Rosenbrock)
-!
-         f = 10.0 * (x(1)**2-x(2)) ** 2 + (1.0+x(1)) ** 2
-      Else If (nprob == 6) Then
-!
-!     Test problem 6 (Equation (9.1.15) in Fletcher's book)
-!
-         f = - x (1) - x (2)
-         con (1) = x (2) - x (1) ** 2
-         con (2) = 1.0 - x (1) ** 2 - x (2) ** 2
-      Else If (nprob == 7) Then
-!
-!     Test problem 7 (Equation (14.4.2) in Fletcher's book)
-!
-         f = x (3)
-         con (1) = 5.0 * x (1) - x (2) + x (3)
-         con (2) = x (3) - x (1) ** 2 - x (2) ** 2 - 4.0 * x (2)
-         con (3) = x (3) - 5.0 * x (1) - x (2)
-      Else If (nprob == 8) Then
-!
-!     Test problem 8 (Rosen-Suzuki)
-!
-         f = x (1) ** 2 + x (2) ** 2 + 2.0 * x (3) ** 2 + x (4) ** 2 - &
-        & 5.0 * x (1) - 5.0 * x (2) - 21.0 * x (3) + 7.0 * x (4)
-         con (1) = 8.0 - x (1) ** 2 - x (2) ** 2 - x (3) ** 2 - x (4) &
-        & ** 2 - x (1) + x (2) - x (3) + x (4)
-         con (2) = 10.0 - x (1) ** 2 - 2.0 * x (2) ** 2 - x (3) ** 2 - &
-        & 2.0 * x (4) ** 2 + x (1) + x (4)
-         con (3) = 5.0 - 2.0 * x (1) ** 2 - x (2) ** 2 - x (3) ** 2 - &
-        & 2.0 * x (1) + x (2) + x (4)
-      Else If (nprob == 9) Then
-!
-!     Test problem 9 (Hock and Schittkowski 100)
-!
-         f = (x(1)-10.0) ** 2 + 5.0 * (x(2)-12.0) ** 2 + x (3) ** 4 + &
-        & 3.0 * (x(4)-11.0) ** 2 + 10.0 * x (5) ** 6 + 7.0 * x (6) ** 2 &
-        & + x (7) ** 4 - 4.0 * x (6) * x (7) - 10.0 * x (6) - 8.0 * x &
-        & (7)
-         con (1) = 127.0 - 2.0 * x (1) ** 2 - 3.0 * x (2) ** 4 - x (3) &
-        & - 4.0 * x (4) ** 2 - 5.0 * x (5)
-         con (2) = 282.0 - 7.0 * x (1) - 3.0 * x (2) - 10.0 * x (3) ** &
-        & 2 - x (4) + x (5)
-         con (3) = 196.0 - 23.0 * x (1) - x (2) ** 2 - 6.0 * x (6) ** 2 &
-        & + 8.0 * x (7)
-         con (4) = - 4.0 * x (1) ** 2 - x (2) ** 2 + 3.0 * x (1) * x &
-        & (2) - 2.0 * x (3) ** 2 - 5.0 * x (6) + 11.0 * x (7)
-      Else If (nprob == 10) Then
-!
-!     Test problem 10 (Hexagon area)
-!
-         f = - 0.5 * &
-        & (x(1)*x(4)-x(2)*x(3)+x(3)*x(9)-x(5)*x(9)+x(5)*x(8)-x(6)*x(7))
-         con (1) = 1.0 - x (3) ** 2 - x (4) ** 2
-         con (2) = 1.0 - x (9) ** 2
-         con (3) = 1.0 - x (5) ** 2 - x (6) ** 2
-         con (4) = 1.0 - x (1) ** 2 - (x(2)-x(9)) ** 2
-         con (5) = 1.0 - (x(1)-x(5)) ** 2 - (x(2)-x(6)) ** 2
-         con (6) = 1.0 - (x(1)-x(7)) ** 2 - (x(2)-x(8)) ** 2
-         con (7) = 1.0 - (x(3)-x(5)) ** 2 - (x(4)-x(6)) ** 2
-         con (8) = 1.0 - (x(3)-x(7)) ** 2 - (x(4)-x(8)) ** 2
-         con (9) = 1.0 - x (7) ** 2 - (x(8)-x(9)) ** 2
-         con (10) = x (1) * x (4) - x (2) * x (3)
-         con (11) = x (3) * x (9)
-         con (12) = - x (5) * x (9)
-         con (13) = x (5) * x (8) - x (6) * x (7)
-         con (14) = x (9)
-      End If
-      Return
-End
-Subroutine cobyla (n, m, x, rhobeg, rhoend, iprint, maxfun, w, iact)
+    module cobyla_module
+
+    private
+
+    abstract interface
+        subroutine func (N,M,X,F,CON)  !! CALCFC interface
+        implicit none
+        integer :: n
+        integer :: m
+        real :: x(*)
+        real :: f
+        real :: con(*)
+        end subroutine func
+    end interface
+
+    public :: cobyla
+    public :: cobyla_test
+
+    contains
+
+Subroutine cobyla (n, m, x, rhobeg, rhoend, iprint, maxfun, w, iact, calcfc)
       Dimension x (*), w (*), iact (*)
+      procedure(func) :: calcfc
 !
 !     This subroutine minimizes an objective function F(X) subject to M
 !     inequality constraints on X, where X is a vector of variables that has
@@ -165,14 +89,16 @@ Subroutine cobyla (n, m, x, rhobeg, rhoend, iprint, maxfun, w, iact)
       idx = isigb + n
       iwork = idx + n
       Call cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, &
-     & w(icon), w(isim), w(isimi), w(idatm), w(ia), w(ivsig), w(iveta), &
-     & w(isigb), w(idx), w(iwork), iact)
+       w(icon), w(isim), w(isimi), w(idatm), w(ia), w(ivsig), w(iveta), &
+       w(isigb), w(idx), w(iwork), iact, calcfc)
       Return
-End
+End Subroutine cobyla
+
 Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
-& sim, simi, datmat, a, vsig, veta, sigbar, dx, w, iact)
+   sim, simi, datmat, a, vsig, veta, sigbar, dx, w, iact, calcfc)
       Dimension x (*), con (*), sim (n,*), simi (n,*), datmat (mpp,*), &
-     & a (n,*), vsig (*), veta (*), sigbar (*), dx (*), w (*), iact (*)
+       a (n,*), vsig (*), veta (*), sigbar (*), dx (*), w (*), iact (*)
+      procedure(func) :: calcfc
 !
 !     Set the initial values of some parameters. The last column of SIM holds
 !     the optimal vertex of the current simplex, and the preceding N columns
@@ -191,8 +117,8 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
       rho = rhobeg
       parmu = 0.0
       If (iprint >= 2) Print 10, rho
-10    Format (/ 3 x, 'The initial value of RHO is', 1 pe13.6, 2 x, 'and&
-     & PARMU is set to zero.')
+10    Format (/ 3 x, 'The initial value of RHO is', 1 pe13.6, 2 x,&
+      'and PARMU is set to zero.')
       nfvals = 0
       temp = 1.0 / rho
       Do 30 i = 1, n
@@ -211,8 +137,8 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
 !
 40    If (nfvals >= maxfun .And. nfvals > 0) Then
          If (iprint >= 1) Print 50
-50       Format (/ 3 x, 'Return from subroutine COBYLA because the ', '&
-        &MAXFUN limit has been reached.')
+50       Format (/ 3 x, 'Return from subroutine COBYLA because the ',&
+         'MAXFUN limit has been reached.')
          Go To 600
       End If
       nfvals = nfvals + 1
@@ -224,8 +150,8 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
       End If
       If (nfvals == iprint-1 .Or. iprint == 3) Then
          Print 70, nfvals, f, resmax, (x(i), i=1, iptem)
-70       Format (/ 3 x, 'NFVALS =', i5, 3 x, 'F =', 1 pe13.6, 4 x, 'MAX&
-        &CV =', 1 pe13.6 / 3 x, 'X =', 1 pe13.6, 1 p4e15.6)
+70       Format (/ 3 x, 'NFVALS =', i5, 3 x, 'F =', 1 pe13.6, 4 x,&
+         'MAXCV =', 1 pe13.6 / 3 x, 'X =', 1 pe13.6, 1 p4e15.6)
          If (iptem < n) Print 80, (x(i), i=iptemp, n)
 80       Format (1 pe19.6, 1 p4e15.6)
       End If
@@ -316,8 +242,8 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
 200   error = amax1 (error, Abs(temp))
       If (error > 0.1) Then
          If (iprint >= 1) Print 210
-210      Format (/ 3 x, 'Return from subroutine COBYLA because ', 'roun&
-        &ding errors are becoming damaging.')
+210      Format (/ 3 x, 'Return from subroutine COBYLA because ',&
+         'rounding errors are becoming damaging.')
          Go To 600
       End If
 !
@@ -583,8 +509,7 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
             End If
          End If
          If (iprint >= 2) Print 580, rho, parmu
-580      Format (/ 3 x, 'Reduction in RHO to', 1 pe13.6, '  and PARMU =&
-        &', 1 pe13.6)
+580      Format (/ 3 x, 'Reduction in RHO to', 1 pe13.6, '  and PARMU =', 1 pe13.6)
          If (iprint == 2) Then
             Print 70, nfvals, datmat (mp, np), datmat (mpp, np), &
            & (sim(i, np), i=1, iptem)
@@ -608,170 +533,10 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
       End If
       maxfun = nfvals
       Return
-End
-!------------------------------------------------------------------------------
-!     Main program of test problems in Report DAMTP 1992/NA5.
-!------------------------------------------------------------------------------
-Common nprob
-Dimension x (10), xopt (10), w (3000), iact (51)
-Do 180 nprob = 1, 10
-   If (nprob == 1) Then
-!
-!     Minimization of a simple quadratic function of two variables.
-!
-      Print 10
-10    Format (/ 7 x, 'Output from test problem 1 (Simple quadratic)')
-      n = 2
-      m = 0
-      xopt (1) = - 1.0
-      xopt (2) = 0.0
-   Else If (nprob == 2) Then
-!
-!     Easy two dimensional minimization in unit circle.
-!
-      Print 20
-20    Format (/ 7 x, 'Output from test problem 2 (2D unit circle ', 'ca&
-     &lculation)')
-      n = 2
-      m = 1
-      xopt (1) = Sqrt (0.5)
-      xopt (2) = - xopt (1)
-   Else If (nprob == 3) Then
-!
-!     Easy three dimensional minimization in ellipsoid.
-!
-      Print 30
-30    Format (/ 7 x, 'Output from test problem 3 (3D ellipsoid ', 'calc&
-     &ulation)')
-      n = 3
-      m = 1
-      xopt (1) = 1.0 / Sqrt (3.0)
-      xopt (2) = 1.0 / Sqrt (6.0)
-      xopt (3) = - 1.0 / 3.0
-   Else If (nprob == 4) Then
-!
-!     Weak version of Rosenbrock's problem.
-!
-      Print 40
-40    Format (/ 7 x, 'Output from test problem 4 (Weak Rosenbrock)')
-      n = 2
-      m = 0
-      xopt (1) = - 1.0
-      xopt (2) = 1.0
-   Else If (nprob == 5) Then
-!
-!     Intermediate version of Rosenbrock's problem.
-!
-      Print 50
-50    Format (/ 7 x, 'Output from test problem 5 (Intermediate ', 'Rose&
-     &nbrock)')
-      n = 2
-      m = 0
-      xopt (1) = - 1.0
-      xopt (2) = 1.0
-   Else If (nprob == 6) Then
-!
-!     This problem is taken from Fletcher's book Practical Methods of
-!     Optimization and has the equation number (9.1.15).
-!
-      Print 60
-60    Format (/ 7 x, 'Output from test problem 6 (Equation ', '(9.1.15)&
-     & in Fletcher)')
-      n = 2
-      m = 2
-      xopt (1) = Sqrt (0.5)
-      xopt (2) = xopt (1)
-   Else If (nprob == 7) Then
-!
-!     This problem is taken from Fletcher's book Practical Methods of
-!     Optimization and has the equation number (14.4.2).
-!
-      Print 70
-70    Format (/ 7 x, 'Output from test problem 7 (Equation ', '(14.4.2)&
-     & in Fletcher)')
-      n = 3
-      m = 3
-      xopt (1) = 0.0
-      xopt (2) = - 3.0
-      xopt (3) = - 3.0
-   Else If (nprob == 8) Then
-!
-!     This problem is taken from page 66 of Hock and Schittkowski's book Test
-!     Examples for Nonlinear Programming Codes. It is their test problem Number
-!     43, and has the name Rosen-Suzuki.
-!
-      Print 80
-80    Format (/ 7 x, 'Output from test problem 8 (Rosen-Suzuki)')
-      n = 4
-      m = 3
-      xopt (1) = 0.0
-      xopt (2) = 1.0
-      xopt (3) = 2.0
-      xopt (4) = - 1.0
-   Else If (nprob == 9) Then
-!
-!     This problem is taken from page 111 of Hock and Schittkowski's
-!     book Test Examples for Nonlinear Programming Codes. It is their
-!     test problem Number 100.
-!
-      Print 90
-90    Format (/ 7 x, 'Output from test problem 9 (Hock and ', 'Schittko&
-     &wski 100)')
-      n = 7
-      m = 4
-      xopt (1) = 2.330499
-      xopt (2) = 1.951372
-      xopt (3) = - 0.4775414
-      xopt (4) = 4.365726
-      xopt (5) = - 0.624487
-      xopt (6) = 1.038131
-      xopt (7) = 1.594227
-   Else If (nprob == 10) Then
-!
-!     This problem is taken from page 415 of Luenberger's book Applied
-!     Nonlinear Programming. It is to maximize the area of a hexagon of
-!     unit diameter.
-!
-      Print 100
-100   Format (/ 7 x, 'Output from test problem 10 (Hexagon area)')
-      n = 9
-      m = 14
-   End If
-   Do 160 icase = 1, 2
-      Do 120 i = 1, n
-120   x (i) = 1.0
-      rhobeg = 0.5
-      rhoend = 0.001
-      If (icase == 2) rhoend = 0.0001
-      iprint = 1
-      maxfun = 2000
-      Call cobyla (n, m, x, rhobeg, rhoend, iprint, maxfun, w, iact)
-      If (nprob == 10) Then
-         tempa = x (1) + x (3) + x (5) + x (7)
-         tempb = x (2) + x (4) + x (6) + x (8)
-         tempc = 0.5 / Sqrt (tempa*tempa+tempb*tempb)
-         tempd = tempc * Sqrt (3.0)
-         xopt (1) = tempd * tempa + tempc * tempb
-         xopt (2) = tempd * tempb - tempc * tempa
-         xopt (3) = tempd * tempa - tempc * tempb
-         xopt (4) = tempd * tempb + tempc * tempa
-         Do 130 i = 1, 4
-130      xopt (i+4) = xopt (i)
-      End If
-      temp = 0.0
-      Do 140 i = 1, n
-140   temp = temp + (x(i)-xopt(i)) ** 2
-      Print 150, Sqrt (temp)
-150   Format (/ 5 x, 'Least squares error in variables =', 1 pe16.6)
-160 Continue
-   Print 170
-170 Format (2 x, '----------------------------------------------', '---&
-  &-----------------')
-180 Continue
-Stop
-End
+End Subroutine cobylb
+
 Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
-& sdirn, dxnew, vmultd)
+  sdirn, dxnew, vmultd)
    Dimension a (n,*), b (*), dx (*), iact (*), z (n,*), zdota (*), &
   & vmultc (*), sdirn (*), dxnew (*), vmultd (*)
 !
@@ -1206,4 +971,269 @@ Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
 490 If (mcon == m) Go To 480
    ifull = 0
 500 Return
-End
+End Subroutine trstlp
+
+Subroutine cobyla_test()
+!------------------------------------------------------------------------------
+!     Main program of test problems in Report DAMTP 1992/NA5.
+!------------------------------------------------------------------------------
+    !Common nprob
+    Dimension x (10), xopt (10), w (3000), iact (51)
+    Do 180 nprob = 1, 10
+       If (nprob == 1) Then
+    !
+    !     Minimization of a simple quadratic function of two variables.
+    !
+          Print 10
+    10    Format (/ 7 x, 'Output from test problem 1 (Simple quadratic)')
+          n = 2
+          m = 0
+          xopt (1) = - 1.0
+          xopt (2) = 0.0
+       Else If (nprob == 2) Then
+    !
+    !     Easy two dimensional minimization in unit circle.
+    !
+          Print 20
+    20    Format (/ 7 x, 'Output from test problem 2 (2D unit circle ',&
+          'calculation)')
+          n = 2
+          m = 1
+          xopt (1) = Sqrt (0.5)
+          xopt (2) = - xopt (1)
+       Else If (nprob == 3) Then
+    !
+    !     Easy three dimensional minimization in ellipsoid.
+    !
+          Print 30
+    30    Format (/ 7 x, 'Output from test problem 3 (3D ellipsoid ',&
+         'calculation)')
+          n = 3
+          m = 1
+          xopt (1) = 1.0 / Sqrt (3.0)
+          xopt (2) = 1.0 / Sqrt (6.0)
+          xopt (3) = - 1.0 / 3.0
+       Else If (nprob == 4) Then
+    !
+    !     Weak version of Rosenbrock's problem.
+    !
+          Print 40
+    40    Format (/ 7 x, 'Output from test problem 4 (Weak Rosenbrock)')
+          n = 2
+          m = 0
+          xopt (1) = - 1.0
+          xopt (2) = 1.0
+       Else If (nprob == 5) Then
+    !
+    !     Intermediate version of Rosenbrock's problem.
+    !
+          Print 50
+    50    Format (/ 7 x, 'Output from test problem 5 (Intermediate ',&
+         'Rosenbrock)')
+          n = 2
+          m = 0
+          xopt (1) = - 1.0
+          xopt (2) = 1.0
+       Else If (nprob == 6) Then
+    !
+    !     This problem is taken from Fletcher's book Practical Methods of
+    !     Optimization and has the equation number (9.1.15).
+    !
+          Print 60
+    60    Format (/ 7 x, 'Output from test problem 6 (Equation ',&
+          '(9.1.15) in Fletcher)')
+          n = 2
+          m = 2
+          xopt (1) = Sqrt (0.5)
+          xopt (2) = xopt (1)
+       Else If (nprob == 7) Then
+    !
+    !     This problem is taken from Fletcher's book Practical Methods of
+    !     Optimization and has the equation number (14.4.2).
+    !
+          Print 70
+    70    Format (/ 7 x, 'Output from test problem 7 (Equation ',&
+         '(14.4.2) in Fletcher)')
+          n = 3
+          m = 3
+          xopt (1) = 0.0
+          xopt (2) = - 3.0
+          xopt (3) = - 3.0
+       Else If (nprob == 8) Then
+    !
+    !     This problem is taken from page 66 of Hock and Schittkowski's book Test
+    !     Examples for Nonlinear Programming Codes. It is their test problem Number
+    !     43, and has the name Rosen-Suzuki.
+    !
+          Print 80
+    80    Format (/ 7 x, 'Output from test problem 8 (Rosen-Suzuki)')
+          n = 4
+          m = 3
+          xopt (1) = 0.0
+          xopt (2) = 1.0
+          xopt (3) = 2.0
+          xopt (4) = - 1.0
+       Else If (nprob == 9) Then
+    !
+    !     This problem is taken from page 111 of Hock and Schittkowski's
+    !     book Test Examples for Nonlinear Programming Codes. It is their
+    !     test problem Number 100.
+    !
+          Print 90
+    90    Format (/ 7 x, 'Output from test problem 9 (Hock and ',&
+         'Schittkowski 100)')
+          n = 7
+          m = 4
+          xopt (1) = 2.330499
+          xopt (2) = 1.951372
+          xopt (3) = - 0.4775414
+          xopt (4) = 4.365726
+          xopt (5) = - 0.624487
+          xopt (6) = 1.038131
+          xopt (7) = 1.594227
+       Else If (nprob == 10) Then
+    !
+    !     This problem is taken from page 415 of Luenberger's book Applied
+    !     Nonlinear Programming. It is to maximize the area of a hexagon of
+    !     unit diameter.
+    !
+          Print 100
+    100   Format (/ 7 x, 'Output from test problem 10 (Hexagon area)')
+          n = 9
+          m = 14
+       End If
+       Do 160 icase = 1, 2
+          Do 120 i = 1, n
+    120   x (i) = 1.0
+          rhobeg = 0.5
+          rhoend = 0.001
+          If (icase == 2) rhoend = 0.0001
+          iprint = 1
+          maxfun = 2000
+          Call cobyla (n, m, x, rhobeg, rhoend, iprint, maxfun, w, iact, calcfc)
+          If (nprob == 10) Then
+             tempa = x (1) + x (3) + x (5) + x (7)
+             tempb = x (2) + x (4) + x (6) + x (8)
+             tempc = 0.5 / Sqrt (tempa*tempa+tempb*tempb)
+             tempd = tempc * Sqrt (3.0)
+             xopt (1) = tempd * tempa + tempc * tempb
+             xopt (2) = tempd * tempb - tempc * tempa
+             xopt (3) = tempd * tempa - tempc * tempb
+             xopt (4) = tempd * tempb + tempc * tempa
+             Do 130 i = 1, 4
+    130      xopt (i+4) = xopt (i)
+          End If
+          temp = 0.0
+          Do 140 i = 1, n
+    140   temp = temp + (x(i)-xopt(i)) ** 2
+          Print 150, Sqrt (temp)
+    150   Format (/ 5 x, 'Least squares error in variables =', 1 pe16.6)
+    160 Continue
+       Print 170
+    170 Format (2 x, '----------------------------------------------',&
+        '--------------------')
+    180 Continue
+
+contains
+
+    Subroutine calcfc (n, m, x, f, con)
+          !Common nprob
+          Dimension x (*), con (*)
+          If (nprob == 1) Then
+    !
+    !     Test problem 1 (Simple quadratic)
+    !
+             f = 10.0 * (x(1)+1.0) ** 2 + x (2) ** 2
+          Else If (nprob == 2) Then
+    !
+    !    Test problem 2 (2D unit circle calculation)
+    !
+             f = x (1) * x (2)
+             con (1) = 1.0 - x (1) ** 2 - x (2) ** 2
+          Else If (nprob == 3) Then
+    !
+    !     Test problem 3 (3D ellipsoid calculation)
+    !
+             f = x (1) * x (2) * x (3)
+             con (1) = 1.0 - x (1) ** 2 - 2.0 * x (2) ** 2 - 3.0 * x (3) ** &
+            & 2
+          Else If (nprob == 4) Then
+    !
+    !     Test problem 4 (Weak Rosenbrock)
+    !
+             f = (x(1)**2-x(2)) ** 2 + (1.0+x(1)) ** 2
+          Else If (nprob == 5) Then
+    !
+    !     Test problem 5 (Intermediate Rosenbrock)
+    !
+             f = 10.0 * (x(1)**2-x(2)) ** 2 + (1.0+x(1)) ** 2
+          Else If (nprob == 6) Then
+    !
+    !     Test problem 6 (Equation (9.1.15) in Fletcher's book)
+    !
+             f = - x (1) - x (2)
+             con (1) = x (2) - x (1) ** 2
+             con (2) = 1.0 - x (1) ** 2 - x (2) ** 2
+          Else If (nprob == 7) Then
+    !
+    !     Test problem 7 (Equation (14.4.2) in Fletcher's book)
+    !
+             f = x (3)
+             con (1) = 5.0 * x (1) - x (2) + x (3)
+             con (2) = x (3) - x (1) ** 2 - x (2) ** 2 - 4.0 * x (2)
+             con (3) = x (3) - 5.0 * x (1) - x (2)
+          Else If (nprob == 8) Then
+    !
+    !     Test problem 8 (Rosen-Suzuki)
+    !
+             f = x (1) ** 2 + x (2) ** 2 + 2.0 * x (3) ** 2 + x (4) ** 2 - &
+            & 5.0 * x (1) - 5.0 * x (2) - 21.0 * x (3) + 7.0 * x (4)
+             con (1) = 8.0 - x (1) ** 2 - x (2) ** 2 - x (3) ** 2 - x (4) &
+            & ** 2 - x (1) + x (2) - x (3) + x (4)
+             con (2) = 10.0 - x (1) ** 2 - 2.0 * x (2) ** 2 - x (3) ** 2 - &
+            & 2.0 * x (4) ** 2 + x (1) + x (4)
+             con (3) = 5.0 - 2.0 * x (1) ** 2 - x (2) ** 2 - x (3) ** 2 - &
+            & 2.0 * x (1) + x (2) + x (4)
+          Else If (nprob == 9) Then
+    !
+    !     Test problem 9 (Hock and Schittkowski 100)
+    !
+             f = (x(1)-10.0) ** 2 + 5.0 * (x(2)-12.0) ** 2 + x (3) ** 4 + &
+            & 3.0 * (x(4)-11.0) ** 2 + 10.0 * x (5) ** 6 + 7.0 * x (6) ** 2 &
+            & + x (7) ** 4 - 4.0 * x (6) * x (7) - 10.0 * x (6) - 8.0 * x &
+            & (7)
+             con (1) = 127.0 - 2.0 * x (1) ** 2 - 3.0 * x (2) ** 4 - x (3) &
+            & - 4.0 * x (4) ** 2 - 5.0 * x (5)
+             con (2) = 282.0 - 7.0 * x (1) - 3.0 * x (2) - 10.0 * x (3) ** &
+            & 2 - x (4) + x (5)
+             con (3) = 196.0 - 23.0 * x (1) - x (2) ** 2 - 6.0 * x (6) ** 2 &
+            & + 8.0 * x (7)
+             con (4) = - 4.0 * x (1) ** 2 - x (2) ** 2 + 3.0 * x (1) * x &
+            & (2) - 2.0 * x (3) ** 2 - 5.0 * x (6) + 11.0 * x (7)
+          Else If (nprob == 10) Then
+    !
+    !     Test problem 10 (Hexagon area)
+    !
+             f = - 0.5 * &
+            & (x(1)*x(4)-x(2)*x(3)+x(3)*x(9)-x(5)*x(9)+x(5)*x(8)-x(6)*x(7))
+             con (1) = 1.0 - x (3) ** 2 - x (4) ** 2
+             con (2) = 1.0 - x (9) ** 2
+             con (3) = 1.0 - x (5) ** 2 - x (6) ** 2
+             con (4) = 1.0 - x (1) ** 2 - (x(2)-x(9)) ** 2
+             con (5) = 1.0 - (x(1)-x(5)) ** 2 - (x(2)-x(6)) ** 2
+             con (6) = 1.0 - (x(1)-x(7)) ** 2 - (x(2)-x(8)) ** 2
+             con (7) = 1.0 - (x(3)-x(5)) ** 2 - (x(4)-x(6)) ** 2
+             con (8) = 1.0 - (x(3)-x(7)) ** 2 - (x(4)-x(8)) ** 2
+             con (9) = 1.0 - x (7) ** 2 - (x(8)-x(9)) ** 2
+             con (10) = x (1) * x (4) - x (2) * x (3)
+             con (11) = x (3) * x (9)
+             con (12) = - x (5) * x (9)
+             con (13) = x (5) * x (8) - x (6) * x (7)
+             con (14) = x (9)
+          End If
+          Return
+    End Subroutine calcfc
+
+End Subroutine cobyla_test
+
+end module cobyla_module

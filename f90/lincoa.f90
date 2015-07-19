@@ -1,33 +1,742 @@
-Subroutine calfun (n, x, f)
+    module lincoa_module
+    
+    private
+ 
+    abstract interface
+        subroutine func (N,X,F)  !! calfun interface
+        implicit none
+        integer :: n
+        real * 8 :: x(*)
+        real * 8 :: f
+        end subroutine func
+    end interface
+   
+    public :: lincoa
+    public :: lincoa_test
+    
+    contains
+
+Subroutine lincoa (n, npt, m, a, ia, b, x, rhobeg, rhoend, iprint, &
+  maxfun, w, calfun)
       Implicit real * 8 (a-h, o-z)
-      Common fmax
-      Dimension x (*)
+      Dimension a (ia,*), b (*), x (*), w (*)
+      procedure(func) :: calfun
+!
+!     This subroutine seeks the least value of a function of many variables,
+!       subject to general linear inequality constraints, by a trust region
+!       method that forms quadratic models by interpolation. Usually there
+!       is much freedom in each new model after satisfying the interpolation
+!       conditions, which is taken up by minimizing the Frobenius norm of
+!       the change to the second derivative matrix of the model. One new
+!       function value is calculated on each iteration, usually at a point
+!       where the current model predicts a reduction in the least value so
+!       far of the objective function subject to the linear constraints.
+!       Alternatively, a new vector of variables may be chosen to replace
+!       an interpolation point that may be too far away for reliability, and
+!       then the new point does not have to satisfy the linear constraints.
+!       The arguments of the subroutine are as follows.
+!
+!     N must be set to the number of variables and must be at least two.
+!     NPT must be set to the number of interpolation conditions, which is
+!       required to be in the interval [N+2,(N+1)(N+2)/2]. Typical choices
+!       of the author are NPT=N+6 and NPT=2*N+1. Larger values tend to be
+!       highly inefficent when the number of variables is substantial, due
+!       to the amount of work and extra difficulty of adjusting more points.
+!     M must be set to the number of linear inequality constraints.
+!     A is a matrix whose columns are the constraint gradients, which are
+!       required to be nonzero.
+!     IA is the first dimension of the array A, which must be at least N.
+!     B is the vector of right hand sides of the constraints, the J-th
+!       constraint being that the scalar product of A(.,J) with X(.) is at
+!       most B(J). The initial vector X(.) is made feasible by increasing
+!       the value of B(J) if necessary.
+!     X is the vector of variables. Initial values of X(1),X(2),...,X(N)
+!       must be supplied. If they do not satisfy the constraints, then B
+!       is increased as mentioned above. X contains on return the variables
+!       that have given the least calculated F subject to the constraints.
+!     RHOBEG and RHOEND must be set to the initial and final values of a
+!       trust region radius, so both must be positive with RHOEND<=RHOBEG.
+!       Typically, RHOBEG should be about one tenth of the greatest expected
+!       change to a variable, and RHOEND should indicate the accuracy that
+!       is required in the final values of the variables.
+!     The value of IPRINT should be set to 0, 1, 2 or 3, which controls the
+!       amount of printing. Specifically, there is no output if IPRINT=0 and
+!       there is output only at the return if IPRINT=1. Otherwise, the best
+!       feasible vector of variables so far and the corresponding value of
+!       the objective function are printed whenever RHO is reduced, where
+!       RHO is the current lower bound on the trust region radius. Further,
+!       each new value of F with its variables are output if IPRINT=3.
+!     MAXFUN must be set to an upper bound on the number of calls of CALFUN,
+!       its value being at least NPT+1.
+!     W is an array used for working space. Its length must be at least
+!       M*(2+N) + NPT*(4+N+NPT) + N*(9+3*N) + MAX [ M+3*N, 2*M+N, 2*NPT ].
+!       On return, W(1) is set to the final value of F, and W(2) is set to
+!       the total number of function evaluations plus 0.5.
+!
+!     SUBROUTINE CALFUN (N,X,F) has to be provided by the user. It must set
+!       F to the value of the objective function for the variables X(1),
+!       X(2),...,X(N). The value of the argument F is positive when CALFUN
+!       is called if and only if the current X satisfies the constraints
+!       to working accuracy.
+
+    integer,dimension(n) :: iact  !to avoid type mismatch error - JW
+!
+!     Check that N, NPT and MAXFUN are acceptable.
+!
       zero = 0.0d0
-      f = fmax
-      v12 = x (1) * x (5) - x (4) * x (2)
-      v13 = x (1) * x (8) - x (7) * x (2)
-      v14 = x (1) * x (11) - x (10) * x (2)
-      v23 = x (4) * x (8) - x (7) * x (5)
-      v24 = x (4) * x (11) - x (10) * x (5)
-      v34 = x (7) * x (11) - x (10) * x (8)
-      del1 = v23 * x (12) - v24 * x (9) + v34 * x (6)
-      If (del1 <= zero) Go To 10
-      del2 = - v34 * x (3) - v13 * x (12) + v14 * x (9)
-      If (del2 <= zero) Go To 10
-      del3 = - v14 * x (6) + v24 * x (3) + v12 * x (12)
-      If (del3 <= zero) Go To 10
-      del4 = - v12 * x (9) + v13 * x (6) - v23 * x (3)
-      If (del4 <= zero) Go To 10
-      temp = (del1+del2+del3+del4) ** 3 / (del1*del2*del3*del4)
-      f = dmin1 (temp/6.0d0, fmax)
-10    Continue
+      smallx = 1.0d-6 * rhoend
+      np = n + 1
+      nptm = npt - np
+      If (n <= 1) Then
+         Print 10
+10       Format (/ 4 x, 'Return from LINCOA because N is less than 2.')
+         Go To 80
+      End If
+      If (npt < n+2 .Or. npt > ((n+2)*np)/2) Then
+         Print 20
+20       Format (/ 4 x, 'Return from LINCOA because NPT is not in',&
+         ' the required interval.')
+         Go To 80
+      End If
+      If (maxfun <= npt) Then
+         Print 30
+30       Format (/ 4 x, 'Return from LINCOA because MAXFUN is less',&
+         ' than NPT+1.')
+         Go To 80
+      End If
+!
+!     Normalize the constraints, and copy the resultant constraint matrix
+!       and right hand sides into working space, after increasing the right
+!       hand sides if necessary so that the starting point is feasible.
+!
+      iamat = max0 (m+3*n, 2*m+n, 2*npt) + 1
+      ib = iamat + m * n
+      iflag = 0
+      If (m > 0) Then
+         iw = iamat - 1
+         Do 60 j = 1, m
+            sum = zero
+            temp = zero
+            Do 40 i = 1, n
+               sum = sum + a (i, j) * x (i)
+40          temp = temp + a (i, j) ** 2
+            If (temp == zero) Then
+               Print 50
+50             Format (/ 4 x, 'Return from LINCOA because the gradient of',&
+               ' a constraint is zero.')
+               Go To 80
+            End If
+            temp = dsqrt (temp)
+            If (sum-b(j) > smallx*temp) iflag = 1
+            w (ib+j-1) = dmax1 (b(j), sum) / temp
+            Do 60 i = 1, n
+               iw = iw + 1
+60       w (iw) = a (i, j) / temp
+      End If
+      If (iflag == 1) Then
+         If (iprint > 0) Print 70
+70       Format (/ 4 x, 'LINCOA has made the initial X feasible by',&
+         ' increasing part(s) of B.')
+      End If
+!
+!     Partition the working space array, so that different parts of it can be
+!     treated separately by the subroutine that performs the main calculation.
+!
+      ndim = npt + n
+      ixb = ib + m
+      ixp = ixb + n
+      ifv = ixp + n * npt
+      ixs = ifv + npt
+      ixo = ixs + n
+      igo = ixo + n
+      ihq = igo + n
+      ipq = ihq + (n*np) / 2
+      ibmat = ipq + npt
+      izmat = ibmat + ndim * n
+      istp = izmat + npt * nptm
+      isp = istp + n
+      ixn = isp + npt + npt
+      iac = ixn + n
+      irc = iac + n
+      iqf = irc + m
+      irf = iqf + n * n
+      ipqw = irf + (n*np) / 2
+!
+!     The above settings provide a partition of W for subroutine LINCOB.
+!
+      Call lincob (n, npt, m, w(iamat), w(ib), x, rhobeg, rhoend, &
+       iprint, maxfun, w(ixb), w(ixp), w(ifv), w(ixs), w(ixo), w(igo), &
+       w(ihq), w(ipq), w(ibmat), w(izmat), ndim, w(istp), w(isp), &
+       w(ixn), iact, w(irc), w(iqf), w(irf), w(ipqw), w, calfun)    !--JW mod
+       !w(ixn), w(iac), w(irc), w(iqf), w(irf), w(ipqw), w) !--original 
+80    Return
+End Subroutine lincoa
+
+Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
+  maxfun, xbase, xpt, fval, xsav, xopt, gopt, hq, pq, bmat, zmat, ndim, &
+  step, sp, xnew, iact, rescon, qfac, rfac, pqw, w, calfun)
+      Implicit real * 8 (a-h, o-z)
+      Dimension amat (n,*), b (*), x (*), xbase (*), xpt (npt,*), fval &
+       (*), xsav (*), xopt (*), gopt (*), hq (*), pq (*), bmat &
+       (ndim,*), zmat (npt,*), step (*), sp (*), xnew (*), iact (*), &
+       rescon (*), qfac (n,*), rfac (*), pqw (*), w (*)
+      procedure(func) :: calfun
+!
+!     The arguments N, NPT, M, X, RHOBEG, RHOEND, IPRINT and MAXFUN are
+!       identical to the corresponding arguments in SUBROUTINE LINCOA.
+!     AMAT is a matrix whose columns are the constraint gradients, scaled
+!       so that they have unit length.
+!     B contains on entry the right hand sides of the constraints, scaled
+!       as above, but later B is modified for variables relative to XBASE.
+!     XBASE holds a shift of origin that should reduce the contributions
+!       from rounding errors to values of the model and Lagrange functions.
+!     XPT contains the interpolation point coordinates relative to XBASE.
+!     FVAL holds the values of F at the interpolation points.
+!     XSAV holds the best feasible vector of variables so far, without any
+!       shift of origin.
+!     XOPT is set to XSAV-XBASE, which is the displacement from XBASE of
+!       the feasible vector of variables that provides the least calculated
+!       F so far, this vector being the current trust region centre.
+!     GOPT holds the gradient of the quadratic model at XSAV = XBASE+XOPT.
+!     HQ holds the explicit second derivatives of the quadratic model.
+!     PQ contains the parameters of the implicit second derivatives of the
+!       quadratic model.
+!     BMAT holds the last N columns of the big inverse matrix H.
+!     ZMAT holds the factorization of the leading NPT by NPT submatrix
+!       of H, this factorization being ZMAT times Diag(DZ) times ZMAT^T,
+!       where the elements of DZ are plus or minus one, as specified by IDZ.
+!     NDIM is the first dimension of BMAT and has the value NPT+N.
+!     STEP is employed for trial steps from XOPT. It is also used for working
+!       space when XBASE is shifted and in PRELIM.
+!     SP is reserved for the scalar products XOPT^T XPT(K,.), K=1,2,...,NPT,
+!       followed by STEP^T XPT(K,.), K=1,2,...,NPT.
+!     XNEW is the displacement from XBASE of the vector of variables for
+!       the current calculation of F, except that SUBROUTINE TRSTEP uses it
+!       for working space.
+!     IACT is an integer array for the indices of the active constraints.
+!     RESCON holds useful information about the constraint residuals. Every
+!       nonnegative RESCON(J) is the residual of the J-th constraint at the
+!       current trust region centre. Otherwise, if RESCON(J) is negative, the
+!       J-th constraint holds as a strict inequality at the trust region
+!       centre, its residual being at least |RESCON(J)|; further, the value
+!       of |RESCON(J)| is at least the current trust region radius DELTA.
+!     QFAC is the orthogonal part of the QR factorization of the matrix of
+!       active constraint gradients, these gradients being ordered in
+!       accordance with IACT. When NACT is less than N, columns are added
+!       to QFAC to complete an N by N orthogonal matrix, which is important
+!       for keeping calculated steps sufficiently close to the boundaries
+!       of the active constraints.
+!     RFAC is the upper triangular part of this QR factorization, beginning
+!       with the first diagonal element, followed by the two elements in the
+!       upper triangular part of the second column and so on.
+!     PQW is used for working space, mainly for storing second derivative
+!       coefficients of quadratic functions. Its length is NPT+N.
+!     The array W is also used for working space. The required number of
+!       elements, namely MAX[M+3*N,2*M+N,2*NPT], is set in LINCOA.
+!
+!     Set some constants.
+!
+      half = 0.5d0
+      one = 1.0d0
+      tenth = 0.1d0
+      zero = 0.0d0
+      np = n + 1
+      nh = (n*np) / 2
+      nptm = npt - np
+!
+!     Set the elements of XBASE, XPT, FVAL, XSAV, XOPT, GOPT, HQ, PQ, BMAT,
+!       ZMAT and SP for the first iteration. An important feature is that,
+!       if the interpolation point XPT(K,.) is not feasible, where K is any
+!       integer from [1,NPT], then a change is made to XPT(K,.) if necessary
+!       so that the constraint violation is at least 0.2*RHOBEG. Also KOPT
+!       is set so that XPT(KOPT,.) is the initial trust region centre.
+!
+      Call prelim (n, npt, m, amat, b, x, rhobeg, iprint, xbase, xpt, &
+       fval, xsav, xopt, gopt, kopt, hq, pq, bmat, zmat, idz, ndim, sp, &
+       rescon, step, pqw, w, calfun)
+!
+!     Begin the iterative procedure.
+!
+      nf = npt
+      fopt = fval (kopt)
+      rho = rhobeg
+      delta = rho
+      ifeas = 0
+      nact = 0
+      itest = 3
+10    knew = 0
+      nvala = 0
+      nvalb = 0
+!
+!     Shift XBASE if XOPT may be too far from XBASE. First make the changes
+!       to BMAT that do not depend on ZMAT.
+!
+20    fsave = fopt
+      xoptsq = zero
+      Do 30 i = 1, n
+30    xoptsq = xoptsq + xopt (i) ** 2
+      If (xoptsq >= 1.0d4*delta*delta) Then
+         qoptsq = 0.25d0 * xoptsq
+         Do 50 k = 1, npt
+            sum = zero
+            Do 40 i = 1, n
+40          sum = sum + xpt (k, i) * xopt (i)
+            sum = sum - half * xoptsq
+            w (npt+k) = sum
+            sp (k) = zero
+            Do 50 i = 1, n
+               xpt (k, i) = xpt (k, i) - half * xopt (i)
+               step (i) = bmat (k, i)
+               w (i) = sum * xpt (k, i) + qoptsq * xopt (i)
+               ip = npt + i
+               Do 50 j = 1, i
+50       bmat (ip, j) = bmat (ip, j) + step (i) * w (j) + w (i) * step &
+        & (j)
+!
+!     Then the revisions of BMAT that depend on ZMAT are calculated.
+!
+         Do 90 k = 1, nptm
+            sumz = zero
+            Do 60 i = 1, npt
+               sumz = sumz + zmat (i, k)
+60          w (i) = w (npt+i) * zmat (i, k)
+            Do 80 j = 1, n
+               sum = qoptsq * sumz * xopt (j)
+               Do 70 i = 1, npt
+70             sum = sum + w (i) * xpt (i, j)
+               step (j) = sum
+               If (k < idz) sum = - sum
+               Do 80 i = 1, npt
+80          bmat (i, j) = bmat (i, j) + sum * zmat (i, k)
+            Do 90 i = 1, n
+               ip = i + npt
+               temp = step (i)
+               If (k < idz) temp = - temp
+               Do 90 j = 1, i
+90       bmat (ip, j) = bmat (ip, j) + temp * step (j)
+!
+!     Update the right hand sides of the constraints.
+!
+         If (m > 0) Then
+            Do 110 j = 1, m
+               temp = zero
+               Do 100 i = 1, n
+100            temp = temp + amat (i, j) * xopt (i)
+110         b (j) = b (j) - temp
+         End If
+!
+!     The following instructions complete the shift of XBASE, including the
+!       changes to the parameters of the quadratic model.
+!
+         ih = 0
+         Do 130 j = 1, n
+            w (j) = zero
+            Do 120 k = 1, npt
+               w (j) = w (j) + pq (k) * xpt (k, j)
+120         xpt (k, j) = xpt (k, j) - half * xopt (j)
+            Do 130 i = 1, j
+               ih = ih + 1
+               hq (ih) = hq (ih) + w (i) * xopt (j) + xopt (i) * w (j)
+130      bmat (npt+i, j) = bmat (npt+j, i)
+         Do 140 j = 1, n
+            xbase (j) = xbase (j) + xopt (j)
+            xopt (j) = zero
+140      xpt (kopt, j) = zero
+      End If
+!
+!     In the case KNEW=0, generate the next trust region step by calling
+!       TRSTEP, where SNORM is the current trust region radius initially.
+!       The final value of SNORM is the length of the calculated step,
+!       except that SNORM is zero on return if the projected gradient is
+!       unsuitable for starting the conjugate gradient iterations.
+!
+      delsav = delta
+      ksave = knew
+      If (knew == 0) Then
+         snorm = delta
+         Do 150 i = 1, n
+150      xnew (i) = gopt (i)
+         Call trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, &
+          rescon, qfac, rfac, snorm, step, xnew, w, w(m+1), pqw, &
+          pqw(np), w(m+np))
+!
+!     A trust region step is applied whenever its length, namely SNORM, is at
+!       least HALF*DELTA. It is also applied if its length is at least 0.1999
+!       times DELTA and if a line search of TRSTEP has caused a change to the
+!       active set. Otherwise there is a branch below to label 530 or 560.
+!
+         temp = half * delta
+         If (xnew(1) >= half) temp = 0.1999d0 * delta
+         If (snorm <= temp) Then
+            delta = half * delta
+            If (delta <= 1.4d0*rho) delta = rho
+            nvala = nvala + 1
+            nvalb = nvalb + 1
+            temp = snorm / rho
+            If (delsav > rho) temp = one
+            If (temp >= half) nvala = zero
+            If (temp >= tenth) nvalb = zero
+            If (delsav > rho) Go To 530
+            If (nvala < 5 .And. nvalb < 3) Go To 530
+            If (snorm > zero) ksave = - 1
+            Go To 560
+         End If
+         nvala = zero
+         nvalb = zero
+!
+!     Alternatively, KNEW is positive. Then the model step is calculated
+!       within a trust region of radius DEL, after setting the gradient at
+!       XBASE and the second derivative parameters of the KNEW-th Lagrange
+!       function in W(1) to W(N) and in PQW(1) to PQW(NPT), respectively.
+!
+      Else
+         del = dmax1 (tenth*delta, rho)
+         Do 160 i = 1, n
+160      w (i) = bmat (knew, i)
+         Do 170 k = 1, npt
+170      pqw (k) = zero
+         Do 180 j = 1, nptm
+            temp = zmat (knew, j)
+            If (j < idz) temp = - temp
+            Do 180 k = 1, npt
+180      pqw (k) = pqw (k) + temp * zmat (k, j)
+         Call qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, &
+        & rescon, qfac, kopt, knew, del, step, w, pqw, w(np), w(np+m), &
+        & ifeas)
+      End If
+!
+!     Set VQUAD to the change to the quadratic model when the move STEP is
+!       made from XOPT. If STEP is a trust region step, then VQUAD should be
+!       negative. If it is nonnegative due to rounding errors in this case,
+!       there is a branch to label 530 to try to improve the model.
+!
+      vquad = zero
+      ih = 0
+      Do 190 j = 1, n
+         vquad = vquad + step (j) * gopt (j)
+         Do 190 i = 1, j
+            ih = ih + 1
+            temp = step (i) * step (j)
+            If (i == j) temp = half * temp
+190   vquad = vquad + temp * hq (ih)
+      Do 210 k = 1, npt
+         temp = zero
+         Do 200 j = 1, n
+            temp = temp + xpt (k, j) * step (j)
+200      sp (npt+k) = temp
+210   vquad = vquad + half * pq (k) * temp * temp
+      If (ksave == 0 .And. vquad >= zero) Go To 530
+!
+!     Calculate the next value of the objective function. The difference
+!       between the actual new value of F and the value predicted by the
+!       model is recorded in DIFF.
+!
+220   nf = nf + 1
+      If (nf > maxfun) Then
+         nf = nf - 1
+         If (iprint > 0) Print 230
+230      Format (/ 4 x, 'Return from LINCOA because CALFUN has been',&
+         ' called MAXFUN times.')
+         Go To 600
+      End If
+      xdiff = zero
+      Do 240 i = 1, n
+         xnew (i) = xopt (i) + step (i)
+         x (i) = xbase (i) + xnew (i)
+240   xdiff = xdiff + (x(i)-xsav(i)) ** 2
+      xdiff = dsqrt (xdiff)
+      If (ksave ==-1) xdiff = rho
+      If (xdiff <= tenth*rho .Or. xdiff >= delta+delta) Then
+         ifeas = 0
+         If (iprint > 0) Print 250
+250      Format (/ 4 x, 'Return from LINCOA because rounding errors',&
+         ' prevent reasonable changes to X.')
+         Go To 600
+      End If
+      If (ksave <= 0) ifeas = 1
+      f = dfloat (ifeas)
+      Call calfun (n, x, f)
+      If (iprint == 3) Then
+         Print 260, nf, f, (x(i), i=1, n)
+260      Format (/ 4 x, 'Function number', i6, '    F =', 1 pd18.10,&
+         '    The corresponding X is:' / (2 x, 5d15.6))
+      End If
+      If (ksave ==-1) Go To 600
+      diff = f - fopt - vquad
+!
+!     If X is feasible, then set DFFALT to the difference between the new
+!       value of F and the value predicted by the alternative model.
+!
+      If (ifeas == 1 .And. itest < 3) Then
+         Do 270 k = 1, npt
+            pqw (k) = zero
+270      w (k) = fval (k) - fval (kopt)
+         Do 290 j = 1, nptm
+            sum = zero
+            Do 280 i = 1, npt
+280         sum = sum + w (i) * zmat (i, j)
+            If (j < idz) sum = - sum
+            Do 290 k = 1, npt
+290      pqw (k) = pqw (k) + sum * zmat (k, j)
+         vqalt = zero
+         Do 310 k = 1, npt
+            sum = zero
+            Do 300 j = 1, n
+300         sum = sum + bmat (k, j) * step (j)
+            vqalt = vqalt + sum * w (k)
+310      vqalt = vqalt + pqw (k) * sp (npt+k) * (half*sp(npt+k)+sp(k))
+         dffalt = f - fopt - vqalt
+      End If
+      If (itest == 3) Then
+         dffalt = diff
+         itest = 0
+      End If
+!
+!     Pick the next value of DELTA after a trust region step.
+!
+      If (ksave == 0) Then
+         ratio = (f-fopt) / vquad
+         If (ratio <= tenth) Then
+            delta = half * delta
+         Else If (ratio <= 0.7d0) Then
+            delta = dmax1 (half*delta, snorm)
+         Else
+            temp = dsqrt (2.0d0) * delta
+            delta = dmax1 (half*delta, snorm+snorm)
+            delta = dmin1 (delta, temp)
+         End If
+         If (delta <= 1.4d0*rho) delta = rho
+      End If
+!
+!     Update BMAT, ZMAT and IDZ, so that the KNEW-th interpolation point
+!       can be moved. If STEP is a trust region step, then KNEW is zero at
+!       present, but a positive value is picked by subroutine UPDATE.
+!
+      Call update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, &
+     & knew, pqw, w)
+      If (knew == 0) Then
+         If (iprint > 0) Print 320
+320      Format (/ 4 x, 'Return from LINCOA because the denominator of the updating formula is zero.')
+         Go To 600
+      End If
+!
+!     If ITEST is increased to 3, then the next quadratic model is the
+!       one whose second derivative matrix is least subject to the new
+!       interpolation conditions. Otherwise the new model is constructed
+!       by the symmetric Broyden method in the usual way.
+!
+      If (ifeas == 1) Then
+         itest = itest + 1
+         If (dabs(dffalt) >= tenth*dabs(diff)) itest = 0
+      End If
+!
+!     Update the second derivatives of the model by the symmetric Broyden
+!       method, using PQW for the second derivative parameters of the new
+!       KNEW-th Lagrange function. The contribution from the old parameter
+!       PQ(KNEW) is included in the second derivative matrix HQ. W is used
+!       later for the gradient of the new KNEW-th Lagrange function.
+!
+      If (itest < 3) Then
+         Do 330 k = 1, npt
+330      pqw (k) = zero
+         Do 350 j = 1, nptm
+            temp = zmat (knew, j)
+            If (temp /= zero) Then
+               If (j < idz) temp = - temp
+               Do 340 k = 1, npt
+340            pqw (k) = pqw (k) + temp * zmat (k, j)
+            End If
+350      Continue
+         ih = 0
+         Do 360 i = 1, n
+            w (i) = bmat (knew, i)
+            temp = pq (knew) * xpt (knew, i)
+            Do 360 j = 1, i
+               ih = ih + 1
+360      hq (ih) = hq (ih) + temp * xpt (knew, j)
+         pq (knew) = zero
+         Do 370 k = 1, npt
+370      pq (k) = pq (k) + diff * pqw (k)
+      End If
+!
+!     Include the new interpolation point with the corresponding updates of
+!       SP. Also make the changes of the symmetric Broyden method to GOPT at
+!       the old XOPT if ITEST is less than 3.
+!
+      fval (knew) = f
+      sp (knew) = sp (kopt) + sp (npt+kopt)
+      ssq = zero
+      Do 380 i = 1, n
+         xpt (knew, i) = xnew (i)
+380   ssq = ssq + step (i) ** 2
+      sp (npt+knew) = sp (npt+kopt) + ssq
+      If (itest < 3) Then
+         Do 390 k = 1, npt
+            temp = pqw (k) * sp (k)
+            Do 390 i = 1, n
+390      w (i) = w (i) + temp * xpt (k, i)
+         Do 400 i = 1, n
+400      gopt (i) = gopt (i) + diff * w (i)
+      End If
+!
+!     Update FOPT, XSAV, XOPT, KOPT, RESCON and SP if the new F is the
+!       least calculated value so far with a feasible vector of variables.
+!
+      If (f < fopt .And. ifeas == 1) Then
+         fopt = f
+         Do 410 j = 1, n
+            xsav (j) = x (j)
+410      xopt (j) = xnew (j)
+         kopt = knew
+         snorm = dsqrt (ssq)
+         Do 430 j = 1, m
+            If (rescon(j) >= delta+snorm) Then
+               rescon (j) = snorm - rescon (j)
+            Else
+               rescon (j) = rescon (j) + snorm
+               If (rescon(j)+delta > zero) Then
+                  temp = b (j)
+                  Do 420 i = 1, n
+420               temp = temp - xopt (i) * amat (i, j)
+                  temp = dmax1 (temp, zero)
+                  If (temp >= delta) temp = - temp
+                  rescon (j) = temp
+               End If
+            End If
+430      Continue
+         Do 440 k = 1, npt
+440      sp (k) = sp (k) + sp (npt+k)
+!
+!     Also revise GOPT when symmetric Broyden updating is applied.
+!
+         If (itest < 3) Then
+            ih = 0
+            Do 450 j = 1, n
+               Do 450 i = 1, j
+                  ih = ih + 1
+                  If (i < j) gopt (j) = gopt (j) + hq (ih) * step &
+                 & (i)
+450         gopt (i) = gopt (i) + hq (ih) * step (j)
+            Do 460 k = 1, npt
+               temp = pq (k) * sp (npt+k)
+               Do 460 i = 1, n
+460         gopt (i) = gopt (i) + temp * xpt (k, i)
+         End If
+      End If
+!
+!     Replace the current model by the least Frobenius norm interpolant if
+!       this interpolant gives substantial reductions in the predictions
+!       of values of F at feasible points.
+!
+      If (itest == 3) Then
+         Do 470 k = 1, npt
+            pq (k) = zero
+470      w (k) = fval (k) - fval (kopt)
+         Do 490 j = 1, nptm
+            sum = zero
+            Do 480 i = 1, npt
+480         sum = sum + w (i) * zmat (i, j)
+            If (j < idz) sum = - sum
+            Do 490 k = 1, npt
+490      pq (k) = pq (k) + sum * zmat (k, j)
+         Do 500 j = 1, n
+            gopt (j) = zero
+            Do 500 i = 1, npt
+500      gopt (j) = gopt (j) + w (i) * bmat (i, j)
+         Do 510 k = 1, npt
+            temp = pq (k) * sp (k)
+            Do 510 i = 1, n
+510      gopt (i) = gopt (i) + temp * xpt (k, i)
+         Do 520 ih = 1, nh
+520      hq (ih) = zero
+      End If
+!
+!     If a trust region step has provided a sufficient decrease in F, then
+!       branch for another trust region calculation. Every iteration that
+!       takes a model step is followed by an attempt to take a trust region
+!       step.
+!
+      knew = 0
+      If (ksave > 0) Go To 20
+      If (ratio >= tenth) Go To 20
+!
+!     Alternatively, find out if the interpolation points are close enough
+!       to the best point so far.
+!
+530   distsq = dmax1 (delta*delta, 4.0d0*rho*rho)
+      Do 550 k = 1, npt
+         sum = zero
+         Do 540 j = 1, n
+540      sum = sum + (xpt(k, j)-xopt(j)) ** 2
+         If (sum > distsq) Then
+            knew = k
+            distsq = sum
+         End If
+550   Continue
+!
+!     If KNEW is positive, then branch back for the next iteration, which
+!       will generate a "model step". Otherwise, if the current iteration
+!       has reduced F, or if DELTA was above its lower bound when the last
+!       trust region step was calculated, then try a "trust region" step
+!       instead.
+!
+      If (knew > 0) Go To 20
+      knew = 0
+      If (fopt < fsave) Go To 20
+      If (delsav > rho) Go To 20
+!
+!     The calculations with the current value of RHO are complete.
+!       Pick the next value of RHO.
+!
+560   If (rho > rhoend) Then
+         delta = half * rho
+         If (rho > 250.0d0*rhoend) Then
+            rho = tenth * rho
+         Else If (rho <= 16.0d0*rhoend) Then
+            rho = rhoend
+         Else
+            rho = dsqrt (rho*rhoend)
+         End If
+         delta = dmax1 (delta, rho)
+         If (iprint >= 2) Then
+            If (iprint >= 3) Print 570
+570         Format (5 x)
+            Print 580, rho, nf
+580         Format (/ 4 x, 'New RHO =', 1 pd11.4, 5 x, 'Number of',&
+            ' function values =', i6)
+            Print 590, fopt, (xbase(i)+xopt(i), i=1, n)
+590         Format (4 x, 'Least value of F =', 1 pd23.15, 9 x,&
+            'The corresponding X is:'/(2 x, 5d15.6))
+         End If
+         Go To 10
+      End If
+!
+!     Return from the calculation, after branching to label 220 for another
+!       Newton-Raphson step if it has not been tried before.
+!
+      If (ksave ==-1) Go To 220
+600   If (fopt <= f .Or. ifeas == 0) Then
+         Do 610 i = 1, n
+610      x (i) = xsav (i)
+         f = fopt
+      End If
+      If (iprint >= 1) Then
+         Print 620, nf
+620      Format (/ 4 x, 'At the return from LINCOA', 5 x,&
+         'Number of function values =', i6)
+         Print 590, f, (x(i), i=1, n)
+      End If
+      w (1) = f
+      w (2) = dfloat (nf) + half
       Return
-End
+End Subroutine lincob
+
+    
 Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
-& resnew, resact, g, dw, vlam, w)
+  resnew, resact, g, dw, vlam, w)
       Implicit real * 8 (a-h, o-z)
       Dimension amat (n,*), b (*), iact (*), qfac (n,*), rfac (*), &
-     & resnew (*), resact (*), g (*), dw (*), vlam (*), w (*)
+       resnew (*), resact (*), g (*), dw (*), vlam (*), w (*)
 !
 !     N, M, AMAT, B, NACT, IACT, QFAC and RFAC are the same as the terms
 !       with these names in SUBROUTINE LINCOB. The current values must be
@@ -301,836 +1010,16 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
       End If
       nact = nact - 1
       Go To (50, 60, 280), iflag
-End
-Subroutine lincoa (n, npt, m, a, ia, b, x, rhobeg, rhoend, iprint, &
-& maxfun, w)
-      Implicit real * 8 (a-h, o-z)
-      Dimension a (ia,*), b (*), x (*), w (*)
-!
-!     This subroutine seeks the least value of a function of many variables,
-!       subject to general linear inequality constraints, by a trust region
-!       method that forms quadratic models by interpolation. Usually there
-!       is much freedom in each new model after satisfying the interpolation
-!       conditions, which is taken up by minimizing the Frobenius norm of
-!       the change to the second derivative matrix of the model. One new
-!       function value is calculated on each iteration, usually at a point
-!       where the current model predicts a reduction in the least value so
-!       far of the objective function subject to the linear constraints.
-!       Alternatively, a new vector of variables may be chosen to replace
-!       an interpolation point that may be too far away for reliability, and
-!       then the new point does not have to satisfy the linear constraints.
-!       The arguments of the subroutine are as follows.
-!
-!     N must be set to the number of variables and must be at least two.
-!     NPT must be set to the number of interpolation conditions, which is
-!       required to be in the interval [N+2,(N+1)(N+2)/2]. Typical choices
-!       of the author are NPT=N+6 and NPT=2*N+1. Larger values tend to be
-!       highly inefficent when the number of variables is substantial, due
-!       to the amount of work and extra difficulty of adjusting more points.
-!     M must be set to the number of linear inequality constraints.
-!     A is a matrix whose columns are the constraint gradients, which are
-!       required to be nonzero.
-!     IA is the first dimension of the array A, which must be at least N.
-!     B is the vector of right hand sides of the constraints, the J-th
-!       constraint being that the scalar product of A(.,J) with X(.) is at
-!       most B(J). The initial vector X(.) is made feasible by increasing
-!       the value of B(J) if necessary.
-!     X is the vector of variables. Initial values of X(1),X(2),...,X(N)
-!       must be supplied. If they do not satisfy the constraints, then B
-!       is increased as mentioned above. X contains on return the variables
-!       that have given the least calculated F subject to the constraints.
-!     RHOBEG and RHOEND must be set to the initial and final values of a
-!       trust region radius, so both must be positive with RHOEND<=RHOBEG.
-!       Typically, RHOBEG should be about one tenth of the greatest expected
-!       change to a variable, and RHOEND should indicate the accuracy that
-!       is required in the final values of the variables.
-!     The value of IPRINT should be set to 0, 1, 2 or 3, which controls the
-!       amount of printing. Specifically, there is no output if IPRINT=0 and
-!       there is output only at the return if IPRINT=1. Otherwise, the best
-!       feasible vector of variables so far and the corresponding value of
-!       the objective function are printed whenever RHO is reduced, where
-!       RHO is the current lower bound on the trust region radius. Further,
-!       each new value of F with its variables are output if IPRINT=3.
-!     MAXFUN must be set to an upper bound on the number of calls of CALFUN,
-!       its value being at least NPT+1.
-!     W is an array used for working space. Its length must be at least
-!       M*(2+N) + NPT*(4+N+NPT) + N*(9+3*N) + MAX [ M+3*N, 2*M+N, 2*NPT ].
-!       On return, W(1) is set to the final value of F, and W(2) is set to
-!       the total number of function evaluations plus 0.5.
-!
-!     SUBROUTINE CALFUN (N,X,F) has to be provided by the user. It must set
-!       F to the value of the objective function for the variables X(1),
-!       X(2),...,X(N). The value of the argument F is positive when CALFUN
-!       is called if and only if the current X satisfies the constraints
-!       to working accuracy.
-!
-!     Check that N, NPT and MAXFUN are acceptable.
-!
-      zero = 0.0d0
-      smallx = 1.0d-6 * rhoend
-      np = n + 1
-      nptm = npt - np
-      If (n <= 1) Then
-         Print 10
-10       Format (/ 4 x, 'Return from LINCOA because N is less than 2.')
-         Go To 80
-      End If
-      If (npt < n+2 .Or. npt > ((n+2)*np)/2) Then
-         Print 20
-20       Format (/ 4 x, 'Return from LINCOA because NPT is not in', ' t&
-        &he required interval.')
-         Go To 80
-      End If
-      If (maxfun <= npt) Then
-         Print 30
-30       Format (/ 4 x, 'Return from LINCOA because MAXFUN is less', ' &
-        &than NPT+1.')
-         Go To 80
-      End If
-!
-!     Normalize the constraints, and copy the resultant constraint matrix
-!       and right hand sides into working space, after increasing the right
-!       hand sides if necessary so that the starting point is feasible.
-!
-      iamat = max0 (m+3*n, 2*m+n, 2*npt) + 1
-      ib = iamat + m * n
-      iflag = 0
-      If (m > 0) Then
-         iw = iamat - 1
-         Do 60 j = 1, m
-            sum = zero
-            temp = zero
-            Do 40 i = 1, n
-               sum = sum + a (i, j) * x (i)
-40          temp = temp + a (i, j) ** 2
-            If (temp == zero) Then
-               Print 50
-50             Format (/ 4 x, 'Return from LINCOA because the gradient &
-              &of', ' a constraint is zero.')
-               Go To 80
-            End If
-            temp = dsqrt (temp)
-            If (sum-b(j) > smallx*temp) iflag = 1
-            w (ib+j-1) = dmax1 (b(j), sum) / temp
-            Do 60 i = 1, n
-               iw = iw + 1
-60       w (iw) = a (i, j) / temp
-      End If
-      If (iflag == 1) Then
-         If (iprint > 0) Print 70
-70       Format (/ 4 x, 'LINCOA has made the initial X feasible by', ' &
-        &increasing part(s) of B.')
-      End If
-!
-!     Partition the working space array, so that different parts of it can be
-!     treated separately by the subroutine that performs the main calculation.
-!
-      ndim = npt + n
-      ixb = ib + m
-      ixp = ixb + n
-      ifv = ixp + n * npt
-      ixs = ifv + npt
-      ixo = ixs + n
-      igo = ixo + n
-      ihq = igo + n
-      ipq = ihq + (n*np) / 2
-      ibmat = ipq + npt
-      izmat = ibmat + ndim * n
-      istp = izmat + npt * nptm
-      isp = istp + n
-      ixn = isp + npt + npt
-      iac = ixn + n
-      irc = iac + n
-      iqf = irc + m
-      irf = iqf + n * n
-      ipqw = irf + (n*np) / 2
-!
-!     The above settings provide a partition of W for subroutine LINCOB.
-!
-      Call lincob (n, npt, m, w(iamat), w(ib), x, rhobeg, rhoend, &
-     & iprint, maxfun, w(ixb), w(ixp), w(ifv), w(ixs), w(ixo), w(igo), &
-     & w(ihq), w(ipq), w(ibmat), w(izmat), ndim, w(istp), w(isp), &
-     & w(ixn), w(iac), w(irc), w(iqf), w(irf), w(ipqw), w)
-80    Return
-End
-Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
-& maxfun, xbase, xpt, fval, xsav, xopt, gopt, hq, pq, bmat, zmat, ndim, &
-& step, sp, xnew, iact, rescon, qfac, rfac, pqw, w)
-      Implicit real * 8 (a-h, o-z)
-      Dimension amat (n,*), b (*), x (*), xbase (*), xpt (npt,*), fval &
-     & (*), xsav (*), xopt (*), gopt (*), hq (*), pq (*), bmat &
-     & (ndim,*), zmat (npt,*), step (*), sp (*), xnew (*), iact (*), &
-     & rescon (*), qfac (n,*), rfac (*), pqw (*), w (*)
-!
-!     The arguments N, NPT, M, X, RHOBEG, RHOEND, IPRINT and MAXFUN are
-!       identical to the corresponding arguments in SUBROUTINE LINCOA.
-!     AMAT is a matrix whose columns are the constraint gradients, scaled
-!       so that they have unit length.
-!     B contains on entry the right hand sides of the constraints, scaled
-!       as above, but later B is modified for variables relative to XBASE.
-!     XBASE holds a shift of origin that should reduce the contributions
-!       from rounding errors to values of the model and Lagrange functions.
-!     XPT contains the interpolation point coordinates relative to XBASE.
-!     FVAL holds the values of F at the interpolation points.
-!     XSAV holds the best feasible vector of variables so far, without any
-!       shift of origin.
-!     XOPT is set to XSAV-XBASE, which is the displacement from XBASE of
-!       the feasible vector of variables that provides the least calculated
-!       F so far, this vector being the current trust region centre.
-!     GOPT holds the gradient of the quadratic model at XSAV = XBASE+XOPT.
-!     HQ holds the explicit second derivatives of the quadratic model.
-!     PQ contains the parameters of the implicit second derivatives of the
-!       quadratic model.
-!     BMAT holds the last N columns of the big inverse matrix H.
-!     ZMAT holds the factorization of the leading NPT by NPT submatrix
-!       of H, this factorization being ZMAT times Diag(DZ) times ZMAT^T,
-!       where the elements of DZ are plus or minus one, as specified by IDZ.
-!     NDIM is the first dimension of BMAT and has the value NPT+N.
-!     STEP is employed for trial steps from XOPT. It is also used for working
-!       space when XBASE is shifted and in PRELIM.
-!     SP is reserved for the scalar products XOPT^T XPT(K,.), K=1,2,...,NPT,
-!       followed by STEP^T XPT(K,.), K=1,2,...,NPT.
-!     XNEW is the displacement from XBASE of the vector of variables for
-!       the current calculation of F, except that SUBROUTINE TRSTEP uses it
-!       for working space.
-!     IACT is an integer array for the indices of the active constraints.
-!     RESCON holds useful information about the constraint residuals. Every
-!       nonnegative RESCON(J) is the residual of the J-th constraint at the
-!       current trust region centre. Otherwise, if RESCON(J) is negative, the
-!       J-th constraint holds as a strict inequality at the trust region
-!       centre, its residual being at least |RESCON(J)|; further, the value
-!       of |RESCON(J)| is at least the current trust region radius DELTA.
-!     QFAC is the orthogonal part of the QR factorization of the matrix of
-!       active constraint gradients, these gradients being ordered in
-!       accordance with IACT. When NACT is less than N, columns are added
-!       to QFAC to complete an N by N orthogonal matrix, which is important
-!       for keeping calculated steps sufficiently close to the boundaries
-!       of the active constraints.
-!     RFAC is the upper triangular part of this QR factorization, beginning
-!       with the first diagonal element, followed by the two elements in the
-!       upper triangular part of the second column and so on.
-!     PQW is used for working space, mainly for storing second derivative
-!       coefficients of quadratic functions. Its length is NPT+N.
-!     The array W is also used for working space. The required number of
-!       elements, namely MAX[M+3*N,2*M+N,2*NPT], is set in LINCOA.
-!
-!     Set some constants.
-!
-      half = 0.5d0
-      one = 1.0d0
-      tenth = 0.1d0
-      zero = 0.0d0
-      np = n + 1
-      nh = (n*np) / 2
-      nptm = npt - np
-!
-!     Set the elements of XBASE, XPT, FVAL, XSAV, XOPT, GOPT, HQ, PQ, BMAT,
-!       ZMAT and SP for the first iteration. An important feature is that,
-!       if the interpolation point XPT(K,.) is not feasible, where K is any
-!       integer from [1,NPT], then a change is made to XPT(K,.) if necessary
-!       so that the constraint violation is at least 0.2*RHOBEG. Also KOPT
-!       is set so that XPT(KOPT,.) is the initial trust region centre.
-!
-      Call prelim (n, npt, m, amat, b, x, rhobeg, iprint, xbase, xpt, &
-     & fval, xsav, xopt, gopt, kopt, hq, pq, bmat, zmat, idz, ndim, sp, &
-     & rescon, step, pqw, w)
-!
-!     Begin the iterative procedure.
-!
-      nf = npt
-      fopt = fval (kopt)
-      rho = rhobeg
-      delta = rho
-      ifeas = 0
-      nact = 0
-      itest = 3
-10    knew = 0
-      nvala = 0
-      nvalb = 0
-!
-!     Shift XBASE if XOPT may be too far from XBASE. First make the changes
-!       to BMAT that do not depend on ZMAT.
-!
-20    fsave = fopt
-      xoptsq = zero
-      Do 30 i = 1, n
-30    xoptsq = xoptsq + xopt (i) ** 2
-      If (xoptsq >= 1.0d4*delta*delta) Then
-         qoptsq = 0.25d0 * xoptsq
-         Do 50 k = 1, npt
-            sum = zero
-            Do 40 i = 1, n
-40          sum = sum + xpt (k, i) * xopt (i)
-            sum = sum - half * xoptsq
-            w (npt+k) = sum
-            sp (k) = zero
-            Do 50 i = 1, n
-               xpt (k, i) = xpt (k, i) - half * xopt (i)
-               step (i) = bmat (k, i)
-               w (i) = sum * xpt (k, i) + qoptsq * xopt (i)
-               ip = npt + i
-               Do 50 j = 1, i
-50       bmat (ip, j) = bmat (ip, j) + step (i) * w (j) + w (i) * step &
-        & (j)
-!
-!     Then the revisions of BMAT that depend on ZMAT are calculated.
-!
-         Do 90 k = 1, nptm
-            sumz = zero
-            Do 60 i = 1, npt
-               sumz = sumz + zmat (i, k)
-60          w (i) = w (npt+i) * zmat (i, k)
-            Do 80 j = 1, n
-               sum = qoptsq * sumz * xopt (j)
-               Do 70 i = 1, npt
-70             sum = sum + w (i) * xpt (i, j)
-               step (j) = sum
-               If (k < idz) sum = - sum
-               Do 80 i = 1, npt
-80          bmat (i, j) = bmat (i, j) + sum * zmat (i, k)
-            Do 90 i = 1, n
-               ip = i + npt
-               temp = step (i)
-               If (k < idz) temp = - temp
-               Do 90 j = 1, i
-90       bmat (ip, j) = bmat (ip, j) + temp * step (j)
-!
-!     Update the right hand sides of the constraints.
-!
-         If (m > 0) Then
-            Do 110 j = 1, m
-               temp = zero
-               Do 100 i = 1, n
-100            temp = temp + amat (i, j) * xopt (i)
-110         b (j) = b (j) - temp
-         End If
-!
-!     The following instructions complete the shift of XBASE, including the
-!       changes to the parameters of the quadratic model.
-!
-         ih = 0
-         Do 130 j = 1, n
-            w (j) = zero
-            Do 120 k = 1, npt
-               w (j) = w (j) + pq (k) * xpt (k, j)
-120         xpt (k, j) = xpt (k, j) - half * xopt (j)
-            Do 130 i = 1, j
-               ih = ih + 1
-               hq (ih) = hq (ih) + w (i) * xopt (j) + xopt (i) * w (j)
-130      bmat (npt+i, j) = bmat (npt+j, i)
-         Do 140 j = 1, n
-            xbase (j) = xbase (j) + xopt (j)
-            xopt (j) = zero
-140      xpt (kopt, j) = zero
-      End If
-!
-!     In the case KNEW=0, generate the next trust region step by calling
-!       TRSTEP, where SNORM is the current trust region radius initially.
-!       The final value of SNORM is the length of the calculated step,
-!       except that SNORM is zero on return if the projected gradient is
-!       unsuitable for starting the conjugate gradient iterations.
-!
-      delsav = delta
-      ksave = knew
-      If (knew == 0) Then
-         snorm = delta
-         Do 150 i = 1, n
-150      xnew (i) = gopt (i)
-         Call trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, &
-        & rescon, qfac, rfac, snorm, step, xnew, w, w(m+1), pqw, &
-        & pqw(np), w(m+np))
-!
-!     A trust region step is applied whenever its length, namely SNORM, is at
-!       least HALF*DELTA. It is also applied if its length is at least 0.1999
-!       times DELTA and if a line search of TRSTEP has caused a change to the
-!       active set. Otherwise there is a branch below to label 530 or 560.
-!
-         temp = half * delta
-         If (xnew(1) >= half) temp = 0.1999d0 * delta
-         If (snorm <= temp) Then
-            delta = half * delta
-            If (delta <= 1.4d0*rho) delta = rho
-            nvala = nvala + 1
-            nvalb = nvalb + 1
-            temp = snorm / rho
-            If (delsav > rho) temp = one
-            If (temp >= half) nvala = zero
-            If (temp >= tenth) nvalb = zero
-            If (delsav > rho) Go To 530
-            If (nvala < 5 .And. nvalb < 3) Go To 530
-            If (snorm > zero) ksave = - 1
-            Go To 560
-         End If
-         nvala = zero
-         nvalb = zero
-!
-!     Alternatively, KNEW is positive. Then the model step is calculated
-!       within a trust region of radius DEL, after setting the gradient at
-!       XBASE and the second derivative parameters of the KNEW-th Lagrange
-!       function in W(1) to W(N) and in PQW(1) to PQW(NPT), respectively.
-!
-      Else
-         del = dmax1 (tenth*delta, rho)
-         Do 160 i = 1, n
-160      w (i) = bmat (knew, i)
-         Do 170 k = 1, npt
-170      pqw (k) = zero
-         Do 180 j = 1, nptm
-            temp = zmat (knew, j)
-            If (j < idz) temp = - temp
-            Do 180 k = 1, npt
-180      pqw (k) = pqw (k) + temp * zmat (k, j)
-         Call qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, &
-        & rescon, qfac, kopt, knew, del, step, w, pqw, w(np), w(np+m), &
-        & ifeas)
-      End If
-!
-!     Set VQUAD to the change to the quadratic model when the move STEP is
-!       made from XOPT. If STEP is a trust region step, then VQUAD should be
-!       negative. If it is nonnegative due to rounding errors in this case,
-!       there is a branch to label 530 to try to improve the model.
-!
-      vquad = zero
-      ih = 0
-      Do 190 j = 1, n
-         vquad = vquad + step (j) * gopt (j)
-         Do 190 i = 1, j
-            ih = ih + 1
-            temp = step (i) * step (j)
-            If (i == j) temp = half * temp
-190   vquad = vquad + temp * hq (ih)
-      Do 210 k = 1, npt
-         temp = zero
-         Do 200 j = 1, n
-            temp = temp + xpt (k, j) * step (j)
-200      sp (npt+k) = temp
-210   vquad = vquad + half * pq (k) * temp * temp
-      If (ksave == 0 .And. vquad >= zero) Go To 530
-!
-!     Calculate the next value of the objective function. The difference
-!       between the actual new value of F and the value predicted by the
-!       model is recorded in DIFF.
-!
-220   nf = nf + 1
-      If (nf > maxfun) Then
-         nf = nf - 1
-         If (iprint > 0) Print 230
-230      Format (/ 4 x, 'Return from LINCOA because CALFUN has been', '&
-        & called MAXFUN times.')
-         Go To 600
-      End If
-      xdiff = zero
-      Do 240 i = 1, n
-         xnew (i) = xopt (i) + step (i)
-         x (i) = xbase (i) + xnew (i)
-240   xdiff = xdiff + (x(i)-xsav(i)) ** 2
-      xdiff = dsqrt (xdiff)
-      If (ksave ==-1) xdiff = rho
-      If (xdiff <= tenth*rho .Or. xdiff >= delta+delta) Then
-         ifeas = 0
-         If (iprint > 0) Print 250
-250      Format (/ 4 x, 'Return from LINCOA because rounding errors', '&
-        & prevent reasonable changes to X.')
-         Go To 600
-      End If
-      If (ksave <= 0) ifeas = 1
-      f = dfloat (ifeas)
-      Call calfun (n, x, f)
-      If (iprint == 3) Then
-         Print 260, nf, f, (x(i), i=1, n)
-260      Format (/ 4 x, 'Function number', i6, '    F =', 1 pd18.10, ' &
-        &   The corresponding X is:' / (2 x, 5d15.6))
-      End If
-      If (ksave ==-1) Go To 600
-      diff = f - fopt - vquad
-!
-!     If X is feasible, then set DFFALT to the difference between the new
-!       value of F and the value predicted by the alternative model.
-!
-      If (ifeas == 1 .And. itest < 3) Then
-         Do 270 k = 1, npt
-            pqw (k) = zero
-270      w (k) = fval (k) - fval (kopt)
-         Do 290 j = 1, nptm
-            sum = zero
-            Do 280 i = 1, npt
-280         sum = sum + w (i) * zmat (i, j)
-            If (j < idz) sum = - sum
-            Do 290 k = 1, npt
-290      pqw (k) = pqw (k) + sum * zmat (k, j)
-         vqalt = zero
-         Do 310 k = 1, npt
-            sum = zero
-            Do 300 j = 1, n
-300         sum = sum + bmat (k, j) * step (j)
-            vqalt = vqalt + sum * w (k)
-310      vqalt = vqalt + pqw (k) * sp (npt+k) * (half*sp(npt+k)+sp(k))
-         dffalt = f - fopt - vqalt
-      End If
-      If (itest == 3) Then
-         dffalt = diff
-         itest = 0
-      End If
-!
-!     Pick the next value of DELTA after a trust region step.
-!
-      If (ksave == 0) Then
-         ratio = (f-fopt) / vquad
-         If (ratio <= tenth) Then
-            delta = half * delta
-         Else If (ratio <= 0.7d0) Then
-            delta = dmax1 (half*delta, snorm)
-         Else
-            temp = dsqrt (2.0d0) * delta
-            delta = dmax1 (half*delta, snorm+snorm)
-            delta = dmin1 (delta, temp)
-         End If
-         If (delta <= 1.4d0*rho) delta = rho
-      End If
-!
-!     Update BMAT, ZMAT and IDZ, so that the KNEW-th interpolation point
-!       can be moved. If STEP is a trust region step, then KNEW is zero at
-!       present, but a positive value is picked by subroutine UPDATE.
-!
-      Call update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, &
-     & knew, pqw, w)
-      If (knew == 0) Then
-         If (iprint > 0) Print 320
-320      Format (/ 4 x, 'Return from LINCOA because the denominator'' o&
-        &f the updating formula is zero.')
-         Go To 600
-      End If
-!
-!     If ITEST is increased to 3, then the next quadratic model is the
-!       one whose second derivative matrix is least subject to the new
-!       interpolation conditions. Otherwise the new model is constructed
-!       by the symmetric Broyden method in the usual way.
-!
-      If (ifeas == 1) Then
-         itest = itest + 1
-         If (dabs(dffalt) >= tenth*dabs(diff)) itest = 0
-      End If
-!
-!     Update the second derivatives of the model by the symmetric Broyden
-!       method, using PQW for the second derivative parameters of the new
-!       KNEW-th Lagrange function. The contribution from the old parameter
-!       PQ(KNEW) is included in the second derivative matrix HQ. W is used
-!       later for the gradient of the new KNEW-th Lagrange function.
-!
-      If (itest < 3) Then
-         Do 330 k = 1, npt
-330      pqw (k) = zero
-         Do 350 j = 1, nptm
-            temp = zmat (knew, j)
-            If (temp /= zero) Then
-               If (j < idz) temp = - temp
-               Do 340 k = 1, npt
-340            pqw (k) = pqw (k) + temp * zmat (k, j)
-            End If
-350      Continue
-         ih = 0
-         Do 360 i = 1, n
-            w (i) = bmat (knew, i)
-            temp = pq (knew) * xpt (knew, i)
-            Do 360 j = 1, i
-               ih = ih + 1
-360      hq (ih) = hq (ih) + temp * xpt (knew, j)
-         pq (knew) = zero
-         Do 370 k = 1, npt
-370      pq (k) = pq (k) + diff * pqw (k)
-      End If
-!
-!     Include the new interpolation point with the corresponding updates of
-!       SP. Also make the changes of the symmetric Broyden method to GOPT at
-!       the old XOPT if ITEST is less than 3.
-!
-      fval (knew) = f
-      sp (knew) = sp (kopt) + sp (npt+kopt)
-      ssq = zero
-      Do 380 i = 1, n
-         xpt (knew, i) = xnew (i)
-380   ssq = ssq + step (i) ** 2
-      sp (npt+knew) = sp (npt+kopt) + ssq
-      If (itest < 3) Then
-         Do 390 k = 1, npt
-            temp = pqw (k) * sp (k)
-            Do 390 i = 1, n
-390      w (i) = w (i) + temp * xpt (k, i)
-         Do 400 i = 1, n
-400      gopt (i) = gopt (i) + diff * w (i)
-      End If
-!
-!     Update FOPT, XSAV, XOPT, KOPT, RESCON and SP if the new F is the
-!       least calculated value so far with a feasible vector of variables.
-!
-      If (f < fopt .And. ifeas == 1) Then
-         fopt = f
-         Do 410 j = 1, n
-            xsav (j) = x (j)
-410      xopt (j) = xnew (j)
-         kopt = knew
-         snorm = dsqrt (ssq)
-         Do 430 j = 1, m
-            If (rescon(j) >= delta+snorm) Then
-               rescon (j) = snorm - rescon (j)
-            Else
-               rescon (j) = rescon (j) + snorm
-               If (rescon(j)+delta > zero) Then
-                  temp = b (j)
-                  Do 420 i = 1, n
-420               temp = temp - xopt (i) * amat (i, j)
-                  temp = dmax1 (temp, zero)
-                  If (temp >= delta) temp = - temp
-                  rescon (j) = temp
-               End If
-            End If
-430      Continue
-         Do 440 k = 1, npt
-440      sp (k) = sp (k) + sp (npt+k)
-!
-!     Also revise GOPT when symmetric Broyden updating is applied.
-!
-         If (itest < 3) Then
-            ih = 0
-            Do 450 j = 1, n
-               Do 450 i = 1, j
-                  ih = ih + 1
-                  If (i < j) gopt (j) = gopt (j) + hq (ih) * step &
-                 & (i)
-450         gopt (i) = gopt (i) + hq (ih) * step (j)
-            Do 460 k = 1, npt
-               temp = pq (k) * sp (npt+k)
-               Do 460 i = 1, n
-460         gopt (i) = gopt (i) + temp * xpt (k, i)
-         End If
-      End If
-!
-!     Replace the current model by the least Frobenius norm interpolant if
-!       this interpolant gives substantial reductions in the predictions
-!       of values of F at feasible points.
-!
-      If (itest == 3) Then
-         Do 470 k = 1, npt
-            pq (k) = zero
-470      w (k) = fval (k) - fval (kopt)
-         Do 490 j = 1, nptm
-            sum = zero
-            Do 480 i = 1, npt
-480         sum = sum + w (i) * zmat (i, j)
-            If (j < idz) sum = - sum
-            Do 490 k = 1, npt
-490      pq (k) = pq (k) + sum * zmat (k, j)
-         Do 500 j = 1, n
-            gopt (j) = zero
-            Do 500 i = 1, npt
-500      gopt (j) = gopt (j) + w (i) * bmat (i, j)
-         Do 510 k = 1, npt
-            temp = pq (k) * sp (k)
-            Do 510 i = 1, n
-510      gopt (i) = gopt (i) + temp * xpt (k, i)
-         Do 520 ih = 1, nh
-520      hq (ih) = zero
-      End If
-!
-!     If a trust region step has provided a sufficient decrease in F, then
-!       branch for another trust region calculation. Every iteration that
-!       takes a model step is followed by an attempt to take a trust region
-!       step.
-!
-      knew = 0
-      If (ksave > 0) Go To 20
-      If (ratio >= tenth) Go To 20
-!
-!     Alternatively, find out if the interpolation points are close enough
-!       to the best point so far.
-!
-530   distsq = dmax1 (delta*delta, 4.0d0*rho*rho)
-      Do 550 k = 1, npt
-         sum = zero
-         Do 540 j = 1, n
-540      sum = sum + (xpt(k, j)-xopt(j)) ** 2
-         If (sum > distsq) Then
-            knew = k
-            distsq = sum
-         End If
-550   Continue
-!
-!     If KNEW is positive, then branch back for the next iteration, which
-!       will generate a "model step". Otherwise, if the current iteration
-!       has reduced F, or if DELTA was above its lower bound when the last
-!       trust region step was calculated, then try a "trust region" step
-!       instead.
-!
-      If (knew > 0) Go To 20
-      knew = 0
-      If (fopt < fsave) Go To 20
-      If (delsav > rho) Go To 20
-!
-!     The calculations with the current value of RHO are complete.
-!       Pick the next value of RHO.
-!
-560   If (rho > rhoend) Then
-         delta = half * rho
-         If (rho > 250.0d0*rhoend) Then
-            rho = tenth * rho
-         Else If (rho <= 16.0d0*rhoend) Then
-            rho = rhoend
-         Else
-            rho = dsqrt (rho*rhoend)
-         End If
-         delta = dmax1 (delta, rho)
-         If (iprint >= 2) Then
-            If (iprint >= 3) Print 570
-570         Format (5 x)
-            Print 580, rho, nf
-580         Format (/ 4 x, 'New RHO =', 1 pd11.4, 5 x, 'Number of', ' f&
-           &unction values =', i6)
-            Print 590, fopt, (xbase(i)+xopt(i), i=1, n)
-590         Format (4 x, 'Least value of F =', 1 pd23.15, 9 x, 'The cor&
-           &responding X is:'/(2 x, 5d15.6))
-         End If
-         Go To 10
-      End If
-!
-!     Return from the calculation, after branching to label 220 for another
-!       Newton-Raphson step if it has not been tried before.
-!
-      If (ksave ==-1) Go To 220
-600   If (fopt <= f .Or. ifeas == 0) Then
-         Do 610 i = 1, n
-610      x (i) = xsav (i)
-         f = fopt
-      End If
-      If (iprint >= 1) Then
-         Print 620, nf
-620      Format (/ 4 x, 'At the return from LINCOA', 5 x, 'Number of fu&
-        &nction values =', i6)
-         Print 590, f, (x(i), i=1, n)
-      End If
-      w (1) = f
-      w (2) = dfloat (nf) + half
-      Return
-End
-!     Calculate the tetrahedron of least volume that encloses the points
-!       (XP(J),YP(J),ZP(J)), J=1,2,...,NP. Our method requires the origin
-!       to be strictly inside the convex hull of these points. There are
-!       twelve variables that define the four faces of each tetrahedron
-!       that is considered. Each face has the form ALPHA*X+BETA*Y+GAMMA*Z=1,
-!       the variables X(3K-2), X(3K-1) and X(3K) being the values of ALPHA,
-!       BETA and GAMMA for the K-th face, K=1,2,3,4. Let the set T contain
-!       all points in three dimensions that can be reached from the origin
-!       without crossing a face. Because the volume of T may be infinite,
-!       the objective function is the smaller of FMAX and the volume of T,
-!       where FMAX is set to an upper bound on the final volume initially.
-!       There are 4*NP linear constraints on the variables, namely that each
-!       of the given points (XP(J),YP(J),ZP(J)) shall be in T. Let XS = min
-!       XP(J), YS = min YP(J), ZS = min ZP(J) and SS = max XP(J)+YP(J)+ZP(J),
-!       where J runs from 1 to NP. The initial values of the variables are
-!       X(1)=1/XS, X(5)=1/YS, X(9)=1/ZS, X(2)=X(3)=X(4)=X(6)=X(7) =X(8)=0
-!       and X(10)=X(11)=X(12)=1/SS, which satisfy the linear constraints,
-!       and which provide the bound FMAX=(SS-XS-YS-ZS)**3/6. Other details
-!       of the test calculation are given below, including the choice of
-!       the data points (XP(J),YP(J),ZP(J)), J=1,2,...,NP. The smaller final
-!       value of the objective function in the case NPT=35 shows that the
-!       problem has local minima.
-!
-Implicit real * 8 (a-h, o-z)
-Common fmax
-Dimension xp (50), yp (50), zp (50), a (12, 200), b (200), x (12), w &
-& (500000)
-!
-!     Set some constants.
-!
-one = 1.0d0
-two = 2.0d0
-zero = 0.0d0
-pi = 4.0d0 * datan (one)
-ia = 12
-n = 12
-!
-!     Set the data points.
-!
-np = 50
-sumx = zero
-sumy = zero
-sumz = zero
-Do 10 j = 1, np
-   theta = dfloat (j-1) * pi / dfloat (np-1)
-   xp (j) = dcos (theta) * dcos (two*theta)
-   sumx = sumx + xp (j)
-   yp (j) = dsin (theta) * dcos (two*theta)
-   sumy = sumy + yp (j)
-   zp (j) = dsin (two*theta)
-10 sumz = sumz + zp (j)
-sumx = sumx / dfloat (np)
-sumy = sumy / dfloat (np)
-sumz = sumz / dfloat (np)
-Do 20 j = 1, np
-   xp (j) = xp (j) - sumx
-   yp (j) = yp (j) - sumy
-20 zp (j) = zp (j) - sumz
-!
-!     Set the linear constraints.
-!
-m = 4 * np
-Do 30 k = 1, m
-   b (k) = one
-   Do 30 i = 1, n
-30 a (i, k) = zero
-Do 40 j = 1, np
-   Do 40 i = 1, 4
-      k = 4 * j + i - 4
-      iw = 3 * i
-      a (iw-2, k) = xp (j)
-      a (iw-1, k) = yp (j)
-40 a (iw, k) = zp (j)
-!
-!     Set the initial vector of variables. The JCASE=1,6 loop gives six
-!       different choices of NPT when LINCOA is called.
-!
-xs = zero
-ys = zero
-zs = zero
-ss = zero
-Do 50 j = 1, np
-   xs = dmin1 (xs, xp(j))
-   ys = dmin1 (ys, yp(j))
-   zs = dmin1 (zs, zp(j))
-50 ss = dmax1 (ss, xp(j)+yp(j)+zp(j))
-fmax = (ss-xs-ys-zs) ** 3 / 6.0d0
-Do 80 jcase = 1, 6
-   Do 60 i = 2, 8
-60 x (i) = zero
-   x (1) = one / xs
-   x (5) = one / ys
-   x (9) = one / zs
-   x (10) = one / ss
-   x (11) = one / ss
-   x (12) = one / ss
-!
-!     Call of LINCOA, which provides the printing given at the end of this
-!       note.
-!
-   npt = 5 * jcase + 10
-   rhobeg = 1.0d0
-   rhoend = 1.0d-6
-   iprint = 1
-   maxfun = 10000
-   Print 70, npt, rhoend
-70 Format (/ / 4 x, 'Output from LINCOA with  NPT =', i4, '  and  RHOEN&
-  &D =', 1 pd12.4)
-   Call lincoa (n, npt, m, a, ia, b, x, rhobeg, rhoend, iprint, maxfun, &
-  & w)
-80 Continue
-Stop
-End
+End Subroutine getact
+
 Subroutine prelim (n, npt, m, amat, b, x, rhobeg, iprint, xbase, xpt, &
-& fval, xsav, xopt, gopt, kopt, hq, pq, bmat, zmat, idz, ndim, sp, &
-& rescon, step, pqw, w)
+  fval, xsav, xopt, gopt, kopt, hq, pq, bmat, zmat, idz, ndim, sp, &
+  rescon, step, pqw, w, calfun)
    Implicit real * 8 (a-h, o-z)
    Dimension amat (n,*), b (*), x (*), xbase (*), xpt (npt,*), fval &
-  & (*), xsav (*), xopt (*), gopt (*), hq (*), pq (*), bmat (ndim,*), &
-  & zmat (npt,*), sp (*), rescon (*), step (*), pqw (*), w (*)
+    (*), xsav (*), xopt (*), gopt (*), hq (*), pq (*), bmat (ndim,*), &
+    zmat (npt,*), sp (*), rescon (*), step (*), pqw (*), w (*)
+   procedure(func) :: calfun
 !
 !     The arguments N, NPT, M, AMAT, B, X, RHOBEG, IPRINT, XBASE, XPT, FVAL,
 !       XSAV, XOPT, GOPT, HQ, PQ, BMAT, ZMAT, NDIM, SP and RESCON are the
@@ -1267,8 +1156,8 @@ Subroutine prelim (n, npt, m, amat, b, x, rhobeg, iprint, xbase, xpt, &
       Call calfun (n, x, f)
       If (iprint == 3) Then
          Print 140, nf, f, (x(i), i=1, n)
-140      Format (/ 4 x, 'Function number', i6, '    F =', 1 pd18.10, ' &
-        &   The corresponding X is:' / (2 x, 5d15.6))
+140      Format (/ 4 x, 'Function number', i6, '    F =', 1 pd18.10,&
+         '    The corresponding X is:' / (2 x, 5d15.6))
       End If
       If (nf == 1) Then
          kopt = 1
@@ -1314,12 +1203,13 @@ Subroutine prelim (n, npt, m, amat, b, x, rhobeg, iprint, xbase, xpt, &
       If (temp >= rhobeg) temp = - temp
 230 rescon (j) = temp
    Return
-End
+End Subroutine prelim
+
 Subroutine qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, rescon, &
-& qfac, kopt, knew, del, step, gl, pqw, rstat, w, ifeas)
+  qfac, kopt, knew, del, step, gl, pqw, rstat, w, ifeas)
    Implicit real * 8 (a-h, o-z)
    Dimension amat (n,*), b (*), xpt (npt,*), xopt (*), iact (*), rescon &
-  & (*), qfac (n,*), step (*), gl (*), pqw (*), rstat (*), w (*)
+    (*), qfac (n,*), step (*), gl (*), pqw (*), rstat (*), w (*)
 !
 !     N, NPT, M, AMAT, B, XPT, XOPT, NACT, IACT, RESCON, QFAC, KOPT are the
 !       same as the terms with these names in SUBROUTINE LINCOB.
@@ -1533,13 +1423,14 @@ Subroutine qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, rescon, &
 !     Return the calculated STEP and the value of IFEAS.
 !
 260 Return
-End
+End Subroutine qmstep
+
 Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
-& qfac, rfac, snorm, step, g, resnew, resact, d, dw, w)
+  qfac, rfac, snorm, step, g, resnew, resact, d, dw, w)
    Implicit real * 8 (a-h, o-z)
    Dimension amat (n,*), b (*), xpt (npt,*), hq (*), pq (*), iact (*), &
-  & rescon (*), qfac (n,*), rfac (*), step (*), g (*), resnew (*), &
-  & resact (*), d (*), dw (*), w (*)
+    rescon (*), qfac (n,*), rfac (*), step (*), g (*), resnew (*), &
+    resact (*), d (*), dw (*), w (*)
 !
 !     N, NPT, M, AMAT, B, XPT, HQ, PQ, NACT, IACT, RESCON, QFAC and RFAC
 !       are the same as the terms with these names in LINCOB. If RESCON(J)
@@ -1839,12 +1730,13 @@ Subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, &
    g (1) = zero
    If (ncall > 1) g (1) = one
    Return
-End
+End Subroutine trstep
+
 Subroutine update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, &
-& knew, vlag, w)
+  knew, vlag, w)
    Implicit real * 8 (a-h, o-z)
    Dimension xpt (npt,*), bmat (ndim,*), zmat (npt,*), sp (*), step &
-  & (*), vlag (*), w (*)
+    (*), vlag (*), w (*)
 !
 !     The arguments N, NPT, XPT, BMAT, ZMAT, IDZ, NDIM ,SP and STEP are
 !       identical to the corresponding arguments in SUBROUTINE LINCOB.
@@ -2044,4 +1936,146 @@ Subroutine update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, &
          If (i > npt) bmat (jp, i-npt) = bmat (i, j)
 170 Continue
 180 Return
-End
+End Subroutine update
+
+subroutine lincoa_test()
+!     Calculate the tetrahedron of least volume that encloses the points
+!       (XP(J),YP(J),ZP(J)), J=1,2,...,NP. Our method requires the origin
+!       to be strictly inside the convex hull of these points. There are
+!       twelve variables that define the four faces of each tetrahedron
+!       that is considered. Each face has the form ALPHA*X+BETA*Y+GAMMA*Z=1,
+!       the variables X(3K-2), X(3K-1) and X(3K) being the values of ALPHA,
+!       BETA and GAMMA for the K-th face, K=1,2,3,4. Let the set T contain
+!       all points in three dimensions that can be reached from the origin
+!       without crossing a face. Because the volume of T may be infinite,
+!       the objective function is the smaller of FMAX and the volume of T,
+!       where FMAX is set to an upper bound on the final volume initially.
+!       There are 4*NP linear constraints on the variables, namely that each
+!       of the given points (XP(J),YP(J),ZP(J)) shall be in T. Let XS = min
+!       XP(J), YS = min YP(J), ZS = min ZP(J) and SS = max XP(J)+YP(J)+ZP(J),
+!       where J runs from 1 to NP. The initial values of the variables are
+!       X(1)=1/XS, X(5)=1/YS, X(9)=1/ZS, X(2)=X(3)=X(4)=X(6)=X(7) =X(8)=0
+!       and X(10)=X(11)=X(12)=1/SS, which satisfy the linear constraints,
+!       and which provide the bound FMAX=(SS-XS-YS-ZS)**3/6. Other details
+!       of the test calculation are given below, including the choice of
+!       the data points (XP(J),YP(J),ZP(J)), J=1,2,...,NP. The smaller final
+!       value of the objective function in the case NPT=35 shows that the
+!       problem has local minima.
+!
+    Implicit real * 8 (a-h, o-z)
+    Common fmax
+    Dimension xp (50), yp (50), zp (50), a (12, 200), b (200), x (12), w &
+    & (500000)
+    !
+    !     Set some constants.
+    !
+    one = 1.0d0
+    two = 2.0d0
+    zero = 0.0d0
+    pi = 4.0d0 * datan (one)
+    ia = 12
+    n = 12
+    !
+    !     Set the data points.
+    !
+    np = 50
+    sumx = zero
+    sumy = zero
+    sumz = zero
+    Do 10 j = 1, np
+       theta = dfloat (j-1) * pi / dfloat (np-1)
+       xp (j) = dcos (theta) * dcos (two*theta)
+       sumx = sumx + xp (j)
+       yp (j) = dsin (theta) * dcos (two*theta)
+       sumy = sumy + yp (j)
+       zp (j) = dsin (two*theta)
+10  sumz = sumz + zp (j)
+    sumx = sumx / dfloat (np)
+    sumy = sumy / dfloat (np)
+    sumz = sumz / dfloat (np)
+    Do 20 j = 1, np
+       xp (j) = xp (j) - sumx
+       yp (j) = yp (j) - sumy
+20  zp (j) = zp (j) - sumz
+    !
+    !     Set the linear constraints.
+    !
+    m = 4 * np
+    Do 30 k = 1, m
+       b (k) = one
+       Do 30 i = 1, n
+30  a (i, k) = zero
+    Do 40 j = 1, np
+       Do 40 i = 1, 4
+          k = 4 * j + i - 4
+          iw = 3 * i
+          a (iw-2, k) = xp (j)
+          a (iw-1, k) = yp (j)
+40        a (iw, k) = zp (j)
+    !
+    !     Set the initial vector of variables. The JCASE=1,6 loop gives six
+    !       different choices of NPT when LINCOA is called.
+    !
+    xs = zero
+    ys = zero
+    zs = zero
+    ss = zero
+    Do 50 j = 1, np
+       xs = dmin1 (xs, xp(j))
+       ys = dmin1 (ys, yp(j))
+       zs = dmin1 (zs, zp(j))
+50     ss = dmax1 (ss, xp(j)+yp(j)+zp(j))
+    fmax = (ss-xs-ys-zs) ** 3 / 6.0d0
+    Do 80 jcase = 1, 6
+       Do 60 i = 2, 8
+60     x (i) = zero
+       x (1) = one / xs
+       x (5) = one / ys
+       x (9) = one / zs
+       x (10) = one / ss
+       x (11) = one / ss
+       x (12) = one / ss
+    !
+    !     Call of LINCOA, which provides the printing given at the end of this
+    !       note.
+    !
+       npt = 5 * jcase + 10
+       rhobeg = 1.0d0
+       rhoend = 1.0d-6
+       iprint = 1
+       maxfun = 10000
+       Print 70, npt, rhoend
+70     Format (/ / 4 x, 'Output from LINCOA with  NPT =', i4,&
+       '  and  RHOEND =', 1 pd12.4)
+       Call lincoa (n, npt, m, a, ia, b, x, rhobeg, rhoend, iprint, maxfun,w,calfun)
+80     Continue
+
+contains
+
+    Subroutine calfun (n, x, f)
+      Implicit real * 8 (a-h, o-z)
+      !Common fmax
+      Dimension x (*)
+      zero = 0.0d0
+      f = fmax
+      v12 = x (1) * x (5) - x (4) * x (2)
+      v13 = x (1) * x (8) - x (7) * x (2)
+      v14 = x (1) * x (11) - x (10) * x (2)
+      v23 = x (4) * x (8) - x (7) * x (5)
+      v24 = x (4) * x (11) - x (10) * x (5)
+      v34 = x (7) * x (11) - x (10) * x (8)
+      del1 = v23 * x (12) - v24 * x (9) + v34 * x (6)
+      If (del1 <= zero) return
+      del2 = - v34 * x (3) - v13 * x (12) + v14 * x (9)
+      If (del2 <= zero) return
+      del3 = - v14 * x (6) + v24 * x (3) + v12 * x (12)
+      If (del3 <= zero) return
+      del4 = - v12 * x (9) + v13 * x (6) - v23 * x (3)
+      If (del4 <= zero) return
+      temp = (del1+del2+del3+del4) ** 3 / (del1*del2*del3*del4)
+      f = dmin1 (temp/6.0d0, fmax)
+    End Subroutine calfun
+
+end subroutine lincoa_test
+
+end module lincoa_module

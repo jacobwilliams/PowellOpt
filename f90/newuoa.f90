@@ -1,8 +1,26 @@
+    module newuoa_module
+    
+    private
+    
+    abstract interface
+        subroutine func(n,x,f)  !! CALFUN interface
+        implicit none
+        integer :: n
+        real * 8 :: x(*)
+        real * 8 :: f
+        end subroutine func
+    end interface
+    
+    public :: newuoa
+    public :: newuoa_test
+    
+    contains
+
 Subroutine bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
-& knew, d, w, vlag, beta, s, wvec, prod)
+  knew, d, w, vlag, beta, s, wvec, prod)
       Implicit real * 8 (a-h, o-z)
       Dimension xopt (*), xpt (npt,*), bmat (ndim,*), zmat (npt,*), d &
-     & (*), w (*), vlag (*), s (*), wvec (ndim,*), prod (ndim,*)
+       (*), w (*), vlag (*), s (*), wvec (ndim,*), prod (ndim,*)
       Dimension den (9), denex (9), par (9)
 !
 !     N is the number of variables.
@@ -316,12 +334,13 @@ Subroutine bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
 350   w (k) = w (k) + wvec (k, j) * par (j)
       vlag (kopt) = vlag (kopt) + one
       Return
-End
+End Subroutine bigden
+
 Subroutine biglag (n, npt, xopt, xpt, bmat, zmat, idz, ndim, knew, &
-& delta, d, alpha, hcol, gc, gd, s, w)
+  delta, d, alpha, hcol, gc, gd, s, w)
       Implicit real * 8 (a-h, o-z)
-      Dimension xopt (*), xpt (npt,*), bmat (ndim,*), zmat (npt,*), d &
-     & (*), hcol (*), gc (*), gd (*), s (*), w (*)
+      Dimension xopt (*), xpt (npt,*), bmat (ndim,*), zmat (npt,*), d(*),&
+      hcol (*), gc (*), gd (*), s (*), w (*)
 !
 !     N is the number of variables.
 !     NPT is the number of interpolation equations.
@@ -490,52 +509,12 @@ Subroutine biglag (n, npt, xopt, xpt, bmat, zmat, idz, ndim, knew, &
       If (dabs(tau) <= 1.1d0*dabs(taubeg)) Go To 160
       If (iterc < n) Go To 80
 160   Return
-End
-Subroutine calfun (n, x, f)
-      Implicit real * 8 (a-h, o-z)
-      Dimension x (*), y (10, 10)
-      Do 10 j = 1, n
-         y (1, j) = 1.0d0
-10    y (2, j) = 2.0d0 * x (j) - 1.0d0
-      Do 20 i = 2, n
-         Do 20 j = 1, n
-20    y (i+1, j) = 2.0d0 * y (2, j) * y (i, j) - y (i-1, j)
-      f = 0.0d0
-      np = n + 1
-      iw = 1
-      Do 40 i = 1, np
-         sum = 0.0d0
-         Do 30 j = 1, n
-30       sum = sum + y (i, j)
-         sum = sum / dfloat (n)
-         If (iw > 0) sum = sum + 1.0d0 / dfloat (i*i-2*i)
-         iw = - iw
-40    f = f + sum * sum
-      Return
-End
-!
-!     The Chebyquad test problem (Fletcher, 1965) for N = 2,4,6 and 8,
-!     with NPT = 2N+1.
-!
-Implicit real * 8 (a-h, o-z)
-Dimension x (10), w (10000)
-iprint = 2
-maxfun = 5000
-rhoend = 1.0d-6
-Do 30 n = 2, 8, 2
-   npt = 2 * n + 1
-   Do 10 i = 1, n
-10 x (i) = dfloat (i) / dfloat (n+1)
-   rhobeg = 0.2d0 * x (1)
-   Print 20, n, npt
-20 Format (/ / 4 x, 'Results with N =', i2, ' and NPT =', i3)
-   Call newuoa (n, npt, x, rhobeg, rhoend, iprint, maxfun, w)
-30 Continue
-Stop
-End
-Subroutine newuoa (n, npt, x, rhobeg, rhoend, iprint, maxfun, w)
+End Subroutine biglag
+
+Subroutine newuoa (n, npt, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
    Implicit real * 8 (a-h, o-z)
    Dimension x (*), w (*)
+   procedure(func) :: calfun
 !
 !     This subroutine seeks the least value of a function of many variables,
 !     by a trust region method that forms quadratic models by interpolation.
@@ -574,8 +553,8 @@ Subroutine newuoa (n, npt, x, rhobeg, rhoend, iprint, maxfun, w)
    nptm = npt - np
    If (npt < n+2 .Or. npt > ((n+2)*np)/2) Then
       Print 10
-10    Format (/ 4 x, 'Return from NEWUOA because NPT is not in', ' the &
-     &required interval')
+10    Format (/ 4 x, 'Return from NEWUOA because NPT is not in',&
+      ' the required interval')
       Go To 20
    End If
    ndim = npt + n
@@ -598,16 +577,18 @@ Subroutine newuoa (n, npt, x, rhobeg, rhoend, iprint, maxfun, w)
 !     W plus the space that is needed by the last array of NEWUOB.
 !
    Call newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, w(ixb), &
-  & w(ixo), w(ixn), w(ixp), w(ifv), w(igq), w(ihq), w(ipq), w(ibmat), &
-  & w(izmat), ndim, w(id), w(ivl), w(iw))
+    w(ixo), w(ixn), w(ixp), w(ifv), w(igq), w(ihq), w(ipq), w(ibmat), &
+    w(izmat), ndim, w(id), w(ivl), w(iw), calfun)
 20 Return
-End
+End Subroutine newuoa
+
 Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
-& xopt, xnew, xpt, fval, gq, hq, pq, bmat, zmat, ndim, d, vlag, w)
+  xopt, xnew, xpt, fval, gq, hq, pq, bmat, zmat, ndim, d, vlag, w, calfun)
    Implicit real * 8 (a-h, o-z)
    Dimension x (*), xbase (*), xopt (*), xnew (*), xpt (npt,*), fval &
-  & (*), gq (*), hq (*), pq (*), bmat (ndim,*), zmat (npt,*), d (*), &
-  & vlag (*), w (*)
+    (*), gq (*), hq (*), pq (*), bmat (ndim,*), zmat (npt,*), d (*), &
+    vlag (*), w (*)
+    procedure(func) :: calfun
 !
 !     The arguments N, NPT, X, RHOBEG, RHOEND, IPRINT and MAXFUN are identical
 !       to the corresponding arguments in SUBROUTINE NEWUOA.
@@ -920,15 +901,15 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
 310 If (nf > nftest) Then
       nf = nf - 1
       If (iprint > 0) Print 320
-320   Format (/ 4 x, 'Return from NEWUOA because CALFUN has been', ' ca&
-     &lled MAXFUN times.')
+320   Format (/ 4 x, 'Return from NEWUOA because CALFUN has been',&
+      ' called MAXFUN times.')
       Go To 530
    End If
    Call calfun (n, x, f)
    If (iprint == 3) Then
       Print 330, nf, f, (x(i), i=1, n)
-330   Format (/ 4 x, 'Function number', i6, '    F =', 1 pd18.10, '    &
-     &The corresponding X is:' / (2 x, 5d15.6))
+330   Format (/ 4 x, 'Function number', i6, '    F =', 1 pd18.10,&
+      '    The corresponding X is:' / (2 x, 5d15.6))
    End If
    If (nf <= npt) Go To 70
    If (knew ==-1) Go To 530
@@ -972,8 +953,8 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
 !
    If (vquad >= zero) Then
       If (iprint > 0) Print 370
-370   Format (/ 4 x, 'Return from NEWUOA because a trust', ' region ste&
-     &p has failed to reduce Q.')
+370   Format (/ 4 x, 'Return from NEWUOA because a trust',&
+      ' region step has failed to reduce Q.')
       Go To 530
    End If
    ratio = (f-fsave) / vquad
@@ -1135,11 +1116,11 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
          If (iprint >= 3) Print 500
 500      Format (5 x)
          Print 510, rho, nf
-510      Format (/ 4 x, 'New RHO =', 1 pd11.4, 5 x, 'Number of', ' func&
-        &tion values =', i6)
+510      Format (/ 4 x, 'New RHO =', 1 pd11.4, 5 x, 'Number of',&
+         ' function values =', i6)
          Print 520, fopt, (xbase(i)+xopt(i), i=1, n)
-520      Format (4 x, 'Least value of F =', 1 pd23.15, 9 x, 'The corres&
-        &ponding X is:'/(2 x, 5d15.6))
+520      Format (4 x, 'Least value of F =', 1 pd23.15, 9 x,&
+         'The corresponding X is:'/(2 x, 5d15.6))
       End If
       Go To 90
    End If
@@ -1155,17 +1136,18 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
    End If
    If (iprint >= 1) Then
       Print 550, nf
-550   Format (/ 4 x, 'At the return from NEWUOA', 5 x, 'Number of funct&
-     &ion values =', i6)
+550   Format (/ 4 x, 'At the return from NEWUOA', 5 x,&
+      'Number of function values =', i6)
       Print 520, f, (x(i), i=1, n)
    End If
    Return
-End
+End Subroutine newuob
+
 Subroutine trsapp (n, npt, xopt, xpt, gq, hq, pq, delta, step, d, g, &
-& hd, hs, crvmin)
+  hd, hs, crvmin)
    Implicit real * 8 (a-h, o-z)
    Dimension xopt (*), xpt (npt,*), gq (*), hq (*), pq (*), step (*), d &
-  & (*), g (*), hd (*), hs (*)
+    (*), g (*), hd (*), hs (*)
 !
 !     N is the number of variables of a quadratic objective function, Q say.
 !     The arguments NPT, XOPT, XPT, GQ, HQ and PQ have their usual meanings,
@@ -1365,7 +1347,8 @@ Subroutine trsapp (n, npt, xopt, xpt, gq, hq, pq, delta, step, d, g, &
    If (iterc == 0) Go To 20
    If (iterc <= itersw) Go To 50
    Go To 120
-End
+End Subroutine trsapp
+
 Subroutine update (n, npt, bmat, zmat, idz, ndim, vlag, beta, knew, w)
    Implicit real * 8 (a-h, o-z)
    Dimension bmat (ndim,*), zmat (npt,*), vlag (*), w (*)
@@ -1474,4 +1457,52 @@ Subroutine update (n, npt, bmat, zmat, idz, ndim, vlag, beta, knew, w)
          If (i > npt) bmat (jp, i-npt) = bmat (i, j)
 70 Continue
    Return
-End
+End Subroutine update
+
+subroutine newuoa_test()
+!
+!     The Chebyquad test problem (Fletcher, 1965) for N = 2,4,6 and 8,
+!     with NPT = 2N+1.
+!
+    Implicit real * 8 (a-h, o-z)
+    Dimension x (10), w (10000)
+    iprint = 2
+    maxfun = 5000
+    rhoend = 1.0d-6
+    Do 30 n = 2, 8, 2
+       npt = 2 * n + 1
+       Do 10 i = 1, n
+    10 x (i) = dfloat (i) / dfloat (n+1)
+       rhobeg = 0.2d0 * x (1)
+       Print 20, n, npt
+    20 Format (/ / 4 x, 'Results with N =', i2, ' and NPT =', i3)
+       Call newuoa (n, npt, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
+    30 Continue
+
+contains
+
+    Subroutine calfun (n, x, f)
+          Implicit real * 8 (a-h, o-z)
+          Dimension x (*), y (10, 10)
+          Do 10 j = 1, n
+             y (1, j) = 1.0d0
+    10    y (2, j) = 2.0d0 * x (j) - 1.0d0
+          Do 20 i = 2, n
+             Do 20 j = 1, n
+    20    y (i+1, j) = 2.0d0 * y (2, j) * y (i, j) - y (i-1, j)
+          f = 0.0d0
+          np = n + 1
+          iw = 1
+          Do 40 i = 1, np
+             sum = 0.0d0
+             Do 30 j = 1, n
+    30       sum = sum + y (i, j)
+             sum = sum / dfloat (n)
+             If (iw > 0) sum = sum + 1.0d0 / dfloat (i*i-2*i)
+             iw = - iw
+    40    f = f + sum * sum
+    End Subroutine calfun
+
+end subroutine newuoa_test
+
+end module newuoa_module

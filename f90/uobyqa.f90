@@ -1,25 +1,528 @@
-Subroutine calfun (n, x, f)
-      Implicit real * 8 (a-h, o-z)
-      Dimension x (*), y (10, 10)
-      Do 10 j = 1, n
-         y (1, j) = 1.0d0
-10    y (2, j) = 2.0d0 * x (j) - 1.0d0
-      Do 20 i = 2, n
-         Do 20 j = 1, n
-20    y (i+1, j) = 2.0d0 * y (2, j) * y (i, j) - y (i-1, j)
-      f = 0.0d0
-      np = n + 1
-      iw = 1
-      Do 40 i = 1, np
-         sum = 0.0d0
-         Do 30 j = 1, n
-30       sum = sum + y (i, j)
-         sum = sum / dfloat (n)
-         If (iw > 0) sum = sum + 1.0 / dfloat (i*i-2*i)
-         iw = - iw
-40    f = f + sum * sum
-      Return
-End
+    module uobyqa_module
+    
+    private
+    
+    abstract interface
+        subroutine func(n,x,f)  !! CALFUN interface
+        implicit none
+        integer :: n
+        real * 8 :: x(*)
+        real * 8 :: f
+        end subroutine func
+    end interface
+
+    public :: uobyqa
+    public :: uobyqa_test
+    
+    contains
+
+Subroutine uobyqa (n, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
+   Implicit real * 8 (a-h, o-z)
+   Dimension x (*), w (*)
+   procedure(func) :: calfun
+!
+!     This subroutine seeks the least value of a function of many variables,
+!     by a trust region method that forms quadratic models by interpolation.
+!     The algorithm is described in "UOBYQA: unconstrained optimization by
+!     quadratic approximation" by M.J.D. Powell, Report DAMTP 2000/NA14,
+!     University of Cambridge. The arguments of the subroutine are as follows.
+!
+!     N must be set to the number of variables and must be at least two.
+!     Initial values of the variables must be set in X(1),X(2),...,X(N). They
+!       will be changed to the values that give the least calculated F.
+!     RHOBEG and RHOEND must be set to the initial and final values of a trust
+!       region radius, so both must be positive with RHOEND<=RHOBEG. Typically
+!       RHOBEG should be about one tenth of the greatest expected change to a
+!       variable, and RHOEND should indicate the accuracy that is required in
+!       the final values of the variables.
+!     The value of IPRINT should be set to 0, 1, 2 or 3, which controls the
+!       amount of printing. Specifically, there is no output if IPRINT=0 and
+!       there is output only at the return if IPRINT=1. Otherwise, each new
+!       value of RHO is printed, with the best vector of variables so far and
+!       the corresponding value of the objective function. Further, each new
+!       value of F with its variables are output if IPRINT=3.
+!     MAXFUN must be set to an upper bound on the number of calls of CALFUN.
+!     The array W will be used for working space. Its length must be at least
+!       ( N**4 + 8*N**3 + 23*N**2 + 42*N + max [ 2*N**2 + 4, 18*N ] ) / 4.
+!
+!     SUBROUTINE CALFUN (N,X,F) must be provided by the user. It must set F to
+!     the value of the objective function for the variables X(1),X(2),...,X(N).
+!
+!     Partition the working space array, so that different parts of it can be
+!     treated separately by the subroutine that performs the main calculation.
+!
+   npt = (n*n+3*n+2) / 2
+   ixb = 1
+   ixo = ixb + n
+   ixn = ixo + n
+   ixp = ixn + n
+   ipq = ixp + n * npt
+   ipl = ipq + npt - 1
+   ih = ipl + (npt-1) * npt
+   ig = ih + n * n
+   id = ig + n
+   ivl = ih
+   iw = id + n
+   Call uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, w(ixb), &
+    w(ixo), w(ixn), w(ixp), w(ipq), w(ipl), w(ih), w(ig), w(id), &
+    w(ivl), w(iw), calfun)
+
+End Subroutine uobyqa
+
+Subroutine uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, xbase, &
+  xopt, xnew, xpt, pq, pl, h, g, d, vlag, w, calfun)
+   Implicit real * 8 (a-h, o-z)
+   Dimension x (*), xbase (*), xopt (*), xnew (*), xpt (npt,*), pq (*), &
+    pl (npt,*), h (n,*), g (*), d (*), vlag (*), w (*)
+   procedure(func) :: calfun
+!
+!     The arguments N, X, RHOBEG, RHOEND, IPRINT and MAXFUN are identical to
+!       the corresponding arguments in SUBROUTINE UOBYQA.
+!     NPT is set by UOBYQA to (N*N+3*N+2)/2 for the above dimension statement.
+!     XBASE will contain a shift of origin that reduces the contributions from
+!       rounding errors to values of the model and Lagrange functions.
+!     XOPT will be set to the displacement from XBASE of the vector of
+!       variables that provides the least calculated F so far.
+!     XNEW will be set to the displacement from XBASE of the vector of
+!       variables for the current calculation of F.
+!     XPT will contain the interpolation point coordinates relative to XBASE.
+!     PQ will contain the parameters of the quadratic model.
+!     PL will contain the parameters of the Lagrange functions.
+!     H will provide the second derivatives that TRSTEP and LAGMAX require.
+!     G will provide the first derivatives that TRSTEP and LAGMAX require.
+!     D is reserved for trial steps from XOPT, except that it will contain
+!       diagonal second derivatives during the initialization procedure.
+!     VLAG will contain the values of the Lagrange functions at a new point X.
+!     The array W will be used for working space. Its length must be at least
+!     max [ 6*N, ( N**2 + 3*N + 2 ) / 2 ].
+!
+!     Set some constants.
+!
+   one = 1.0d0
+   two = 2.0d0
+   zero = 0.0d0
+   half = 0.5d0
+   tol = 0.01d0
+   nnp = n + n + 1
+   nptm = npt - 1
+   nftest = max0 (maxfun, 1)
+!
+!     Initialization. NF is the number of function calculations so far.
+!
+   rho = rhobeg
+   rhosq = rho * rho
+   nf = 0
+   Do 10 i = 1, n
+      xbase (i) = x (i)
+      Do 10 k = 1, npt
+10 xpt (k, i) = zero
+   Do 20 k = 1, npt
+      Do 20 j = 1, nptm
+20 pl (k, j) = zero
+!
+!     The branch to label 120 obtains a new value of the objective function
+!     and then there is a branch back to label 50, because the new function
+!     value is needed to form the initial quadratic model. The least function
+!     value so far and its index are noted below.
+!
+30 Do 40 i = 1, n
+40 x (i) = xbase (i) + xpt (nf+1, i)
+   Go To 120
+50 If (nf == 1) Then
+      fopt = f
+      kopt = nf
+      fbase = f
+      j = 0
+      jswitch = - 1
+      ih = n
+   Else
+      If (f < fopt) Then
+         fopt = f
+         kopt = nf
+      End If
+   End If
+!
+!     Form the gradient and diagonal second derivatives of the initial
+!     quadratic model and Lagrange functions.
+!
+   If (nf <= nnp) Then
+      jswitch = - jswitch
+      If (jswitch > 0) Then
+         If (j >= 1) Then
+            ih = ih + j
+            If (w(j) < zero) Then
+               d (j) = (fsave+f-two*fbase) / rhosq
+               pq (j) = (fsave-f) / (two*rho)
+               pl (1, ih) = - two / rhosq
+               pl (nf-1, j) = half / rho
+               pl (nf-1, ih) = one / rhosq
+            Else
+               pq (j) = (4.0d0*fsave-3.0d0*fbase-f) / (two*rho)
+               d (j) = (fbase+f-two*fsave) / rhosq
+               pl (1, j) = - 1.5d0 / rho
+               pl (1, ih) = one / rhosq
+               pl (nf-1, j) = two / rho
+               pl (nf-1, ih) = - two / rhosq
+            End If
+            pq (ih) = d (j)
+            pl (nf, j) = - half / rho
+            pl (nf, ih) = one / rhosq
+         End If
+!
+!     Pick the shift from XBASE to the next initial interpolation point
+!     that provides diagonal second derivatives.
+!
+         If (j < n) Then
+            j = j + 1
+            xpt (nf+1, j) = rho
+         End If
+      Else
+         fsave = f
+         If (f < fbase) Then
+            w (j) = rho
+            xpt (nf+1, j) = two * rho
+         Else
+            w (j) = - rho
+            xpt (nf+1, j) = - rho
+         End If
+      End If
+      If (nf < nnp) Go To 30
+!
+!     Form the off-diagonal second derivatives of the initial quadratic model.
+!
+      ih = n
+      ip = 1
+      iq = 2
+   End If
+   ih = ih + 1
+   If (nf > nnp) Then
+      temp = one / (w(ip)*w(iq))
+      tempa = f - fbase - w (ip) * pq (ip) - w (iq) * pq (iq)
+      pq (ih) = (tempa-half*rhosq*(d(ip)+d(iq))) * temp
+      pl (1, ih) = temp
+      iw = ip + ip
+      If (w(ip) < zero) iw = iw + 1
+      pl (iw, ih) = - temp
+      iw = iq + iq
+      If (w(iq) < zero) iw = iw + 1
+      pl (iw, ih) = - temp
+      pl (nf, ih) = temp
+!
+!     Pick the shift from XBASE to the next initial interpolation point
+!     that provides off-diagonal second derivatives.
+!
+      ip = ip + 1
+   End If
+   If (ip == iq) Then
+      ih = ih + 1
+      ip = 1
+      iq = iq + 1
+   End If
+   If (nf < npt) Then
+      xpt (nf+1, ip) = w (ip)
+      xpt (nf+1, iq) = w (iq)
+      Go To 30
+   End If
+!
+!     Set parameters to begin the iterations for the current RHO.
+!
+   sixthm = zero
+   delta = rho
+60 tworsq = (two*rho) ** 2
+   rhosq = rho * rho
+!
+!     Form the gradient of the quadratic model at the trust region centre.
+!
+70 knew = 0
+   ih = n
+   Do 80 j = 1, n
+      xopt (j) = xpt (kopt, j)
+      g (j) = pq (j)
+      Do 80 i = 1, j
+         ih = ih + 1
+         g (i) = g (i) + pq (ih) * xopt (j)
+         If (i < j) g (j) = g (j) + pq (ih) * xopt (i)
+80 h (i, j) = pq (ih)
+!
+!     Generate the next trust region step and test its length. Set KNEW
+!     to -1 if the purpose of the next F will be to improve conditioning,
+!     and also calculate a lower bound on the Hessian term of the model Q.
+!
+   Call trstep (n, g, h, delta, tol, d, w(1), w(n+1), w(2*n+1), &
+    w(3*n+1), w(4*n+1), w(5*n+1), evalue)
+   temp = zero
+   Do 90 i = 1, n
+90 temp = temp + d (i) ** 2
+   dnorm = dmin1 (delta, dsqrt(temp))
+   errtol = - one
+   If (dnorm < half*rho) Then
+      knew = - 1
+      errtol = half * evalue * rho * rho
+      If (nf <= npt+9) errtol = zero
+      Go To 290
+   End If
+!
+!     Calculate the next value of the objective function.
+!
+100 Do 110 i = 1, n
+      xnew (i) = xopt (i) + d (i)
+110 x (i) = xbase (i) + xnew (i)
+120 If (nf >= nftest) Then
+      If (iprint > 0) Print 130
+130   Format (/ 4 x, 'Return from UOBYQA because CALFUN has been',&
+      ' called MAXFUN times')
+      Go To 420
+   End If
+   nf = nf + 1
+   Call calfun (n, x, f)
+   If (iprint == 3) Then
+      Print 140, nf, f, (x(i), i=1, n)
+140   Format (/ 4 x, 'Function number', i6, '    F =', 1 pd18.10,&
+      '    The corresponding X is:' / (2 x, 5d15.6))
+   End If
+   If (nf <= npt) Go To 50
+   If (knew ==-1) Go To 420
+!
+!     Use the quadratic model to predict the change in F due to the step D,
+!     and find the values of the Lagrange functions at the new point.
+!
+   vquad = zero
+   ih = n
+   Do 150 j = 1, n
+      w (j) = d (j)
+      vquad = vquad + w (j) * pq (j)
+      Do 150 i = 1, j
+         ih = ih + 1
+         w (ih) = d (i) * xnew (j) + d (j) * xopt (i)
+         If (i == j) w (ih) = half * w (ih)
+150 vquad = vquad + w (ih) * pq (ih)
+   Do 170 k = 1, npt
+      temp = zero
+      Do 160 j = 1, nptm
+160   temp = temp + w (j) * pl (k, j)
+170 vlag (k) = temp
+   vlag (kopt) = vlag (kopt) + one
+!
+!     Update SIXTHM, which is a lower bound on one sixth of the greatest
+!     third derivative of F.
+!
+   diff = f - fopt - vquad
+   sum = zero
+   Do 190 k = 1, npt
+      temp = zero
+      Do 180 i = 1, n
+180   temp = temp + (xpt(k, i)-xnew(i)) ** 2
+      temp = dsqrt (temp)
+190 sum = sum + dabs (temp*temp*temp*vlag(k))
+   sixthm = dmax1 (sixthm, dabs(diff)/sum)
+!
+!     Update FOPT and XOPT if the new F is the least value of the objective
+!     function so far. Then branch if D is not a trust region step.
+!
+   fsave = fopt
+   If (f < fopt) Then
+      fopt = f
+      Do 200 i = 1, n
+200   xopt (i) = xnew (i)
+   End If
+   ksave = knew
+   If (knew > 0) Go To 240
+!
+!     Pick the next value of DELTA after a trust region step.
+!
+   If (vquad >= zero) Then
+      If (iprint > 0) Print 210
+210   Format (/ 4 x, 'Return from UOBYQA because a trust',&
+      ' region step has failed to reduce Q')
+      Go To 420
+   End If
+   ratio = (f-fsave) / vquad
+   If (ratio <= 0.1d0) Then
+      delta = half * dnorm
+   Else If (ratio <= 0.7d0) Then
+      delta = dmax1 (half*delta, dnorm)
+   Else
+      delta = dmax1 (delta, 1.25d0*dnorm, dnorm+rho)
+   End If
+   If (delta <= 1.5d0*rho) delta = rho
+!
+!     Set KNEW to the index of the next interpolation point to be deleted.
+!
+   ktemp = 0
+   detrat = zero
+   If (f >= fsave) Then
+      ktemp = kopt
+      detrat = one
+   End If
+   Do 230 k = 1, npt
+      sum = zero
+      Do 220 i = 1, n
+220   sum = sum + (xpt(k, i)-xopt(i)) ** 2
+      temp = dabs (vlag(k))
+      If (sum > rhosq) temp = temp * (sum/rhosq) ** 1.5d0
+      If (temp > detrat .And. k /= ktemp) Then
+         detrat = temp
+         ddknew = sum
+         knew = k
+      End If
+230 Continue
+   If (knew == 0) Go To 290
+!
+!     Replace the interpolation point that has index KNEW by the point XNEW,
+!     and also update the Lagrange functions and the quadratic model.
+!
+240 Do 250 i = 1, n
+250 xpt (knew, i) = xnew (i)
+   temp = one / vlag (knew)
+   Do 260 j = 1, nptm
+      pl (knew, j) = temp * pl (knew, j)
+260 pq (j) = pq (j) + diff * pl (knew, j)
+   Do 280 k = 1, npt
+      If (k /= knew) Then
+         temp = vlag (k)
+         Do 270 j = 1, nptm
+270      pl (k, j) = pl (k, j) - temp * pl (knew, j)
+      End If
+280 Continue
+!
+!     Update KOPT if F is the least calculated value of the objective
+!     function. Then branch for another trust region calculation. The
+!     case KSAVE>0 indicates that a model step has just been taken.
+!
+   If (f < fsave) Then
+      kopt = knew
+      Go To 70
+   End If
+   If (ksave > 0) Go To 70
+   If (dnorm > two*rho) Go To 70
+   If (ddknew > tworsq) Go To 70
+!
+!     Alternatively, find out if the interpolation points are close
+!     enough to the best point so far.
+!
+290 Do 300 k = 1, npt
+      w (k) = zero
+      Do 300 i = 1, n
+300 w (k) = w (k) + (xpt(k, i)-xopt(i)) ** 2
+310 knew = - 1
+   distest = tworsq
+   Do 320 k = 1, npt
+      If (w(k) > distest) Then
+         knew = k
+         distest = w (k)
+      End If
+320 Continue
+!
+!     If a point is sufficiently far away, then set the gradient and Hessian
+!     of its Lagrange function at the centre of the trust region, and find
+!     half the sum of squares of components of the Hessian.
+!
+   If (knew > 0) Then
+      ih = n
+      sumh = zero
+      Do 340 j = 1, n
+         g (j) = pl (knew, j)
+         Do 330 i = 1, j
+            ih = ih + 1
+            temp = pl (knew, ih)
+            g (j) = g (j) + temp * xopt (i)
+            If (i < j) Then
+               g (i) = g (i) + temp * xopt (j)
+               sumh = sumh + temp * temp
+            End If
+330      h (i, j) = temp
+340   sumh = sumh + half * temp * temp
+!
+!     If ERRTOL is positive, test whether to replace the interpolation point
+!     with index KNEW, using a bound on the maximum modulus of its Lagrange
+!     function in the trust region.
+!
+      If (errtol > zero) Then
+         w (knew) = zero
+         sumg = zero
+         Do 350 i = 1, n
+350      sumg = sumg + g (i) ** 2
+         estim = rho * (dsqrt(sumg)+rho*dsqrt(half*sumh))
+         wmult = sixthm * distest ** 1.5d0
+         If (wmult*estim <= errtol) Go To 310
+      End If
+!
+!     If the KNEW-th point may be replaced, then pick a D that gives a large
+!     value of the modulus of its Lagrange function within the trust region.
+!     Here the vector XNEW is used as temporary working space.
+!
+      Call lagmax (n, g, h, rho, d, xnew, vmax)
+      If (errtol > zero) Then
+         If (wmult*vmax <= errtol) Go To 310
+      End If
+      Go To 100
+   End If
+   If (dnorm > rho) Go To 70
+!
+!     Prepare to reduce RHO by shifting XBASE to the best point so far,
+!     and make the corresponding changes to the gradients of the Lagrange
+!     functions and the quadratic model.
+!
+   If (rho > rhoend) Then
+      ih = n
+      Do 380 j = 1, n
+         xbase (j) = xbase (j) + xopt (j)
+         Do 360 k = 1, npt
+360      xpt (k, j) = xpt (k, j) - xopt (j)
+         Do 380 i = 1, j
+            ih = ih + 1
+            pq (i) = pq (i) + pq (ih) * xopt (j)
+            If (i < j) Then
+               pq (j) = pq (j) + pq (ih) * xopt (i)
+               Do 370 k = 1, npt
+370            pl (k, j) = pl (k, j) + pl (k, ih) * xopt (i)
+            End If
+            Do 380 k = 1, npt
+380   pl (k, i) = pl (k, i) + pl (k, ih) * xopt (j)
+!
+!     Pick the next values of RHO and DELTA.
+!
+      delta = half * rho
+      ratio = rho / rhoend
+      If (ratio <= 16.0d0) Then
+         rho = rhoend
+      Else If (ratio <= 250.0d0) Then
+         rho = dsqrt (ratio) * rhoend
+      Else
+         rho = 0.1d0 * rho
+      End If
+      delta = dmax1 (delta, rho)
+      If (iprint >= 2) Then
+         If (iprint >= 3) Print 390
+390      Format (5 x)
+         Print 400, rho, nf
+400      Format (/ 4 x, 'New RHO =', 1 pd11.4, 5 x, 'Number of',&
+         ' function values =', i6)
+         Print 410, fopt, (xbase(i), i=1, n)
+410      Format (4 x, 'Least value of F =', 1 pd23.15, 9 x,&
+         'The corresponding X is:'/(2 x, 5d15.6))
+      End If
+      Go To 60
+   End If
+!
+!     Return from the calculation, after another Newton-Raphson step, if
+!     it is too short to have been tried before.
+!
+   If (errtol >= zero) Go To 100
+420 If (fopt <= f) Then
+      Do 430 i = 1, n
+430   x (i) = xbase (i) + xopt (i)
+      f = fopt
+   End If
+   If (iprint >= 1) Then
+      Print 440, nf
+440   Format (/ 4 x, 'At the return from UOBYQA', 5 x,&
+      'Number of function values =', i6)
+      Print 410, f, (x(i), i=1, n)
+   End If
+   Return
+End Subroutine uobyqb
+
 Subroutine lagmax (n, g, h, rho, d, v, vmax)
       Implicit real * 8 (a-h, o-z)
       Dimension g (*), h (n,*), d (*), v (*)
@@ -189,31 +692,13 @@ Subroutine lagmax (n, g, h, rho, d, v, vmax)
 160   d (i) = tempd * d (i) + tempv * v (i)
       vmax = rho * rho * dmax1 (tempa, tempb, tempc)
 170   Return
-End
-!
-!     The Chebyquad test problem (Fletcher, 1965) for N = 2,4,6,8.
-!
-Implicit real * 8 (a-h, o-z)
-Dimension x (10), w (10000)
-iprint = 2
-maxfun = 5000
-rhoend = 1.0d-8
-Do 30 n = 2, 8, 2
-   Do 10 i = 1, n
-10 x (i) = dfloat (i) / dfloat (n+1)
-   rhobeg = 0.2d0 * x (1)
-   Print 20, n
-20 Format (/ / 5 x, '******************' / 5 x, 'Results with N =', i2, &
-  & / 5 x, '******************')
-   Call uobyqa (n, x, rhobeg, rhoend, iprint, maxfun, w)
-30 Continue
-Stop
-End
+End Subroutine lagmax
+
 Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
-& evalue)
+  evalue)
    Implicit real * 8 (a-h, o-z)
    Dimension g (*), h (n,*), d (*), gg (*), td (*), tn (*), w (*), piv &
-  & (*), z (*)
+    (*), z (*)
 !
 !     N is the number of variables of a quadratic objective function, Q say.
 !     G is the gradient of Q at the origin.
@@ -587,507 +1072,52 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
 !     Return from the subroutine.
 !
 400 Return
-End
-Subroutine uobyqa (n, x, rhobeg, rhoend, iprint, maxfun, w)
-   Implicit real * 8 (a-h, o-z)
-   Dimension x (*), w (*)
+End Subroutine trstep
+
+subroutine uobyqa_test()
 !
-!     This subroutine seeks the least value of a function of many variables,
-!     by a trust region method that forms quadratic models by interpolation.
-!     The algorithm is described in "UOBYQA: unconstrained optimization by
-!     quadratic approximation" by M.J.D. Powell, Report DAMTP 2000/NA14,
-!     University of Cambridge. The arguments of the subroutine are as follows.
+!     The Chebyquad test problem (Fletcher, 1965) for N = 2,4,6,8.
 !
-!     N must be set to the number of variables and must be at least two.
-!     Initial values of the variables must be set in X(1),X(2),...,X(N). They
-!       will be changed to the values that give the least calculated F.
-!     RHOBEG and RHOEND must be set to the initial and final values of a trust
-!       region radius, so both must be positive with RHOEND<=RHOBEG. Typically
-!       RHOBEG should be about one tenth of the greatest expected change to a
-!       variable, and RHOEND should indicate the accuracy that is required in
-!       the final values of the variables.
-!     The value of IPRINT should be set to 0, 1, 2 or 3, which controls the
-!       amount of printing. Specifically, there is no output if IPRINT=0 and
-!       there is output only at the return if IPRINT=1. Otherwise, each new
-!       value of RHO is printed, with the best vector of variables so far and
-!       the corresponding value of the objective function. Further, each new
-!       value of F with its variables are output if IPRINT=3.
-!     MAXFUN must be set to an upper bound on the number of calls of CALFUN.
-!     The array W will be used for working space. Its length must be at least
-!       ( N**4 + 8*N**3 + 23*N**2 + 42*N + max [ 2*N**2 + 4, 18*N ] ) / 4.
-!
-!     SUBROUTINE CALFUN (N,X,F) must be provided by the user. It must set F to
-!     the value of the objective function for the variables X(1),X(2),...,X(N).
-!
-!     Partition the working space array, so that different parts of it can be
-!     treated separately by the subroutine that performs the main calculation.
-!
-   npt = (n*n+3*n+2) / 2
-   ixb = 1
-   ixo = ixb + n
-   ixn = ixo + n
-   ixp = ixn + n
-   ipq = ixp + n * npt
-   ipl = ipq + npt - 1
-   ih = ipl + (npt-1) * npt
-   ig = ih + n * n
-   id = ig + n
-   ivl = ih
-   iw = id + n
-   Call uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, w(ixb), &
-  & w(ixo), w(ixn), w(ixp), w(ipq), w(ipl), w(ih), w(ig), w(id), &
-  & w(ivl), w(iw))
-   Return
-End
-Subroutine uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, xbase, &
-& xopt, xnew, xpt, pq, pl, h, g, d, vlag, w)
-   Implicit real * 8 (a-h, o-z)
-   Dimension x (*), xbase (*), xopt (*), xnew (*), xpt (npt,*), pq (*), &
-  & pl (npt,*), h (n,*), g (*), d (*), vlag (*), w (*)
-!
-!     The arguments N, X, RHOBEG, RHOEND, IPRINT and MAXFUN are identical to
-!       the corresponding arguments in SUBROUTINE UOBYQA.
-!     NPT is set by UOBYQA to (N*N+3*N+2)/2 for the above dimension statement.
-!     XBASE will contain a shift of origin that reduces the contributions from
-!       rounding errors to values of the model and Lagrange functions.
-!     XOPT will be set to the displacement from XBASE of the vector of
-!       variables that provides the least calculated F so far.
-!     XNEW will be set to the displacement from XBASE of the vector of
-!       variables for the current calculation of F.
-!     XPT will contain the interpolation point coordinates relative to XBASE.
-!     PQ will contain the parameters of the quadratic model.
-!     PL will contain the parameters of the Lagrange functions.
-!     H will provide the second derivatives that TRSTEP and LAGMAX require.
-!     G will provide the first derivatives that TRSTEP and LAGMAX require.
-!     D is reserved for trial steps from XOPT, except that it will contain
-!       diagonal second derivatives during the initialization procedure.
-!     VLAG will contain the values of the Lagrange functions at a new point X.
-!     The array W will be used for working space. Its length must be at least
-!     max [ 6*N, ( N**2 + 3*N + 2 ) / 2 ].
-!
-!     Set some constants.
-!
-   one = 1.0d0
-   two = 2.0d0
-   zero = 0.0d0
-   half = 0.5d0
-   tol = 0.01d0
-   nnp = n + n + 1
-   nptm = npt - 1
-   nftest = max0 (maxfun, 1)
-!
-!     Initialization. NF is the number of function calculations so far.
-!
-   rho = rhobeg
-   rhosq = rho * rho
-   nf = 0
-   Do 10 i = 1, n
-      xbase (i) = x (i)
-      Do 10 k = 1, npt
-10 xpt (k, i) = zero
-   Do 20 k = 1, npt
-      Do 20 j = 1, nptm
-20 pl (k, j) = zero
-!
-!     The branch to label 120 obtains a new value of the objective function
-!     and then there is a branch back to label 50, because the new function
-!     value is needed to form the initial quadratic model. The least function
-!     value so far and its index are noted below.
-!
-30 Do 40 i = 1, n
-40 x (i) = xbase (i) + xpt (nf+1, i)
-   Go To 120
-50 If (nf == 1) Then
-      fopt = f
-      kopt = nf
-      fbase = f
-      j = 0
-      jswitch = - 1
-      ih = n
-   Else
-      If (f < fopt) Then
-         fopt = f
-         kopt = nf
-      End If
-   End If
-!
-!     Form the gradient and diagonal second derivatives of the initial
-!     quadratic model and Lagrange functions.
-!
-   If (nf <= nnp) Then
-      jswitch = - jswitch
-      If (jswitch > 0) Then
-         If (j >= 1) Then
-            ih = ih + j
-            If (w(j) < zero) Then
-               d (j) = (fsave+f-two*fbase) / rhosq
-               pq (j) = (fsave-f) / (two*rho)
-               pl (1, ih) = - two / rhosq
-               pl (nf-1, j) = half / rho
-               pl (nf-1, ih) = one / rhosq
-            Else
-               pq (j) = (4.0d0*fsave-3.0d0*fbase-f) / (two*rho)
-               d (j) = (fbase+f-two*fsave) / rhosq
-               pl (1, j) = - 1.5d0 / rho
-               pl (1, ih) = one / rhosq
-               pl (nf-1, j) = two / rho
-               pl (nf-1, ih) = - two / rhosq
-            End If
-            pq (ih) = d (j)
-            pl (nf, j) = - half / rho
-            pl (nf, ih) = one / rhosq
-         End If
-!
-!     Pick the shift from XBASE to the next initial interpolation point
-!     that provides diagonal second derivatives.
-!
-         If (j < n) Then
-            j = j + 1
-            xpt (nf+1, j) = rho
-         End If
-      Else
-         fsave = f
-         If (f < fbase) Then
-            w (j) = rho
-            xpt (nf+1, j) = two * rho
-         Else
-            w (j) = - rho
-            xpt (nf+1, j) = - rho
-         End If
-      End If
-      If (nf < nnp) Go To 30
-!
-!     Form the off-diagonal second derivatives of the initial quadratic model.
-!
-      ih = n
-      ip = 1
-      iq = 2
-   End If
-   ih = ih + 1
-   If (nf > nnp) Then
-      temp = one / (w(ip)*w(iq))
-      tempa = f - fbase - w (ip) * pq (ip) - w (iq) * pq (iq)
-      pq (ih) = (tempa-half*rhosq*(d(ip)+d(iq))) * temp
-      pl (1, ih) = temp
-      iw = ip + ip
-      If (w(ip) < zero) iw = iw + 1
-      pl (iw, ih) = - temp
-      iw = iq + iq
-      If (w(iq) < zero) iw = iw + 1
-      pl (iw, ih) = - temp
-      pl (nf, ih) = temp
-!
-!     Pick the shift from XBASE to the next initial interpolation point
-!     that provides off-diagonal second derivatives.
-!
-      ip = ip + 1
-   End If
-   If (ip == iq) Then
-      ih = ih + 1
-      ip = 1
-      iq = iq + 1
-   End If
-   If (nf < npt) Then
-      xpt (nf+1, ip) = w (ip)
-      xpt (nf+1, iq) = w (iq)
-      Go To 30
-   End If
-!
-!     Set parameters to begin the iterations for the current RHO.
-!
-   sixthm = zero
-   delta = rho
-60 tworsq = (two*rho) ** 2
-   rhosq = rho * rho
-!
-!     Form the gradient of the quadratic model at the trust region centre.
-!
-70 knew = 0
-   ih = n
-   Do 80 j = 1, n
-      xopt (j) = xpt (kopt, j)
-      g (j) = pq (j)
-      Do 80 i = 1, j
-         ih = ih + 1
-         g (i) = g (i) + pq (ih) * xopt (j)
-         If (i < j) g (j) = g (j) + pq (ih) * xopt (i)
-80 h (i, j) = pq (ih)
-!
-!     Generate the next trust region step and test its length. Set KNEW
-!     to -1 if the purpose of the next F will be to improve conditioning,
-!     and also calculate a lower bound on the Hessian term of the model Q.
-!
-   Call trstep (n, g, h, delta, tol, d, w(1), w(n+1), w(2*n+1), &
-  & w(3*n+1), w(4*n+1), w(5*n+1), evalue)
-   temp = zero
-   Do 90 i = 1, n
-90 temp = temp + d (i) ** 2
-   dnorm = dmin1 (delta, dsqrt(temp))
-   errtol = - one
-   If (dnorm < half*rho) Then
-      knew = - 1
-      errtol = half * evalue * rho * rho
-      If (nf <= npt+9) errtol = zero
-      Go To 290
-   End If
-!
-!     Calculate the next value of the objective function.
-!
-100 Do 110 i = 1, n
-      xnew (i) = xopt (i) + d (i)
-110 x (i) = xbase (i) + xnew (i)
-120 If (nf >= nftest) Then
-      If (iprint > 0) Print 130
-130   Format (/ 4 x, 'Return from UOBYQA because CALFUN has been', ' ca&
-     &lled MAXFUN times')
-      Go To 420
-   End If
-   nf = nf + 1
-   Call calfun (n, x, f)
-   If (iprint == 3) Then
-      Print 140, nf, f, (x(i), i=1, n)
-140   Format (/ 4 x, 'Function number', i6, '    F =', 1 pd18.10, '    &
-     &The corresponding X is:' / (2 x, 5d15.6))
-   End If
-   If (nf <= npt) Go To 50
-   If (knew ==-1) Go To 420
-!
-!     Use the quadratic model to predict the change in F due to the step D,
-!     and find the values of the Lagrange functions at the new point.
-!
-   vquad = zero
-   ih = n
-   Do 150 j = 1, n
-      w (j) = d (j)
-      vquad = vquad + w (j) * pq (j)
-      Do 150 i = 1, j
-         ih = ih + 1
-         w (ih) = d (i) * xnew (j) + d (j) * xopt (i)
-         If (i == j) w (ih) = half * w (ih)
-150 vquad = vquad + w (ih) * pq (ih)
-   Do 170 k = 1, npt
-      temp = zero
-      Do 160 j = 1, nptm
-160   temp = temp + w (j) * pl (k, j)
-170 vlag (k) = temp
-   vlag (kopt) = vlag (kopt) + one
-!
-!     Update SIXTHM, which is a lower bound on one sixth of the greatest
-!     third derivative of F.
-!
-   diff = f - fopt - vquad
-   sum = zero
-   Do 190 k = 1, npt
-      temp = zero
-      Do 180 i = 1, n
-180   temp = temp + (xpt(k, i)-xnew(i)) ** 2
-      temp = dsqrt (temp)
-190 sum = sum + dabs (temp*temp*temp*vlag(k))
-   sixthm = dmax1 (sixthm, dabs(diff)/sum)
-!
-!     Update FOPT and XOPT if the new F is the least value of the objective
-!     function so far. Then branch if D is not a trust region step.
-!
-   fsave = fopt
-   If (f < fopt) Then
-      fopt = f
-      Do 200 i = 1, n
-200   xopt (i) = xnew (i)
-   End If
-   ksave = knew
-   If (knew > 0) Go To 240
-!
-!     Pick the next value of DELTA after a trust region step.
-!
-   If (vquad >= zero) Then
-      If (iprint > 0) Print 210
-210   Format (/ 4 x, 'Return from UOBYQA because a trust', ' region ste&
-     &p has failed to reduce Q')
-      Go To 420
-   End If
-   ratio = (f-fsave) / vquad
-   If (ratio <= 0.1d0) Then
-      delta = half * dnorm
-   Else If (ratio <= 0.7d0) Then
-      delta = dmax1 (half*delta, dnorm)
-   Else
-      delta = dmax1 (delta, 1.25d0*dnorm, dnorm+rho)
-   End If
-   If (delta <= 1.5d0*rho) delta = rho
-!
-!     Set KNEW to the index of the next interpolation point to be deleted.
-!
-   ktemp = 0
-   detrat = zero
-   If (f >= fsave) Then
-      ktemp = kopt
-      detrat = one
-   End If
-   Do 230 k = 1, npt
-      sum = zero
-      Do 220 i = 1, n
-220   sum = sum + (xpt(k, i)-xopt(i)) ** 2
-      temp = dabs (vlag(k))
-      If (sum > rhosq) temp = temp * (sum/rhosq) ** 1.5d0
-      If (temp > detrat .And. k /= ktemp) Then
-         detrat = temp
-         ddknew = sum
-         knew = k
-      End If
-230 Continue
-   If (knew == 0) Go To 290
-!
-!     Replace the interpolation point that has index KNEW by the point XNEW,
-!     and also update the Lagrange functions and the quadratic model.
-!
-240 Do 250 i = 1, n
-250 xpt (knew, i) = xnew (i)
-   temp = one / vlag (knew)
-   Do 260 j = 1, nptm
-      pl (knew, j) = temp * pl (knew, j)
-260 pq (j) = pq (j) + diff * pl (knew, j)
-   Do 280 k = 1, npt
-      If (k /= knew) Then
-         temp = vlag (k)
-         Do 270 j = 1, nptm
-270      pl (k, j) = pl (k, j) - temp * pl (knew, j)
-      End If
-280 Continue
-!
-!     Update KOPT if F is the least calculated value of the objective
-!     function. Then branch for another trust region calculation. The
-!     case KSAVE>0 indicates that a model step has just been taken.
-!
-   If (f < fsave) Then
-      kopt = knew
-      Go To 70
-   End If
-   If (ksave > 0) Go To 70
-   If (dnorm > two*rho) Go To 70
-   If (ddknew > tworsq) Go To 70
-!
-!     Alternatively, find out if the interpolation points are close
-!     enough to the best point so far.
-!
-290 Do 300 k = 1, npt
-      w (k) = zero
-      Do 300 i = 1, n
-300 w (k) = w (k) + (xpt(k, i)-xopt(i)) ** 2
-310 knew = - 1
-   distest = tworsq
-   Do 320 k = 1, npt
-      If (w(k) > distest) Then
-         knew = k
-         distest = w (k)
-      End If
-320 Continue
-!
-!     If a point is sufficiently far away, then set the gradient and Hessian
-!     of its Lagrange function at the centre of the trust region, and find
-!     half the sum of squares of components of the Hessian.
-!
-   If (knew > 0) Then
-      ih = n
-      sumh = zero
-      Do 340 j = 1, n
-         g (j) = pl (knew, j)
-         Do 330 i = 1, j
-            ih = ih + 1
-            temp = pl (knew, ih)
-            g (j) = g (j) + temp * xopt (i)
-            If (i < j) Then
-               g (i) = g (i) + temp * xopt (j)
-               sumh = sumh + temp * temp
-            End If
-330      h (i, j) = temp
-340   sumh = sumh + half * temp * temp
-!
-!     If ERRTOL is positive, test whether to replace the interpolation point
-!     with index KNEW, using a bound on the maximum modulus of its Lagrange
-!     function in the trust region.
-!
-      If (errtol > zero) Then
-         w (knew) = zero
-         sumg = zero
-         Do 350 i = 1, n
-350      sumg = sumg + g (i) ** 2
-         estim = rho * (dsqrt(sumg)+rho*dsqrt(half*sumh))
-         wmult = sixthm * distest ** 1.5d0
-         If (wmult*estim <= errtol) Go To 310
-      End If
-!
-!     If the KNEW-th point may be replaced, then pick a D that gives a large
-!     value of the modulus of its Lagrange function within the trust region.
-!     Here the vector XNEW is used as temporary working space.
-!
-      Call lagmax (n, g, h, rho, d, xnew, vmax)
-      If (errtol > zero) Then
-         If (wmult*vmax <= errtol) Go To 310
-      End If
-      Go To 100
-   End If
-   If (dnorm > rho) Go To 70
-!
-!     Prepare to reduce RHO by shifting XBASE to the best point so far,
-!     and make the corresponding changes to the gradients of the Lagrange
-!     functions and the quadratic model.
-!
-   If (rho > rhoend) Then
-      ih = n
-      Do 380 j = 1, n
-         xbase (j) = xbase (j) + xopt (j)
-         Do 360 k = 1, npt
-360      xpt (k, j) = xpt (k, j) - xopt (j)
-         Do 380 i = 1, j
-            ih = ih + 1
-            pq (i) = pq (i) + pq (ih) * xopt (j)
-            If (i < j) Then
-               pq (j) = pq (j) + pq (ih) * xopt (i)
-               Do 370 k = 1, npt
-370            pl (k, j) = pl (k, j) + pl (k, ih) * xopt (i)
-            End If
-            Do 380 k = 1, npt
-380   pl (k, i) = pl (k, i) + pl (k, ih) * xopt (j)
-!
-!     Pick the next values of RHO and DELTA.
-!
-      delta = half * rho
-      ratio = rho / rhoend
-      If (ratio <= 16.0d0) Then
-         rho = rhoend
-      Else If (ratio <= 250.0d0) Then
-         rho = dsqrt (ratio) * rhoend
-      Else
-         rho = 0.1d0 * rho
-      End If
-      delta = dmax1 (delta, rho)
-      If (iprint >= 2) Then
-         If (iprint >= 3) Print 390
-390      Format (5 x)
-         Print 400, rho, nf
-400      Format (/ 4 x, 'New RHO =', 1 pd11.4, 5 x, 'Number of', ' func&
-        &tion values =', i6)
-         Print 410, fopt, (xbase(i), i=1, n)
-410      Format (4 x, 'Least value of F =', 1 pd23.15, 9 x, 'The corres&
-        &ponding X is:'/(2 x, 5d15.6))
-      End If
-      Go To 60
-   End If
-!
-!     Return from the calculation, after another Newton-Raphson step, if
-!     it is too short to have been tried before.
-!
-   If (errtol >= zero) Go To 100
-420 If (fopt <= f) Then
-      Do 430 i = 1, n
-430   x (i) = xbase (i) + xopt (i)
-      f = fopt
-   End If
-   If (iprint >= 1) Then
-      Print 440, nf
-440   Format (/ 4 x, 'At the return from UOBYQA', 5 x, 'Number of funct&
-     &ion values =', i6)
-      Print 410, f, (x(i), i=1, n)
-   End If
-   Return
-End
+    Implicit real * 8 (a-h, o-z)
+    Dimension x (10), w (10000)
+    iprint = 2
+    maxfun = 5000
+    rhoend = 1.0d-8
+    Do 30 n = 2, 8, 2
+       Do 10 i = 1, n
+    10 x (i) = dfloat (i) / dfloat (n+1)
+       rhobeg = 0.2d0 * x (1)
+       Print 20, n
+    20 Format (/ / 5 x, '******************' / 5 x, 'Results with N =', i2, &
+        / 5 x, '******************')
+       Call uobyqa (n, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
+    30 Continue
+
+contains
+
+    Subroutine calfun (n, x, f)
+          Implicit real * 8 (a-h, o-z)
+          Dimension x (*), y (10, 10)
+          Do 10 j = 1, n
+             y (1, j) = 1.0d0
+    10    y (2, j) = 2.0d0 * x (j) - 1.0d0
+          Do 20 i = 2, n
+             Do 20 j = 1, n
+    20    y (i+1, j) = 2.0d0 * y (2, j) * y (i, j) - y (i-1, j)
+          f = 0.0d0
+          np = n + 1
+          iw = 1
+          Do 40 i = 1, np
+             sum = 0.0d0
+             Do 30 j = 1, n
+    30       sum = sum + y (i, j)
+             sum = sum / dfloat (n)
+             If (iw > 0) sum = sum + 1.0 / dfloat (i*i-2*i)
+             iw = - iw
+    40    f = f + sum * sum
+          Return
+    End Subroutine calfun
+
+end subroutine uobyqa_test
+
+end module uobyqa_module

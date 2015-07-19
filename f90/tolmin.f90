@@ -1,575 +1,27 @@
-Subroutine addcon (n, m, a, ia, iact, nact, z, u, relacc, indxbd, ztc, &
-& cgrad)
-      Implicit real * 8 (a-h, o-z)
-      Dimension a (ia,*), iact (*), z (*), u (*), ztc (*), cgrad (*)
-      np = nact + 1
-      icon = iact (indxbd)
-      iact (indxbd) = iact (np)
-      iact (np) = icon
-!
-!     Form ZTC when the new constraint is a bound.
-!
-      If (icon > m) Then
-         inewbd = icon - m
-         If (inewbd <= n) Then
-            temp = - 1.0
-         Else
-            inewbd = inewbd - n
-            temp = 1.0
-         End If
-         iznbd = inewbd * n - n
-         Do 10 j = 1, n
-10       ztc (j) = temp * z (iznbd+j)
-!
-!     Else form ZTC for an ordinary constraint.
-!
-      Else
-         Do 20 i = 1, n
-20       cgrad (i) = a (i, icon)
-         Do 30 j = 1, n
-            ztc (j) = 0.0
-            iz = j
-            Do 30 i = 1, n
-               ztc (j) = ztc (j) + z (iz) * cgrad (i)
-30       iz = iz + n
-      End If
-!
-!     Find any Givens rotations to apply to the last columns of Z.
-!
-      j = n
-40    jp = j
-      j = j - 1
-      If (j > nact) Then
-         If (ztc(jp) == 0.0) Go To 40
-         If (dabs(ztc(jp)) <= relacc*dabs(ztc(j))) Then
-            temp = dabs (ztc(j))
-         Else If (dabs(ztc(j)) <= relacc*dabs(ztc(jp))) Then
-            temp = dabs (ztc(jp))
-         Else
-            temp = dabs (ztc(jp)) * dsqrt (1.0+(ztc(j)/ztc(jp))**2)
-         End If
-         wcos = ztc (j) / temp
-         wsin = ztc (jp) / temp
-         ztc (j) = temp
-!
-!     Apply the rotation when the new constraint is a bound.
-!
-         iz = j
-         If (icon > m) Then
-            Do 50 i = 1, n
-               temp = wcos * z (iz+1) - wsin * z (iz)
-               z (iz) = wcos * z (iz) + wsin * z (iz+1)
-               z (iz+1) = temp
-50          iz = iz + n
-            z (iznbd+jp) = 0.0
-!
-!     Else apply the rotation for an ordinary constraint.
-!
-         Else
-            wpiv = 0.0
-            Do 60 i = 1, n
-               tempa = wcos * z (iz+1)
-               tempb = wsin * z (iz)
-               temp = dabs (cgrad(i)) * (dabs(tempa)+dabs(tempb))
-               If (temp > wpiv) Then
-                  wpiv = temp
-                  ipiv = i
-               End If
-               z (iz) = wcos * z (iz) + wsin * z (iz+1)
-               z (iz+1) = tempa - tempb
-60          iz = iz + n
-!
-!     Ensure orthogonality of Z(.,JP) to CGRAD.
-!
-            sum = 0.0
-            iz = jp
-            Do 70 i = 1, n
-               sum = sum + z (iz) * cgrad (i)
-70          iz = iz + n
-            If (sum /= 0.0) Then
-               iz = ipiv * n - n + jp
-               z (iz) = z (iz) - sum / cgrad (ipiv)
-            End If
-         End If
-         Go To 40
-      End If
-!
-!     Test for linear independence in the proposed new active set.
-!
-      If (ztc(np) == 0.0) Go To 90
-      If (icon <= m) Then
-         sum = 0.0
-         sumabs = 0.0
-         iz = np
-         Do 80 i = 1, n
-            temp = z (iz) * cgrad (i)
-            sum = sum + temp
-            sumabs = sumabs + dabs (temp)
-80       iz = iz + n
-         If (dabs(sum) <= relacc*sumabs) Go To 90
-      End If
-!
-!     Set the new diagonal element of U and return.
-!
-      u (np) = 1.0 / ztc (np)
-      nact = np
-90    Return
-End
-Subroutine adjtol (n, m, a, ia, b, xl, xu, x, iact, nact, xbig, relacc, &
-& tol, meql)
-      Implicit real * 8 (a-h, o-z)
-      Dimension a (ia,*), b (*), xl (*), xu (*), x (*), iact (*), xbig &
-     & (*)
-!
-!     Set VIOL to the greatest relative constraint residual of the first
-!       NACT constraints.
-!
-      viol = 0.0
-      If (nact > meql) Then
-         kl = meql + 1
-         Do 20 k = kl, nact
-            j = iact (k)
-            If (j <= m) Then
-               res = b (j)
-               resabs = dabs (b(j))
-               Do 10 i = 1, n
-                  res = res - a (i, j) * x (i)
-10             resabs = resabs + dabs (a(i, j)*xbig(i))
-            Else
-               jm = j - m
-               If (jm <= n) Then
-                  res = x (jm) - xl (jm)
-                  resabs = xbig (jm) + dabs (xl(jm))
-               Else
-                  jm = jm - n
-                  res = xu (jm) - x (jm)
-                  resabs = xbig (jm) + dabs (xu(jm))
-               End If
-            End If
-            If (res > 0.0) viol = dmax1 (viol, res/resabs)
-20       Continue
-      End If
-!
-!     Adjust TOL.
-!
-      tol = 0.1 * dmin1 (tol, viol)
-      If (tol <= relacc+relacc) Then
-         tol = relacc
-         Do 30 i = 1, n
-30       xbig (i) = dabs (x(i))
-      End If
-      Return
-End
-Subroutine conres (n, m, a, ia, b, xl, xu, x, iact, nact, par, g, z, u, &
-& xbig, bres, d, ztg, relacc, tol, stepcb, sumres, meql, msat, mtot, &
-& indxbd, gm, gmnew, parnew, cgrad)
-      Implicit real * 8 (a-h, o-z)
-      Dimension a (ia,*), b (*), xl (*), xu (*), x (*), iact (*), par &
-     & (*), g (*), z (*), u (*), xbig (*), bres (*), d (*), ztg (*), gm &
-     & (*), gmnew (*), parnew (*), cgrad (*)
-      idiff = mtot - msat
-!
-!     Calculate and partition the residuals of the inactive constraints,
-!       and set the gradient vector when seeking feasibility.
-!
-      If (idiff > 0.0) Then
-         Do 10 i = 1, n
-10       g (i) = 0.0
-         sumres = 0.0
-      End If
-      msatk = msat
-      mdeg = nact
-      msat = nact
-      kl = meql + 1
-      Do 50 k = kl, mtot
-         j = iact (k)
-!
-!     Calculate the residual of the current constraint.
-!
-         If (j <= m) Then
-            res = b (j)
-            resabs = dabs (b(j))
-            Do 20 i = 1, n
-               res = res - x (i) * a (i, j)
-20          resabs = resabs + dabs (xbig(i)*a(i, j))
-         Else
-            jm = j - m
-            If (jm <= n) Then
-               res = x (jm) - xl (jm)
-               resabs = dabs (xbig(jm)) + dabs (xl(jm))
-            Else
-               jm = jm - n
-               res = xu (jm) - x (jm)
-               resabs = dabs (xbig(jm)) + dabs (xu(jm))
-            End If
-         End If
-         bres (j) = res
-!
-!     Set TEMP to the relative residual.
-!
-         temp = 0.0
-         If (resabs /= 0.0) temp = res / resabs
-         If (k > msatk .And. temp < 0.0) Then
-            If (temp+relacc >= 0.0) Then
-               If (j <= m) Then
-                  sum = dabs (b(j))
-                  Do 30 i = 1, n
-30                sum = sum + dabs (x(i)*a(i, j))
-               Else
-                  jm = j - m
-                  If (jm <= n) Then
-                     sum = dabs (x(jm)) + dabs (xl(jm))
-                  Else
-                     sum = dabs (x(jm-n)) + dabs (xu(jm-n))
-                  End If
-               End If
-               If (dabs(res) <= sum*relacc) temp = 0.0
-            End If
-         End If
-!
-!     Place the residual in the appropriate position.
-!
-         If (k <= nact) Go To 50
-         If (k <= msatk .Or. temp >= 0.0) Then
-            msat = msat + 1
-            If (msat < k) Then
-               iact (k) = iact (msat)
-            End If
-            If (temp > tol) Then
-               iact (msat) = j
-            Else
-               mdeg = mdeg + 1
-               iact (msat) = iact (mdeg)
-               iact (mdeg) = j
-            End If
-!
-!     Update the gradient and SUMRES if the constraint is violated when
-!       seeking feasibility.
-!
-         Else
-            If (j <= m) Then
-               Do 40 i = 1, n
-40             g (i) = g (i) + a (i, j)
-            Else
-               j = j - m
-               If (j <= n) Then
-                  g (j) = g (j) - 1.0
-               Else
-                  g (j-n) = g (j-n) + 1.0
-               End If
-            End If
-            sumres = sumres + dabs (res)
-         End If
-50    Continue
-!
-!     Seek the next search direction unless CONRES was called from GETFES
-!       and feasibility has been achieved.
-!
-      stepcb = 0.0
-      If (idiff > 0 .And. msat == mtot) Go To 60
-      Call getd (n, m, a, ia, iact, nact, par, g, z, u, d, ztg, relacc, &
-     & ddotg, meql, mdeg, gm, gmnew, parnew, cgrad)
-!
-!     Calculate the (bound on the) step-length due to the constraints.
-!
-      If (ddotg < 0.0) Then
-         Call stepbd (n, m, a, ia, iact, bres, d, stepcb, ddotg, mdeg, &
-        & msat, mtot, indxbd)
-      End If
-      If (idiff == 0) sumres = ddotg
-60    Return
-End
-Subroutine delcon (n, m, a, ia, iact, nact, z, u, relacc, idrop)
-      Implicit real * 8 (a-h, o-z)
-      Dimension a (ia,*), iact (*), z (*), u (*)
-      nm = nact - 1
-      If (idrop == nact) Go To 60
-      isave = iact (idrop)
-!
-!     Cycle through the constraint exchanges that are needed.
-!
-      Do 50 j = idrop, nm
-         jp = j + 1
-         icon = iact (jp)
-         iact (j) = icon
-!
-!     Calculate the (J,JP) element of R.
-!
-         If (icon <= m) Then
-            rjjp = 0.0
-            iz = j
-            Do 10 i = 1, n
-               rjjp = rjjp + z (iz) * a (i, icon)
-10          iz = iz + n
-         Else
-            ibd = icon - m
-            If (ibd <= n) Then
-               izbd = ibd * n - n
-               rjjp = - z (izbd+j)
-            Else
-               ibd = ibd - n
-               izbd = ibd * n - n
-               rjjp = z (izbd+j)
-            End If
-         End If
-!
-!     Calculate the parameters of the next rotation.
-!
-         ujp = u (jp)
-         temp = rjjp * ujp
-         denom = dabs (temp)
-         If (denom*relacc < 1.0) denom = dsqrt (1.0+denom*denom)
-         wcos = temp / denom
-         wsin = 1.0 / denom
-!
-!     Rotate Z when a bound constraint is promoted.
-!
-         iz = j
-         If (icon > m) Then
-            Do 20 i = 1, n
-               temp = wcos * z (iz+1) - wsin * z (iz)
-               z (iz) = wcos * z (iz) + wsin * z (iz+1)
-               z (iz+1) = temp
-20          iz = iz + n
-            z (izbd+jp) = 0.0
-!
-!     Rotate Z when an ordinary constraint is promoted.
-!
-         Else
-            wpiv = 0.0
-            Do 30 i = 1, n
-               tempa = wcos * z (iz+1)
-               tempb = wsin * z (iz)
-               temp = dabs (a(i, icon)) * (dabs(tempa)+dabs(tempb))
-               If (temp > wpiv) Then
-                  wpiv = temp
-                  ipiv = i
-               End If
-               z (iz) = wcos * z (iz) + wsin * z (iz+1)
-               z (iz+1) = tempa - tempb
-30          iz = iz + n
-!
-!     Ensure orthogonality to promoted constraint.
-!
-            sum = 0.0
-            iz = jp
-            Do 40 i = 1, n
-               sum = sum + z (iz) * a (i, icon)
-40          iz = iz + n
-            If (sum /= 0.0) Then
-               iz = ipiv * n - n + jp
-               z (iz) = z (iz) - sum / a (ipiv, icon)
-            End If
-         End If
-!
-!     Set the new diagonal elements of U.
-!
-         u (jp) = - denom * u (j)
-         u (j) = ujp / denom
-50    Continue
-!
-!     Return.
-!
-      iact (nact) = isave
-60    nact = nm
-      Return
-End
-Subroutine eqcons (n, m, meq, a, ia, b, xu, iact, meql, info, z, u, &
-& relacc, am, cgrad)
-      Implicit real * 8 (a-h, o-z)
-      Dimension a (ia,*), b (*), xu (*), iact (*), z (*), u (*), am &
-     & (*), cgrad (*)
-!
-!     Try to add the next equality constraint to the active set.
-!
-      Do 50 keq = 1, meq
-         If (meql < n) Then
-            np = meql + 1
-            iact (np) = keq
-            Call addcon (n, m, a, ia, iact, meql, z, u, relacc, np, am, &
-           & cgrad)
-            If (meql == np) Go To 50
-         End If
-!
-!     If linear dependence occurs then find the multipliers of the
-!       dependence relation and apply them to the right hand sides.
-!
-         sum = b (keq)
-         sumabs = dabs (b(keq))
-         If (meql > 0) Then
-            Do 10 i = 1, n
-10          am (i) = a (i, keq)
-            k = meql
-20          vmult = 0.0
-            iz = k
-            Do 30 i = 1, n
-               vmult = vmult + z (iz) * am (i)
-30          iz = iz + n
-            vmult = vmult * u (k)
-            j = iact (k)
-            If (j <= m) Then
-               Do 40 i = 1, n
-40             am (i) = am (i) - vmult * a (i, j)
-               rhs = b (j)
-            Else
-               jm = j - m - n
-               am (jm) = am (jm) - vmult
-               rhs = xu (jm)
-            End If
-            sum = sum - rhs * vmult
-            sumabs = sumabs + dabs (rhs*vmult)
-            k = k - 1
-            If (k >= 1) Go To 20
-         End If
-!
-!     Error return if the constraints are inconsistent.
-!
-         If (dabs(sum) > relacc*sumabs) Then
-            info = 5
-            Go To 60
-         End If
-50    Continue
-60    Return
-End
-Subroutine fgcalc (n, x, f, g)
-      Implicit real * 8 (a-h, o-z)
-      Dimension x (*), g (*)
-!
-!     Calculate the objective function and its gradient.
-!
-      wa = (x(1)-x(3)) ** 2 + (x(2)-x(4)) ** 2
-      wb = (x(3)-x(5)) ** 2 + (x(4)-x(6)) ** 2
-      wc = (x(5)-x(1)) ** 2 + (x(6)-x(2)) ** 2
-      f = 1.0 / (wa**8) + 1.0 / (wb**8) + 1.0 / (wc**8)
-      g (1) = 16.0 * ((x(3)-x(1))/(wa**9)+(x(5)-x(1))/(wc**9))
-      g (2) = 16.0 * ((x(4)-x(2))/(wa**9)+(x(6)-x(2))/(wc**9))
-      g (3) = 16.0 * ((x(5)-x(3))/(wb**9)+(x(1)-x(3))/(wa**9))
-      g (4) = 16.0 * ((x(6)-x(4))/(wb**9)+(x(2)-x(4))/(wa**9))
-      g (5) = 16.0 * ((x(1)-x(5))/(wc**9)+(x(3)-x(5))/(wb**9))
-      g (6) = 16.0 * ((x(2)-x(6))/(wc**9)+(x(4)-x(6))/(wb**9))
-      Return
-End
-!
-Subroutine getd (n, m, a, ia, iact, nact, par, g, z, u, d, ztg, relacc, &
-& ddotg, meql, mdeg, gm, gmnew, parnew, cgrad)
-      Implicit real * 8 (a-h, o-z)
-      Dimension a (ia,*), iact (*), par (*), g (*), z (*), u (*), d &
-     & (*), ztg (*), gm (*), gmnew (*), parnew (*), cgrad (*)
-!
-!     Initialize GM and cycle backwards through the active set.
-!
-10    Do 20 i = 1, n
-20    gm (i) = g (i)
-      k = nact
-30    If (k > 0) Then
-!
-!     Set TEMP to the next multiplier, but reduce the active set if
-!       TEMP has an unacceptable sign.
-!
-         temp = 0.0
-         iz = k
-         Do 40 i = 1, n
-            temp = temp + z (iz) * gm (i)
-40       iz = iz + n
-         temp = temp * u (k)
-         If (k > meql .And. temp > 0.0) Then
-            Call delcon (n, m, a, ia, iact, nact, z, u, relacc, k)
-            Go To 10
-         End If
-!
-!     Update GM using the multiplier that has just been calculated.
-!
-         j = iact (k)
-         If (j <= m) Then
-            Do 50 i = 1, n
-50          gm (i) = gm (i) - temp * a (i, j)
-         Else
-            jm = j - m
-            If (jm <= n) Then
-               gm (jm) = gm (jm) + temp
-            Else
-               gm (jm-n) = gm (jm-n) - temp
-            End If
-         End If
-         par (k) = temp
-         k = k - 1
-         Go To 30
-      End If
-!
-!     Calculate the search direction and DDOTG.
-!
-      ddotg = 0.0
-      If (nact < n) Then
-         Call sdegen (n, m, a, ia, iact, nact, par, z, u, d, ztg, gm, &
-        & relacc, ddotgm, meql, mdeg, gmnew, parnew, cgrad)
-         If (ddotgm < 0.0) Then
-            Do 60 i = 1, n
-60          ddotg = ddotg + d (i) * g (i)
-         End If
-      End If
-      Return
-End
-Subroutine getfes (n, m, a, ia, b, xl, xu, x, iact, nact, par, info, g, &
-& z, u, xbig, relacc, tol, meql, msat, mtot, bres, d, ztg, gm, gmnew, &
-& parnew, cgrad)
-      Implicit real * 8 (a-h, o-z)
-      Dimension a (ia,*), b (*), xl (*), xu (*), x (*), iact (*), par &
-     & (*), g (*), z (*), u (*), xbig (*), bres (*), d (*), ztg (*), gm &
-     & (*), gmnew (*), parnew (*), cgrad (*)
-!
-!     Make the correction to X for the active constraints.
-!
-      info = 0
-10    Call satact (n, m, a, ia, b, xl, xu, x, iact, nact, info, z, u, &
-     & xbig, relacc, tol, meql)
-      If (info > 0) msat = nact
-      If (msat == mtot) Go To 60
-!
-!     Try to correct the infeasibility.
-!
-20    msatk = msat
-      sumrsk = 0.0
-30    Call conres (n, m, a, ia, b, xl, xu, x, iact, nact, par, g, z, u, &
-     & xbig, bres, d, ztg, relacc, tol, stepcb, sumres, meql, msat, &
-     & mtot, indxbd, gm, gmnew, parnew, cgrad)
-!
-!     Include the new constraint in the active set.
-!
-      If (stepcb > 0.0) Then
-         Do 40 i = 1, n
-            x (i) = x (i) + stepcb * d (i)
-40       xbig (i) = dmax1 (xbig(i), dabs(x(i)))
-         Call addcon (n, m, a, ia, iact, nact, z, u, relacc, indxbd, &
-        & gmnew, cgrad)
-      End If
-!
-!     Test whether to continue the search for feasibility.
-!
-      If (msat < mtot) Then
-         If (stepcb == 0.0) Go To 50
-         If (msatk < msat) Go To 20
-         If (sumrsk == 0.0 .Or. sumres < sumrsk) Then
-            sumrsk = sumres
-            itest = 0
-         End If
-         itest = itest + 1
-         If (itest <= 2) Go To 30
-!
-!     Reduce TOL if it may be too large to allow feasibility.
-!
-50       If (tol > relacc) Then
-            Call adjtol (n, m, a, ia, b, xl, xu, x, iact, nact, xbig, &
-           & relacc, tol, meql)
-            Go To 10
-         End If
-      End If
-60    Return
-End
+    module tolmin_module
+    
+    private
+
+    abstract interface
+        subroutine func(n,x,f,g)  !! FGCALC interface
+        implicit none
+        integer :: n
+        real * 8 :: x(*)
+        real * 8 :: f
+        real * 8 :: g(*)
+        end subroutine func
+    end interface
+    
+    public :: getmin
+    public :: tolmin_test
+    
+    contains
+
 Subroutine getmin (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
-& par, iprint, info, w)
+  par, iprint, info, w, fgcalc)
       Implicit real * 8 (a-h, o-z)
-      Dimension a (ia,*), b (*), xl (*), xu (*), x (*), iact (*), par &
-     & (*), w (*)
+      Dimension a(ia,*), b(*), xl(*), xu(*), x(*), iact(*), par(*), w(*)
+      procedure(func) :: fgcalc
 !
 !  This is the entry point to a package of subroutines that calculate the
 !     the least value of a differentiable function of several variables
@@ -721,10 +173,566 @@ Subroutine getmin (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
 !     Call the optimization package.
 !
       Call minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
-     & par, iprint, info, w(ig), w(iz), w(iu), w(ixbig), w(ireskt), &
-     & w(ibres), w(id), w(iztg), w(igm), w(ixs), w(igs))
+       par, iprint, info, w(ig), w(iz), w(iu), w(ixbig), w(ireskt), &
+       w(ibres), w(id), w(iztg), w(igm), w(ixs), w(igs), fgcalc)
+
+End Subroutine getmin
+
+Subroutine addcon (n, m, a, ia, iact, nact, z, u, relacc, indxbd, ztc, cgrad)
+      Implicit real * 8 (a-h, o-z)
+      Dimension a (ia,*), iact (*), z (*), u (*), ztc (*), cgrad (*)
+      np = nact + 1
+      icon = iact (indxbd)
+      iact (indxbd) = iact (np)
+      iact (np) = icon
+!
+!     Form ZTC when the new constraint is a bound.
+!
+      If (icon > m) Then
+         inewbd = icon - m
+         If (inewbd <= n) Then
+            temp = - 1.0
+         Else
+            inewbd = inewbd - n
+            temp = 1.0
+         End If
+         iznbd = inewbd * n - n
+         Do 10 j = 1, n
+10       ztc (j) = temp * z (iznbd+j)
+!
+!     Else form ZTC for an ordinary constraint.
+!
+      Else
+         Do 20 i = 1, n
+20       cgrad (i) = a (i, icon)
+         Do 30 j = 1, n
+            ztc (j) = 0.0
+            iz = j
+            Do 30 i = 1, n
+               ztc (j) = ztc (j) + z (iz) * cgrad (i)
+30       iz = iz + n
+      End If
+!
+!     Find any Givens rotations to apply to the last columns of Z.
+!
+      j = n
+40    jp = j
+      j = j - 1
+      If (j > nact) Then
+         If (ztc(jp) == 0.0) Go To 40
+         If (dabs(ztc(jp)) <= relacc*dabs(ztc(j))) Then
+            temp = dabs (ztc(j))
+         Else If (dabs(ztc(j)) <= relacc*dabs(ztc(jp))) Then
+            temp = dabs (ztc(jp))
+         Else
+            temp = dabs (ztc(jp)) * dsqrt (1.0+(ztc(j)/ztc(jp))**2)
+         End If
+         wcos = ztc (j) / temp
+         wsin = ztc (jp) / temp
+         ztc (j) = temp
+!
+!     Apply the rotation when the new constraint is a bound.
+!
+         iz = j
+         If (icon > m) Then
+            Do 50 i = 1, n
+               temp = wcos * z (iz+1) - wsin * z (iz)
+               z (iz) = wcos * z (iz) + wsin * z (iz+1)
+               z (iz+1) = temp
+50          iz = iz + n
+            z (iznbd+jp) = 0.0
+!
+!     Else apply the rotation for an ordinary constraint.
+!
+         Else
+            wpiv = 0.0
+            Do 60 i = 1, n
+               tempa = wcos * z (iz+1)
+               tempb = wsin * z (iz)
+               temp = dabs (cgrad(i)) * (dabs(tempa)+dabs(tempb))
+               If (temp > wpiv) Then
+                  wpiv = temp
+                  ipiv = i
+               End If
+               z (iz) = wcos * z (iz) + wsin * z (iz+1)
+               z (iz+1) = tempa - tempb
+60          iz = iz + n
+!
+!     Ensure orthogonality of Z(.,JP) to CGRAD.
+!
+            sum = 0.0
+            iz = jp
+            Do 70 i = 1, n
+               sum = sum + z (iz) * cgrad (i)
+70          iz = iz + n
+            If (sum /= 0.0) Then
+               iz = ipiv * n - n + jp
+               z (iz) = z (iz) - sum / cgrad (ipiv)
+            End If
+         End If
+         Go To 40
+      End If
+!
+!     Test for linear independence in the proposed new active set.
+!
+      If (ztc(np) == 0.0) Go To 90
+      If (icon <= m) Then
+         sum = 0.0
+         sumabs = 0.0
+         iz = np
+         Do 80 i = 1, n
+            temp = z (iz) * cgrad (i)
+            sum = sum + temp
+            sumabs = sumabs + dabs (temp)
+80       iz = iz + n
+         If (dabs(sum) <= relacc*sumabs) Go To 90
+      End If
+!
+!     Set the new diagonal element of U and return.
+!
+      u (np) = 1.0 / ztc (np)
+      nact = np
+90    Return
+End Subroutine addcon
+
+Subroutine adjtol (n, m, a, ia, b, xl, xu, x, iact, nact, xbig, relacc, &
+& tol, meql)
+      Implicit real * 8 (a-h, o-z)
+      Dimension a (ia,*), b (*), xl (*), xu (*), x (*), iact (*), xbig &
+     & (*)
+!
+!     Set VIOL to the greatest relative constraint residual of the first
+!       NACT constraints.
+!
+      viol = 0.0
+      If (nact > meql) Then
+         kl = meql + 1
+         Do 20 k = kl, nact
+            j = iact (k)
+            If (j <= m) Then
+               res = b (j)
+               resabs = dabs (b(j))
+               Do 10 i = 1, n
+                  res = res - a (i, j) * x (i)
+10             resabs = resabs + dabs (a(i, j)*xbig(i))
+            Else
+               jm = j - m
+               If (jm <= n) Then
+                  res = x (jm) - xl (jm)
+                  resabs = xbig (jm) + dabs (xl(jm))
+               Else
+                  jm = jm - n
+                  res = xu (jm) - x (jm)
+                  resabs = xbig (jm) + dabs (xu(jm))
+               End If
+            End If
+            If (res > 0.0) viol = dmax1 (viol, res/resabs)
+20       Continue
+      End If
+!
+!     Adjust TOL.
+!
+      tol = 0.1 * dmin1 (tol, viol)
+      If (tol <= relacc+relacc) Then
+         tol = relacc
+         Do 30 i = 1, n
+30       xbig (i) = dabs (x(i))
+      End If
       Return
-End
+End Subroutine adjtol
+
+Subroutine conres (n, m, a, ia, b, xl, xu, x, iact, nact, par, g, z, u, &
+& xbig, bres, d, ztg, relacc, tol, stepcb, sumres, meql, msat, mtot, &
+& indxbd, gm, gmnew, parnew, cgrad)
+      Implicit real * 8 (a-h, o-z)
+      Dimension a (ia,*), b (*), xl (*), xu (*), x (*), iact (*), par &
+     & (*), g (*), z (*), u (*), xbig (*), bres (*), d (*), ztg (*), gm &
+     & (*), gmnew (*), parnew (*), cgrad (*)
+      idiff = mtot - msat
+!
+!     Calculate and partition the residuals of the inactive constraints,
+!       and set the gradient vector when seeking feasibility.
+!
+      If (idiff > 0.0) Then
+         Do 10 i = 1, n
+10       g (i) = 0.0
+         sumres = 0.0
+      End If
+      msatk = msat
+      mdeg = nact
+      msat = nact
+      kl = meql + 1
+      Do 50 k = kl, mtot
+         j = iact (k)
+!
+!     Calculate the residual of the current constraint.
+!
+         If (j <= m) Then
+            res = b (j)
+            resabs = dabs (b(j))
+            Do 20 i = 1, n
+               res = res - x (i) * a (i, j)
+20          resabs = resabs + dabs (xbig(i)*a(i, j))
+         Else
+            jm = j - m
+            If (jm <= n) Then
+               res = x (jm) - xl (jm)
+               resabs = dabs (xbig(jm)) + dabs (xl(jm))
+            Else
+               jm = jm - n
+               res = xu (jm) - x (jm)
+               resabs = dabs (xbig(jm)) + dabs (xu(jm))
+            End If
+         End If
+         bres (j) = res
+!
+!     Set TEMP to the relative residual.
+!
+         temp = 0.0
+         If (resabs /= 0.0) temp = res / resabs
+         If (k > msatk .And. temp < 0.0) Then
+            If (temp+relacc >= 0.0) Then
+               If (j <= m) Then
+                  sum = dabs (b(j))
+                  Do 30 i = 1, n
+30                sum = sum + dabs (x(i)*a(i, j))
+               Else
+                  jm = j - m
+                  If (jm <= n) Then
+                     sum = dabs (x(jm)) + dabs (xl(jm))
+                  Else
+                     sum = dabs (x(jm-n)) + dabs (xu(jm-n))
+                  End If
+               End If
+               If (dabs(res) <= sum*relacc) temp = 0.0
+            End If
+         End If
+!
+!     Place the residual in the appropriate position.
+!
+         If (k <= nact) Go To 50
+         If (k <= msatk .Or. temp >= 0.0) Then
+            msat = msat + 1
+            If (msat < k) Then
+               iact (k) = iact (msat)
+            End If
+            If (temp > tol) Then
+               iact (msat) = j
+            Else
+               mdeg = mdeg + 1
+               iact (msat) = iact (mdeg)
+               iact (mdeg) = j
+            End If
+!
+!     Update the gradient and SUMRES if the constraint is violated when
+!       seeking feasibility.
+!
+         Else
+            If (j <= m) Then
+               Do 40 i = 1, n
+40             g (i) = g (i) + a (i, j)
+            Else
+               j = j - m
+               If (j <= n) Then
+                  g (j) = g (j) - 1.0
+               Else
+                  g (j-n) = g (j-n) + 1.0
+               End If
+            End If
+            sumres = sumres + dabs (res)
+         End If
+50    Continue
+!
+!     Seek the next search direction unless CONRES was called from GETFES
+!       and feasibility has been achieved.
+!
+      stepcb = 0.0
+      If (idiff > 0 .And. msat == mtot) Go To 60
+      Call getd (n, m, a, ia, iact, nact, par, g, z, u, d, ztg, relacc, &
+     & ddotg, meql, mdeg, gm, gmnew, parnew, cgrad)
+!
+!     Calculate the (bound on the) step-length due to the constraints.
+!
+      If (ddotg < 0.0) Then
+         Call stepbd (n, m, a, ia, iact, bres, d, stepcb, ddotg, mdeg, &
+        & msat, mtot, indxbd)
+      End If
+      If (idiff == 0) sumres = ddotg
+60    Return
+End Subroutine conres
+
+Subroutine delcon (n, m, a, ia, iact, nact, z, u, relacc, idrop)
+      Implicit real * 8 (a-h, o-z)
+      Dimension a (ia,*), iact (*), z (*), u (*)
+      nm = nact - 1
+      If (idrop == nact) Go To 60
+      isave = iact (idrop)
+!
+!     Cycle through the constraint exchanges that are needed.
+!
+      Do 50 j = idrop, nm
+         jp = j + 1
+         icon = iact (jp)
+         iact (j) = icon
+!
+!     Calculate the (J,JP) element of R.
+!
+         If (icon <= m) Then
+            rjjp = 0.0
+            iz = j
+            Do 10 i = 1, n
+               rjjp = rjjp + z (iz) * a (i, icon)
+10          iz = iz + n
+         Else
+            ibd = icon - m
+            If (ibd <= n) Then
+               izbd = ibd * n - n
+               rjjp = - z (izbd+j)
+            Else
+               ibd = ibd - n
+               izbd = ibd * n - n
+               rjjp = z (izbd+j)
+            End If
+         End If
+!
+!     Calculate the parameters of the next rotation.
+!
+         ujp = u (jp)
+         temp = rjjp * ujp
+         denom = dabs (temp)
+         If (denom*relacc < 1.0) denom = dsqrt (1.0+denom*denom)
+         wcos = temp / denom
+         wsin = 1.0 / denom
+!
+!     Rotate Z when a bound constraint is promoted.
+!
+         iz = j
+         If (icon > m) Then
+            Do 20 i = 1, n
+               temp = wcos * z (iz+1) - wsin * z (iz)
+               z (iz) = wcos * z (iz) + wsin * z (iz+1)
+               z (iz+1) = temp
+20          iz = iz + n
+            z (izbd+jp) = 0.0
+!
+!     Rotate Z when an ordinary constraint is promoted.
+!
+         Else
+            wpiv = 0.0
+            Do 30 i = 1, n
+               tempa = wcos * z (iz+1)
+               tempb = wsin * z (iz)
+               temp = dabs (a(i, icon)) * (dabs(tempa)+dabs(tempb))
+               If (temp > wpiv) Then
+                  wpiv = temp
+                  ipiv = i
+               End If
+               z (iz) = wcos * z (iz) + wsin * z (iz+1)
+               z (iz+1) = tempa - tempb
+30          iz = iz + n
+!
+!     Ensure orthogonality to promoted constraint.
+!
+            sum = 0.0
+            iz = jp
+            Do 40 i = 1, n
+               sum = sum + z (iz) * a (i, icon)
+40          iz = iz + n
+            If (sum /= 0.0) Then
+               iz = ipiv * n - n + jp
+               z (iz) = z (iz) - sum / a (ipiv, icon)
+            End If
+         End If
+!
+!     Set the new diagonal elements of U.
+!
+         u (jp) = - denom * u (j)
+         u (j) = ujp / denom
+50    Continue
+!
+!     Return.
+!
+      iact (nact) = isave
+60    nact = nm
+      Return
+End Subroutine delcon
+
+Subroutine eqcons (n, m, meq, a, ia, b, xu, iact, meql, info, z, u, &
+& relacc, am, cgrad)
+      Implicit real * 8 (a-h, o-z)
+      Dimension a (ia,*), b (*), xu (*), iact (*), z (*), u (*), am &
+     & (*), cgrad (*)
+!
+!     Try to add the next equality constraint to the active set.
+!
+      Do 50 keq = 1, meq
+         If (meql < n) Then
+            np = meql + 1
+            iact (np) = keq
+            Call addcon (n, m, a, ia, iact, meql, z, u, relacc, np, am, &
+           & cgrad)
+            If (meql == np) Go To 50
+         End If
+!
+!     If linear dependence occurs then find the multipliers of the
+!       dependence relation and apply them to the right hand sides.
+!
+         sum = b (keq)
+         sumabs = dabs (b(keq))
+         If (meql > 0) Then
+            Do 10 i = 1, n
+10          am (i) = a (i, keq)
+            k = meql
+20          vmult = 0.0
+            iz = k
+            Do 30 i = 1, n
+               vmult = vmult + z (iz) * am (i)
+30          iz = iz + n
+            vmult = vmult * u (k)
+            j = iact (k)
+            If (j <= m) Then
+               Do 40 i = 1, n
+40             am (i) = am (i) - vmult * a (i, j)
+               rhs = b (j)
+            Else
+               jm = j - m - n
+               am (jm) = am (jm) - vmult
+               rhs = xu (jm)
+            End If
+            sum = sum - rhs * vmult
+            sumabs = sumabs + dabs (rhs*vmult)
+            k = k - 1
+            If (k >= 1) Go To 20
+         End If
+!
+!     Error return if the constraints are inconsistent.
+!
+         If (dabs(sum) > relacc*sumabs) Then
+            info = 5
+            Go To 60
+         End If
+50    Continue
+60    Return
+End Subroutine eqcons
+
+!
+Subroutine getd (n, m, a, ia, iact, nact, par, g, z, u, d, ztg, relacc, &
+& ddotg, meql, mdeg, gm, gmnew, parnew, cgrad)
+      Implicit real * 8 (a-h, o-z)
+      Dimension a (ia,*), iact (*), par (*), g (*), z (*), u (*), d &
+     & (*), ztg (*), gm (*), gmnew (*), parnew (*), cgrad (*)
+!
+!     Initialize GM and cycle backwards through the active set.
+!
+10    Do 20 i = 1, n
+20    gm (i) = g (i)
+      k = nact
+30    If (k > 0) Then
+!
+!     Set TEMP to the next multiplier, but reduce the active set if
+!       TEMP has an unacceptable sign.
+!
+         temp = 0.0
+         iz = k
+         Do 40 i = 1, n
+            temp = temp + z (iz) * gm (i)
+40       iz = iz + n
+         temp = temp * u (k)
+         If (k > meql .And. temp > 0.0) Then
+            Call delcon (n, m, a, ia, iact, nact, z, u, relacc, k)
+            Go To 10
+         End If
+!
+!     Update GM using the multiplier that has just been calculated.
+!
+         j = iact (k)
+         If (j <= m) Then
+            Do 50 i = 1, n
+50          gm (i) = gm (i) - temp * a (i, j)
+         Else
+            jm = j - m
+            If (jm <= n) Then
+               gm (jm) = gm (jm) + temp
+            Else
+               gm (jm-n) = gm (jm-n) - temp
+            End If
+         End If
+         par (k) = temp
+         k = k - 1
+         Go To 30
+      End If
+!
+!     Calculate the search direction and DDOTG.
+!
+      ddotg = 0.0
+      If (nact < n) Then
+         Call sdegen (n, m, a, ia, iact, nact, par, z, u, d, ztg, gm, &
+        & relacc, ddotgm, meql, mdeg, gmnew, parnew, cgrad)
+         If (ddotgm < 0.0) Then
+            Do 60 i = 1, n
+60          ddotg = ddotg + d (i) * g (i)
+         End If
+      End If
+      Return
+End Subroutine getd
+
+Subroutine getfes (n, m, a, ia, b, xl, xu, x, iact, nact, par, info, g, &
+& z, u, xbig, relacc, tol, meql, msat, mtot, bres, d, ztg, gm, gmnew, &
+& parnew, cgrad)
+      Implicit real * 8 (a-h, o-z)
+      Dimension a (ia,*), b (*), xl (*), xu (*), x (*), iact (*), par &
+     & (*), g (*), z (*), u (*), xbig (*), bres (*), d (*), ztg (*), gm &
+     & (*), gmnew (*), parnew (*), cgrad (*)
+!
+!     Make the correction to X for the active constraints.
+!
+      info = 0
+10    Call satact (n, m, a, ia, b, xl, xu, x, iact, nact, info, z, u, &
+     & xbig, relacc, tol, meql)
+      If (info > 0) msat = nact
+      If (msat == mtot) Go To 60
+!
+!     Try to correct the infeasibility.
+!
+20    msatk = msat
+      sumrsk = 0.0
+30    Call conres (n, m, a, ia, b, xl, xu, x, iact, nact, par, g, z, u, &
+     & xbig, bres, d, ztg, relacc, tol, stepcb, sumres, meql, msat, &
+     & mtot, indxbd, gm, gmnew, parnew, cgrad)
+!
+!     Include the new constraint in the active set.
+!
+      If (stepcb > 0.0) Then
+         Do 40 i = 1, n
+            x (i) = x (i) + stepcb * d (i)
+40       xbig (i) = dmax1 (xbig(i), dabs(x(i)))
+         Call addcon (n, m, a, ia, iact, nact, z, u, relacc, indxbd, &
+        & gmnew, cgrad)
+      End If
+!
+!     Test whether to continue the search for feasibility.
+!
+      If (msat < mtot) Then
+         If (stepcb == 0.0) Go To 50
+         If (msatk < msat) Go To 20
+         If (sumrsk == 0.0 .Or. sumres < sumrsk) Then
+            sumrsk = sumres
+            itest = 0
+         End If
+         itest = itest + 1
+         If (itest <= 2) Go To 30
+!
+!     Reduce TOL if it may be too large to allow feasibility.
+!
+50       If (tol > relacc) Then
+            Call adjtol (n, m, a, ia, b, xl, xu, x, iact, nact, xbig, &
+           & relacc, tol, meql)
+            Go To 10
+         End If
+      End If
+60    Return
+End Subroutine getfes
+
 Subroutine initzu (n, m, xl, xu, x, iact, meql, info, z, u, xbig, &
 & relacc)
       Implicit real * 8 (a-h, o-z)
@@ -769,7 +777,8 @@ Subroutine initzu (n, m, xl, xu, x, iact, meql, info, z, u, xbig, &
 40    xbig (i) = dabs (x(i))
       info = 1
 50    Return
-End
+End Subroutine initzu
+
 Subroutine ktvec (n, m, a, ia, iact, nact, par, g, reskt, z, u, bres, &
 & relaxf, meql, ssqkt, parw, resktw)
       Implicit real * 8 (a-h, o-z)
@@ -864,11 +873,13 @@ Subroutine ktvec (n, m, a, ia, iact, nact, par, g, reskt, z, u, bres, &
 120      Continue
       End If
 130   Return
-End
+End Subroutine ktvec
+
 Subroutine lsrch (n, x, g, d, xs, gs, relacc, stepcb, ddotg, f, step, &
-& nfvals, nfmax, gopt)
+& nfvals, nfmax, gopt, fgcalc)
       Implicit real * 8 (a-h, o-z)
       Dimension x (*), g (*), d (*), xs (*), gs (*), gopt (*)
+      procedure(func) :: fgcalc
 !
 !     Initialization.
 !
@@ -976,83 +987,15 @@ Subroutine lsrch (n, x, g, d, xs, gs, relacc, stepcb, ddotg, f, step, &
       End If
       nfvals = nfvals + icount
       Return
-End
-!
-!     The pentagon problem.
-!
-Implicit real * 8 (a-h, o-z)
-Dimension a (10, 15), b (15), xl (6), xu (6), x (6), iact (27), par &
-& (20), w (1000)
-!
-!     The two values of ICASE provide two different values of ACC, the latter
-!     accuracy being so demanding that a return with INFO=2 occurs. The
-!     final values of the objective function in the two cases agree well
-!     and constraint violations are negligible, considering the differences
-!     between the final values of the variables.
-!
-iprint = 10
-ia = 10
-n = 6
-Do 100 icase = 1, 2
-   acc = 1.0d-6
-   If (icase == 2) acc = 1.0d-14
-!
-!     Set the components of XL, XU and X.
-!
-   Do 10 i = 1, n
-      xl (i) = - 1.0d6
-      xu (i) = 1.0d6
-10 x (i) = 0.5d0 * dfloat (i-3)
-   x (2) = 0.0d0
-   x (4) = - 1.0d0
-   x (6) = 1.0d0
-!
-!     Set the constraints.
-!
-   m = 0
-   meq = 0
-   pi = 4.0d0 * datan (1.0d0)
-   Do 30 k = 1, 5
-      theta = 0.4d0 * dfloat (k-1) * pi
-      cth = dcos (theta)
-      sth = dsin (theta)
-      Do 30 j = 2, n, 2
-         m = m + 1
-         Do 20 i = 1, n
-20       a (i, m) = 0.0d0
-         a (j-1, m) = cth
-         a (j, m) = sth
-30 b (m) = 1.0d0
-!
-!     Call the optimization package.
-!
-   info = 0
-   Print 40, acc, iprint
-40 Format (/ / 5 x, 'CALL OF GETMIN WITH  ACC =', 1 pd11.4, '  AND  IPR&
-  &INT =', i3)
-   Call getmin (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, par, &
-  & iprint, info, w)
-   Print 50, info
-50 Format (/ 5 x, 'RETURN FROM TOLMIN WITH INFO =', i2)
-   Call fgcalc (n, x, f, w)
-   Print 60, f
-60 Format (/ 5 x, 'FINAL VALUE OF OBJECTIVE FUNCTION =', 1 pd20.12)
-   Print 70, (x(i), i=1, n)
-70 Format (/ 5 x, 'FINAL COMPONENTS OF X =' // (4 x, 1 p3d20.12))
-   Do 80 k = 1, m
-      Do 80 i = 1, n
-80 b (k) = b (k) - a (i, k) * x (i)
-   Print 90, (b(k), k=1, m)
-90 Format (/ 5 x, 'FINAL CONSTRAINT RESIDUALS =' // (3 x, 1 p6d12.4))
-100 Continue
-Stop
-End
+End Subroutine lsrch
+
 Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
-& par, iprint, info, g, z, u, xbig, reskt, bres, d, ztg, gm, xs, gs)
+  par, iprint, info, g, z, u, xbig, reskt, bres, d, ztg, gm, xs, gs, fgcalc)
    Implicit real * 8 (a-h, o-z)
    Dimension a (ia,*), b (*), xl (*), xu (*), x (*), iact (*), par (*), &
-  & g (*), z (*), u (*), xbig (*), reskt (*), bres (*), d (*), ztg (*), &
-  & gm (*), xs (*), gs (*)
+    g (*), z (*), u (*), xbig (*), reskt (*), bres (*), d (*), ztg (*), &
+    gm (*), xs (*), gs (*)
+      procedure(func) :: fgcalc
 !
 !     Initialize ZZNORM, ITERC, NFVALS and NFMAX.
 !
@@ -1067,8 +1010,8 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
    info = 4
    If (max0(1-n,-m, meq*(meq-m)) > 0) Then
       If (iprint /= 0) Print 1010
-1010  Format (/ 5 x, 'ERROR RETURN FROM GETMIN BECAUSE A CONDITION', ' &
-     &ON N, M OR MEQ IS VIOLATED')
+1010  Format (/ 5 x, 'ERROR RETURN FROM GETMIN BECAUSE A CONDITION',&
+      ' ON N, M OR MEQ IS VIOLATED')
       Go To 40
    End If
 !
@@ -1078,8 +1021,8 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
    tol = dmax1 (0.01d0, 10.0d0*relacc)
    If (info == 4) Then
       If (iprint /= 0) Print 1020
-1020  Format (/ 5 x, 'ERROR RETURN FROM GETMIN BECAUSE A LOWER', ' BOUN&
-     &D EXCEEDS AN UPPER BOUND')
+1020  Format (/ 5 x, 'ERROR RETURN FROM GETMIN BECAUSE A LOWER',&
+      ' BOUND EXCEEDS AN UPPER BOUND')
       Go To 40
    End If
 !
@@ -1090,8 +1033,8 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
      & relacc, xs, gs)
       If (info == 5) Then
          If (iprint /= 0) Print 1030
-1030     Format (/ 5 x, 'ERROR RETURN FROM GETMIN BECAUSE THE', ' EQUAL&
-        &ITY CONSTRAINTS ARE INCONSISTENT')
+1030     Format (/ 5 x, 'ERROR RETURN FROM GETMIN BECAUSE THE',&
+         ' EQUALITY CONSTRAINTS ARE INCONSISTENT')
          Go To 40
       End If
    End If
@@ -1116,8 +1059,8 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
   & xs, gs)
    If (msat < mtot) Then
       If (iprint /= 0) Print 1040
-1040  Format (/ 5 x, 'ERROR RETURN FROM GETMIN BECAUSE THE', ' EQUALITI&
-     &ES AND BOUNDS ARE INCONSISTENT')
+1040  Format (/ 5 x, 'ERROR RETURN FROM GETMIN BECAUSE THE',&
+      ' EQUALITIES AND BOUNDS ARE INCONSISTENT')
       info = 6
       Go To 40
    End If
@@ -1138,14 +1081,14 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
   & xs, gs)
    If (msat < mtot) Then
       If (iprint /= 0) Print 1050
-1050  Format (/ 5 x, 'ERROR RETURN FROM GETMIN BECAUSE THE', ' CONSTRAI&
-     &NTS ARE INCONSISTENT')
+1050  Format (/ 5 x, 'ERROR RETURN FROM GETMIN BECAUSE THE',&
+      ' CONSTRAINTS ARE INCONSISTENT')
       info = 7
       Go To 40
    Else If (meql == n) Then
       If (iprint /= 0) Print 1060
-1060  Format (/ 5 x, 'GETMIN FINDS THAT THE VARIABLES ARE', ' DETERMINE&
-     &D BY THE EQUALITY CONSTRAINTS')
+1060  Format (/ 5 x, 'GETMIN FINDS THAT THE VARIABLES ARE',&
+      ' DETERMINED BY THE EQUALITY CONSTRAINTS')
       Go To 40
    End If
 !
@@ -1154,7 +1097,7 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
 !
    Call minfun (n, m, a, ia, b, xl, xu, x, acc, iact, nact, par, &
   & iprint, info, g, z, u, xbig, relacc, zznorm, tol, meql, mtot, &
-  & iterc, nfvals, nfmax, reskt, bres, d, ztg, gm, xs, gs)
+  & iterc, nfvals, nfmax, reskt, bres, d, ztg, gm, xs, gs, fgcalc)
 !
 !     Reduce TOL if necessary.
 !
@@ -1171,25 +1114,27 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
       If (info == 1) Print 1070
 1070  Format (/ 5 x, 'GETMIN HAS ACHIEVED THE REQUIRED ACCURACY')
       If (info == 2) Print 1080
-1080  Format (/ 5 x, 'GETMIN CAN MAKE NO FURTHER PROGRESS BECAUSE', ' O&
-     &F ROUNDING ERRORS')
+1080  Format (/ 5 x, 'GETMIN CAN MAKE NO FURTHER PROGRESS BECAUSE',&
+      ' OF ROUNDING ERRORS')
       If (info == 3) Print 1090
-1090  Format (/ 5 x, 'GETMIN CAN MAKE NO FURTHER PROGRESS BECAUSE', ' F&
-     & WILL NOT DECREASE ANY MORE')
+1090  Format (/ 5 x, 'GETMIN CAN MAKE NO FURTHER PROGRESS BECAUSE',&
+      ' F WILL NOT DECREASE ANY MORE')
       If (info == 8) Print 1100
-1100  Format (/ 5 x, 'GETMIN HAS REACHED THE GIVEN LIMIT ON THE', ' NUM&
-     &BER OF CALLS OF FGCALC')
+1100  Format (/ 5 x, 'GETMIN HAS REACHED THE GIVEN LIMIT ON THE',&
+      ' NUMBER OF CALLS OF FGCALC')
    End If
 40 Return
-End
+End Subroutine minflc
+
 Subroutine minfun (n, m, a, ia, b, xl, xu, x, acc, iact, nact, par, &
 & iprint, info, g, z, u, xbig, relacc, zznorm, tol, meql, mtot, iterc, &
-& nfvals, nfmax, reskt, bres, d, ztg, gm, xs, gs)
+& nfvals, nfmax, reskt, bres, d, ztg, gm, xs, gs, fgcalc)
    Implicit real * 8 (a-h, o-z)
    Dimension a (ia,*), b (*), xl (*), xu (*), x (*), iact (*), par (*), &
   & g (*), z (*), u (*), xbig (*), reskt (*), bres (*), d (*), ztg (*), &
   & gm (*), xs (*), gs (*)
    Save f
+   procedure(func) :: fgcalc
 !
 !     Initialize the minimization calculation.
 !
@@ -1260,7 +1205,7 @@ Subroutine minfun (n, m, a, ia, b, xl, xu, x, acc, iact, nact, par, &
 !
 40 iterc = iterc + 1
    Call lsrch (n, x, g, d, xs, gs, relacc, stepcb, ddotg, f, step, &
-  & nfvals, nfmax, bres)
+    nfvals, nfmax, bres, fgcalc)
    If (step == 0.0) Then
       info = 3
       sum = 0.0
@@ -1328,7 +1273,8 @@ Subroutine minfun (n, m, a, ia, b, xl, xu, x, acc, iact, nact, par, &
    iterp = iterc + iabs (iprint)
    If (iterk >= 0) Go To 40
 90 Return
-End
+End Subroutine minfun
+
 Subroutine newcon (n, m, a, ia, iact, nact, z, u, d, relacc, mdeg, &
 & zzdiag, gmnew, cgrad)
    Implicit real * 8 (a-h, o-z)
@@ -1463,12 +1409,12 @@ Subroutine newcon (n, m, a, ia, iact, nact, z, u, d, relacc, mdeg, &
       Go To 30
    End If
 140 Return
-End
+End Subroutine newcon
+
 Subroutine satact (n, m, a, ia, b, xl, xu, x, iact, nact, info, z, u, &
-& xbig, relacc, tol, meql)
+  xbig, relacc, tol, meql)
    Implicit real * 8 (a-h, o-z)
-   Dimension a (ia,*), b (*), xl (*), xu (*), x (*), iact (*), z (*), u &
-  & (*), xbig (*)
+   Dimension a (ia,*), b (*), xl (*), xu (*), x (*), iact (*), z (*), u(*), xbig (*)
    If (nact == 0) Go To 50
    Do 30 k = 1, nact
 !
@@ -1534,12 +1480,13 @@ Subroutine satact (n, m, a, ia, b, xl, xu, x, iact, nact, info, z, u, &
    idrop = idrop - 1
    If (idrop > meql) Go To 40
 50 Return
-End
+End Subroutine satact
+
 Subroutine sdegen (n, m, a, ia, iact, nact, par, z, u, d, ztg, gm, &
-& relacc, ddotgm, meql, mdeg, gmnew, parnew, cgrad)
+  relacc, ddotgm, meql, mdeg, gmnew, parnew, cgrad)
    Implicit real * 8 (a-h, o-z)
    Dimension a (ia,*), iact (*), par (*), z (*), u (*), d (*), ztg (*), &
-  & gm (*), gmnew (*), parnew (*), cgrad (*)
+   gm (*), gmnew (*), parnew (*), cgrad (*)
    mp = meql + 1
    dtest = 0.0
 !
@@ -1637,7 +1584,8 @@ Subroutine sdegen (n, m, a, ia, iact, nact, par, z, u, d, ztg, gm, &
    If (nact < n) Go To 10
    ddotgm = 0.0
 120 Return
-End
+End Subroutine sdegen
+
 Subroutine sdirn (n, nact, z, d, ztg, gm, relacc, ddotgm)
    Implicit real * 8 (a-h, o-z)
    Dimension z (*), d (*), ztg (*), gm (*)
@@ -1682,9 +1630,10 @@ Subroutine sdirn (n, nact, z, d, ztg, gm, relacc, ddotgm)
 50 sumabs = sumabs + dabs (temp)
    If (ddotgm+relacc*sumabs >= 0.0) ddotgm = 0.0
 60 Return
-End
+End Subroutine sdirn
+
 Subroutine stepbd (n, m, a, ia, iact, bres, d, stepcb, ddotg, mdeg, &
-& msat, mtot, indxbd)
+  msat, mtot, indxbd)
    Implicit real * 8 (a-h, o-z)
    Dimension a (ia,*), iact (*), bres (*), d (*)
 !
@@ -1765,7 +1714,8 @@ Subroutine stepbd (n, m, a, ia, iact, bres, d, stepcb, ddotg, mdeg, &
    End If
 80 Continue
    Return
-End
+End Subroutine stepbd
+
 Subroutine zbfgs (n, x, nact, g, z, ztg, xs, gs, zznorm)
    Implicit real * 8 (a-h, o-z)
    Dimension x (*), g (*), z (*), ztg (*), xs (*), gs (*)
@@ -1846,4 +1796,98 @@ Subroutine zbfgs (n, x, nact, g, z, ztg, xs, gs, zznorm)
 80    Continue
    End If
 90 Return
-End
+End Subroutine zbfgs
+
+subroutine tolmin_test()
+!
+!     The pentagon problem.
+!
+Implicit real * 8 (a-h, o-z)
+Dimension a (10, 15), b (15), xl (6), xu (6), x (6), iact (27), par &
+& (20), w (1000)
+!
+!     The two values of ICASE provide two different values of ACC, the latter
+!     accuracy being so demanding that a return with INFO=2 occurs. The
+!     final values of the objective function in the two cases agree well
+!     and constraint violations are negligible, considering the differences
+!     between the final values of the variables.
+!
+iprint = 10
+ia = 10
+n = 6
+Do 100 icase = 1, 2
+   acc = 1.0d-6
+   If (icase == 2) acc = 1.0d-14
+!
+!     Set the components of XL, XU and X.
+!
+   Do 10 i = 1, n
+      xl (i) = - 1.0d6
+      xu (i) = 1.0d6
+10 x (i) = 0.5d0 * dfloat (i-3)
+   x (2) = 0.0d0
+   x (4) = - 1.0d0
+   x (6) = 1.0d0
+!
+!     Set the constraints.
+!
+   m = 0
+   meq = 0
+   pi = 4.0d0 * datan (1.0d0)
+   Do 30 k = 1, 5
+      theta = 0.4d0 * dfloat (k-1) * pi
+      cth = dcos (theta)
+      sth = dsin (theta)
+      Do 30 j = 2, n, 2
+         m = m + 1
+         Do 20 i = 1, n
+20       a (i, m) = 0.0d0
+         a (j-1, m) = cth
+         a (j, m) = sth
+30 b (m) = 1.0d0
+!
+!     Call the optimization package.
+!
+   info = 0
+   Print 40, acc, iprint
+40 Format (/ / 5 x, 'CALL OF GETMIN WITH  ACC =', 1 pd11.4, '  AND  IPR&
+  &INT =', i3)
+   Call getmin (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, par, &
+  & iprint, info, w, fgcalc)
+   Print 50, info
+50 Format (/ 5 x, 'RETURN FROM TOLMIN WITH INFO =', i2)
+   Call fgcalc (n, x, f, w)
+   Print 60, f
+60 Format (/ 5 x, 'FINAL VALUE OF OBJECTIVE FUNCTION =', 1 pd20.12)
+   Print 70, (x(i), i=1, n)
+70 Format (/ 5 x, 'FINAL COMPONENTS OF X =' // (4 x, 1 p3d20.12))
+   Do 80 k = 1, m
+      Do 80 i = 1, n
+80 b (k) = b (k) - a (i, k) * x (i)
+   Print 90, (b(k), k=1, m)
+90 Format (/ 5 x, 'FINAL CONSTRAINT RESIDUALS =' // (3 x, 1 p6d12.4))
+100 Continue
+
+contains
+
+    Subroutine fgcalc (n, x, f, g)
+          Implicit real * 8 (a-h, o-z)
+          Dimension x (*), g (*)
+    !
+    !     Calculate the objective function and its gradient.
+    !
+          wa = (x(1)-x(3)) ** 2 + (x(2)-x(4)) ** 2
+          wb = (x(3)-x(5)) ** 2 + (x(4)-x(6)) ** 2
+          wc = (x(5)-x(1)) ** 2 + (x(6)-x(2)) ** 2
+          f = 1.0 / (wa**8) + 1.0 / (wb**8) + 1.0 / (wc**8)
+          g (1) = 16.0 * ((x(3)-x(1))/(wa**9)+(x(5)-x(1))/(wc**9))
+          g (2) = 16.0 * ((x(4)-x(2))/(wa**9)+(x(6)-x(2))/(wc**9))
+          g (3) = 16.0 * ((x(5)-x(3))/(wb**9)+(x(1)-x(3))/(wa**9))
+          g (4) = 16.0 * ((x(6)-x(4))/(wb**9)+(x(2)-x(4))/(wa**9))
+          g (5) = 16.0 * ((x(1)-x(5))/(wc**9)+(x(3)-x(5))/(wb**9))
+          g (6) = 16.0 * ((x(2)-x(6))/(wc**9)+(x(4)-x(6))/(wb**9))
+    End Subroutine fgcalc
+
+End subroutine tolmin_test
+
+end module tolmin_module
