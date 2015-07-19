@@ -91,7 +91,7 @@ Subroutine cobyla (n, m, x, rhobeg, rhoend, iprint, maxfun, w, iact, calcfc)
       Call cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, &
        w(icon), w(isim), w(isimi), w(idatm), w(ia), w(ivsig), w(iveta), &
        w(isigb), w(idx), w(iwork), iact, calcfc)
-      Return
+
 End Subroutine cobyla
 
 Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
@@ -532,13 +532,13 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
          If (iptem < n) Print 80, (x(i), i=iptemp, n)
       End If
       maxfun = nfvals
-      Return
+
 End Subroutine cobylb
 
 Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
   sdirn, dxnew, vmultd)
    Dimension a (n,*), b (*), dx (*), iact (*), z (n,*), zdota (*), &
-  & vmultc (*), sdirn (*), dxnew (*), vmultd (*)
+    vmultc (*), sdirn (*), dxnew (*), vmultd (*)
 !
 !     This subroutine calculates an N-component vector DX by applying the
 !     following two stages. In the first stage, DX is set to the shortest
