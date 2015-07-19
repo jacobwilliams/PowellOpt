@@ -299,7 +299,7 @@ Subroutine adjtol (n, m, a, ia, b, xl, xu, x, iact, nact, xbig, relacc, &
 & tol, meql)
       Implicit real * 8 (a-h, o-z)
       Dimension a (ia,*), b (*), xl (*), xu (*), x (*), iact (*), xbig &
-     & (*)
+       (*)
 !
 !     Set VIOL to the greatest relative constraint residual of the first
 !       NACT constraints.
@@ -346,8 +346,8 @@ Subroutine conres (n, m, a, ia, b, xl, xu, x, iact, nact, par, g, z, u, &
 & indxbd, gm, gmnew, parnew, cgrad)
       Implicit real * 8 (a-h, o-z)
       Dimension a (ia,*), b (*), xl (*), xu (*), x (*), iact (*), par &
-     & (*), g (*), z (*), u (*), xbig (*), bres (*), d (*), ztg (*), gm &
-     & (*), gmnew (*), parnew (*), cgrad (*)
+       (*), g (*), z (*), u (*), xbig (*), bres (*), d (*), ztg (*), gm &
+       (*), gmnew (*), parnew (*), cgrad (*)
       idiff = mtot - msat
 !
 !     Calculate and partition the residuals of the inactive constraints,
@@ -449,13 +449,13 @@ Subroutine conres (n, m, a, ia, b, xl, xu, x, iact, nact, par, g, z, u, &
       stepcb = 0.0
       If (idiff > 0 .And. msat == mtot) Go To 60
       Call getd (n, m, a, ia, iact, nact, par, g, z, u, d, ztg, relacc, &
-     & ddotg, meql, mdeg, gm, gmnew, parnew, cgrad)
+       ddotg, meql, mdeg, gm, gmnew, parnew, cgrad)
 !
 !     Calculate the (bound on the) step-length due to the constraints.
 !
       If (ddotg < 0.0) Then
          Call stepbd (n, m, a, ia, iact, bres, d, stepcb, ddotg, mdeg, &
-        & msat, mtot, indxbd)
+          msat, mtot, indxbd)
       End If
       If (idiff == 0) sumres = ddotg
 60    Return
@@ -561,7 +561,7 @@ Subroutine eqcons (n, m, meq, a, ia, b, xu, iact, meql, info, z, u, &
 & relacc, am, cgrad)
       Implicit real * 8 (a-h, o-z)
       Dimension a (ia,*), b (*), xu (*), iact (*), z (*), u (*), am &
-     & (*), cgrad (*)
+       (*), cgrad (*)
 !
 !     Try to add the next equality constraint to the active set.
 !
@@ -570,7 +570,7 @@ Subroutine eqcons (n, m, meq, a, ia, b, xu, iact, meql, info, z, u, &
             np = meql + 1
             iact (np) = keq
             Call addcon (n, m, a, ia, iact, meql, z, u, relacc, np, am, &
-           & cgrad)
+             cgrad)
             If (meql == np) Go To 50
          End If
 !
@@ -620,7 +620,7 @@ Subroutine getd (n, m, a, ia, iact, nact, par, g, z, u, d, ztg, relacc, &
 & ddotg, meql, mdeg, gm, gmnew, parnew, cgrad)
       Implicit real * 8 (a-h, o-z)
       Dimension a (ia,*), iact (*), par (*), g (*), z (*), u (*), d &
-     & (*), ztg (*), gm (*), gmnew (*), parnew (*), cgrad (*)
+       (*), ztg (*), gm (*), gmnew (*), parnew (*), cgrad (*)
 !
 !     Initialize GM and cycle backwards through the active set.
 !
@@ -667,7 +667,7 @@ Subroutine getd (n, m, a, ia, iact, nact, par, g, z, u, d, ztg, relacc, &
       ddotg = 0.0
       If (nact < n) Then
          Call sdegen (n, m, a, ia, iact, nact, par, z, u, d, ztg, gm, &
-        & relacc, ddotgm, meql, mdeg, gmnew, parnew, cgrad)
+          relacc, ddotgm, meql, mdeg, gmnew, parnew, cgrad)
          If (ddotgm < 0.0) Then
             Do 60 i = 1, n
 60          ddotg = ddotg + d (i) * g (i)
@@ -681,14 +681,14 @@ Subroutine getfes (n, m, a, ia, b, xl, xu, x, iact, nact, par, info, g, &
 & parnew, cgrad)
       Implicit real * 8 (a-h, o-z)
       Dimension a (ia,*), b (*), xl (*), xu (*), x (*), iact (*), par &
-     & (*), g (*), z (*), u (*), xbig (*), bres (*), d (*), ztg (*), gm &
-     & (*), gmnew (*), parnew (*), cgrad (*)
+       (*), g (*), z (*), u (*), xbig (*), bres (*), d (*), ztg (*), gm &
+       (*), gmnew (*), parnew (*), cgrad (*)
 !
 !     Make the correction to X for the active constraints.
 !
       info = 0
 10    Call satact (n, m, a, ia, b, xl, xu, x, iact, nact, info, z, u, &
-     & xbig, relacc, tol, meql)
+       xbig, relacc, tol, meql)
       If (info > 0) msat = nact
       If (msat == mtot) Go To 60
 !
@@ -697,8 +697,8 @@ Subroutine getfes (n, m, a, ia, b, xl, xu, x, iact, nact, par, info, g, &
 20    msatk = msat
       sumrsk = 0.0
 30    Call conres (n, m, a, ia, b, xl, xu, x, iact, nact, par, g, z, u, &
-     & xbig, bres, d, ztg, relacc, tol, stepcb, sumres, meql, msat, &
-     & mtot, indxbd, gm, gmnew, parnew, cgrad)
+       xbig, bres, d, ztg, relacc, tol, stepcb, sumres, meql, msat, &
+       mtot, indxbd, gm, gmnew, parnew, cgrad)
 !
 !     Include the new constraint in the active set.
 !
@@ -707,7 +707,7 @@ Subroutine getfes (n, m, a, ia, b, xl, xu, x, iact, nact, par, info, g, &
             x (i) = x (i) + stepcb * d (i)
 40       xbig (i) = dmax1 (xbig(i), dabs(x(i)))
          Call addcon (n, m, a, ia, iact, nact, z, u, relacc, indxbd, &
-        & gmnew, cgrad)
+          gmnew, cgrad)
       End If
 !
 !     Test whether to continue the search for feasibility.
@@ -726,7 +726,7 @@ Subroutine getfes (n, m, a, ia, b, xl, xu, x, iact, nact, par, info, g, &
 !
 50       If (tol > relacc) Then
             Call adjtol (n, m, a, ia, b, xl, xu, x, iact, nact, xbig, &
-           & relacc, tol, meql)
+             relacc, tol, meql)
             Go To 10
          End If
       End If
@@ -783,7 +783,7 @@ Subroutine ktvec (n, m, a, ia, iact, nact, par, g, reskt, z, u, bres, &
 & relaxf, meql, ssqkt, parw, resktw)
       Implicit real * 8 (a-h, o-z)
       Dimension a (ia,*), iact (*), par (*), g (*), reskt (*), z (*), u &
-     & (*), bres (*), parw (*), resktw (*)
+       (*), bres (*), parw (*), resktw (*)
 !
 !     Calculate the Lagrange parameters and the residual vector.
 !
@@ -937,7 +937,7 @@ Subroutine lsrch (n, x, g, d, xs, gs, relacc, stepcb, ddotg, f, step, &
 !
       If (f >= fbase+0.1*(step-sbase)*ddotgb) Then
          If (stphgh > 0.0 .Or. f > fbase .Or. dgmid > &
-        & 0.5*ddotg) Then
+          0.5*ddotg) Then
             stphgh = step
             fhgh = f
             dghgh = dgmid
@@ -963,7 +963,7 @@ Subroutine lsrch (n, x, g, d, xs, gs, relacc, stepcb, ddotg, f, step, &
          Go To 20
       Else If (icount == 1 .Or. stplow > 0.0) Then
          dgknot = 2.0 * (fhgh-flow) / (stphgh-stplow) - 0.5 * &
-        & (dglow+dghgh)
+          (dglow+dghgh)
          If (dgknot >= 0.0) Then
             ratio = dmax1 (0.1d0, 0.5d0*dglow/(dglow-dgknot))
          Else
@@ -1030,7 +1030,7 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
 !
    If (meq > 0) Then
       Call eqcons (n, m, meq, a, ia, b, xu, iact, meql, info, z, u, &
-     & relacc, xs, gs)
+       relacc, xs, gs)
       If (info == 5) Then
          If (iprint /= 0) Print 1030
 1030     Format (/ 5 x, 'ERROR RETURN FROM GETMIN BECAUSE THE',&
@@ -1104,7 +1104,7 @@ Subroutine minflc (n, m, meq, a, ia, b, xl, xu, x, acc, iact, nact, &
    If (tol > relacc .And. nact > 0) Then
       If (nfvals /= nfmax) Then
          Call adjtol (n, m, a, ia, b, xl, xu, x, iact, nact, xbig, &
-        & relacc, tol, meql)
+          relacc, tol, meql)
          Go To 30
       Else
          info = 8
@@ -1237,7 +1237,7 @@ Subroutine minfun (n, m, a, ia, b, xl, xu, x, acc, iact, nact, par, &
          End If
       End If
       Call addcon (n, m, a, ia, iact, nact, z, u, relacc, indxbd, xs, &
-     & gs)
+       gs)
    End If
    Go To 10
 !

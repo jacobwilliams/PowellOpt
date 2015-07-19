@@ -625,7 +625,7 @@ Subroutine lagmax (n, g, h, rho, d, v, vmax)
 120   d (i) = scale * d (i)
       gnorm = dsqrt (gg)
       If (gnorm*dd <= 0.5d-2*rho*dabs(dhd) .Or. vv/dd <= 1.0d-4) &
-     & Then
+       Then
          vmax = dabs (scale*(gd+half*scale*dhd))
          Go To 170
       End If
@@ -677,7 +677,7 @@ Subroutine lagmax (n, g, h, rho, d, v, vmax)
       tempa = dabs (dlin) + half * dabs (vmu+vhv)
       tempb = dabs (vlin) + half * dabs (ghg-vmu)
       tempc = halfrt * (dabs(dlin)+dabs(vlin)) + 0.25d0 * dabs &
-     & (ghg+vhv)
+       (ghg+vhv)
       If (tempa >= tempb .And. tempa >= tempc) Then
          tempd = dsign (rho, dlin*(vmu+vhv))
          tempv = zero
@@ -776,7 +776,7 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
                jp = j + 1
                Do 60 i = jp, n
 60             h (i, j) = h (i, j) - w (i) * z (j) - w (j) * &
-              & (z(i)-wz*w(i))
+                (z(i)-wz*w(i))
             End If
 70       Continue
       End If

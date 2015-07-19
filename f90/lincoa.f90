@@ -291,7 +291,7 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
                ip = npt + i
                Do 50 j = 1, i
 50       bmat (ip, j) = bmat (ip, j) + step (i) * w (j) + w (i) * step &
-        & (j)
+          (j)
 !
 !     Then the revisions of BMAT that depend on ZMAT are calculated.
 !
@@ -401,8 +401,8 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
             Do 180 k = 1, npt
 180      pqw (k) = pqw (k) + temp * zmat (k, j)
          Call qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, &
-        & rescon, qfac, kopt, knew, del, step, w, pqw, w(np), w(np+m), &
-        & ifeas)
+          rescon, qfac, kopt, knew, del, step, w, pqw, w(np), w(np+m), &
+          ifeas)
       End If
 !
 !     Set VQUAD to the change to the quadratic model when the move STEP is
@@ -513,7 +513,7 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
 !       present, but a positive value is picked by subroutine UPDATE.
 !
       Call update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, &
-     & knew, pqw, w)
+       knew, pqw, w)
       If (knew == 0) Then
          If (iprint > 0) Print 320
 320      Format (/ 4 x, 'Return from LINCOA because the denominator of the updating formula is zero.')
@@ -615,7 +615,7 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
                Do 450 i = 1, j
                   ih = ih + 1
                   If (i < j) gopt (j) = gopt (j) + hq (ih) * step &
-                 & (i)
+                   (i)
 450         gopt (i) = gopt (i) + hq (ih) * step (j)
             Do 460 k = 1, npt
                temp = pq (k) * sp (npt+k)
@@ -896,7 +896,7 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
                Do 190 i = 1, n
                   temp = cosv * qfac (i, j) + sinv * qfac (i, j+1)
                   qfac (i, j+1) = - sinv * qfac (i, j) + cosv * qfac &
-                 & (i, j+1)
+                   (i, j+1)
 190            qfac (i, j) = temp
             End If
          End If
@@ -988,7 +988,7 @@ Subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, &
             Do 820 j = jcp + 1, nact
                temp = sval * rfac (jw+jc) + cval * rfac (jw+jcp)
                rfac (jw+jcp) = cval * rfac (jw+jc) - sval * rfac &
-              & (jw+jcp)
+                (jw+jcp)
                rfac (jw+jc) = temp
 820         jw = jw + j
          End If
@@ -1142,7 +1142,7 @@ Subroutine prelim (n, npt, m, amat, b, x, rhobeg, iprint, xbase, xpt, &
             Do 110 j = 1, n
 110      sp (npt+k) = sp (npt+k) + xpt (k, j) * step (j)
          Call update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, &
-        & kbase, nf, pqw, w)
+          kbase, nf, pqw, w)
          Do 120 i = 1, n
 120      xpt (nf, i) = step (i)
       End If

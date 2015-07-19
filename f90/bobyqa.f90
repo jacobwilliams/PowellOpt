@@ -141,9 +141,9 @@ Subroutine bobyqa (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, w, calfun)
 !     Make the call of BOBYQB.
 !
       Call bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, &
-     & w(ixb), w(ixp), w(ifv), w(ixo), w(igo), w(ihq), w(ipq), &
-     & w(ibmat), w(izmat), ndim, w(isl), w(isu), w(ixn), w(ixa), w(id), &
-     & w(ivl), w(iw), calfun)
+       w(ixb), w(ixp), w(ifv), w(ixo), w(igo), w(ihq), w(ipq), &
+       w(ibmat), w(izmat), ndim, w(isl), w(isu), w(ixn), w(ixa), w(id), &
+       w(ivl), w(iw), calfun)
 40    Return
 End Subroutine bobyqa
 
@@ -152,9 +152,9 @@ Subroutine bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, &
  xalt, d, vlag, w, calfun)
       Implicit real * 8 (a-h, o-z)
       Dimension x (*), xl (*), xu (*), xbase (*), xpt (npt,*), fval &
-     & (*), xopt (*), gopt (*), hq (*), pq (*), bmat (ndim,*), zmat &
-     & (npt,*), sl (*), su (*), xnew (*), xalt (*), d (*), vlag (*), w &
-     & (*)
+       (*), xopt (*), gopt (*), hq (*), pq (*), bmat (ndim,*), zmat &
+       (npt,*), sl (*), su (*), xnew (*), xalt (*), d (*), vlag (*), w &
+       (*)
     procedure(func) :: calfun
 !
 !     The arguments N, NPT, X, XL, XU, RHOBEG, RHOEND, IPRINT and MAXFUN
@@ -209,7 +209,7 @@ Subroutine bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, &
 !     less than NPT. GOPT will be updated if KOPT is different from KBASE.
 !
       Call prelim (n, npt, x, xl, xu, rhobeg, iprint, maxfun, xbase, &
-     & xpt, fval, gopt, hq, pq, bmat, zmat, ndim, sl, su, nf, kopt, calfun)
+       xpt, fval, gopt, hq, pq, bmat, zmat, ndim, sl, su, nf, kopt, calfun)
       xoptsq = zero
       Do 10 i = 1, n
          xopt (i) = xpt (kopt, i)
@@ -261,7 +261,7 @@ Subroutine bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, &
 !     label 650 or 680 with NTRITS=-1, instead of calculating F at XNEW.
 !
 60    Call trsbox (n, npt, xpt, xopt, gopt, hq, pq, sl, su, delta, &
-     & xnew, d, w, w(np), w(np+n), w(np+2*n), w(np+3*n), dsq, crvmin)
+       xnew, d, w, w(np), w(np+n), w(np+2*n), w(np+3*n), dsq, crvmin)
       dnorm = dmin1 (delta, dsqrt(dsq))
       If (dnorm < half*rho) Then
          ntrits = - 1
@@ -277,7 +277,7 @@ Subroutine bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, &
          errbig = dmax1 (diffa, diffb, diffc)
          frhosq = 0.125d0 * rho * rho
          If (crvmin > zero .And. errbig > frhosq*crvmin) Go To &
-        & 650
+          650
          bdtol = errbig / rho
          Do 80 j = 1, n
             bdtest = bdtol
@@ -317,7 +317,7 @@ Subroutine bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, &
                ip = npt + i
                Do 110 j = 1, i
 110      bmat (ip, j) = bmat (ip, j) + w (i) * vlag (j) + vlag (i) * w &
-        & (j)
+          (j)
 !
 !     Then the revisions of BMAT that depend on ZMAT are calculated.
 !
@@ -377,8 +377,8 @@ Subroutine bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, &
 190   nfsav = nf
       kbase = kopt
       Call rescue (n, npt, xl, xu, iprint, maxfun, xbase, xpt, fval, &
-     & xopt, gopt, hq, pq, bmat, zmat, ndim, sl, su, nf, delta, kopt, &
-     & vlag, w, w(n+np), w(ndim+np), calfun)
+       xopt, gopt, hq, pq, bmat, zmat, ndim, sl, su, nf, delta, kopt, &
+       vlag, w, w(n+np), w(ndim+np), calfun)
 !
 !     XOPT is updated now in case the branch below to label 720 is taken.
 !     Any updating of GOPT occurs after the branch below to label 20, which
@@ -414,7 +414,7 @@ Subroutine bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, &
 !     going to be made when the denominator is calculated.
 !
 210   Call altmov (n, npt, xpt, xopt, bmat, zmat, ndim, sl, su, kopt, &
-     & knew, adelt, xnew, xalt, alpha, cauchy, w, w(np), w(ndim+1))
+       knew, adelt, xnew, xalt, alpha, cauchy, w, w(np), w(ndim+1))
       Do 220 i = 1, n
 220   d (i) = xnew (i) - xopt (i)
 !
@@ -620,7 +620,7 @@ Subroutine bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, &
 !     moved. Also update the second derivative terms of the model.
 !
       Call update (n, npt, bmat, zmat, ndim, vlag, beta, denom, knew, &
-     & w)
+       w)
       ih = 0
       pqold = pq (knew)
       pq (knew) = zero
@@ -827,7 +827,7 @@ Subroutine altmov (n, npt, xpt, xopt, bmat, zmat, ndim, sl, su, kopt, &
 
       Implicit real * 8 (a-h, o-z)
       Dimension xpt (npt,*), xopt (*), bmat (ndim,*), zmat (npt,*), sl &
-     & (*), su (*), xnew (*), xalt (*), glag (*), hcol (*), w (*)
+       (*), su (*), xnew (*), xalt (*), glag (*), hcol (*), w (*)
 !
 !     The arguments N, NPT, XPT, XOPT, BMAT, ZMAT, NDIM, SL and SU all have
 !       the same meanings as the corresponding arguments of BOBYQB.
@@ -1440,7 +1440,7 @@ Subroutine rescue (n, npt, xl, xu, iprint, maxfun, xbase, xpt, fval, &
 !     The nonnegative values of W(NDIM+K) are required in the search below.
 !
       Call update (n, npt, bmat, zmat, ndim, vlag, beta, denom, knew, &
-     & w)
+       w)
       If (nrem == 0) Go To 350
       Do 110 k = 1, npt
 110   w (ndim+k) = dabs (w(ndim+k))
@@ -1642,7 +1642,7 @@ Subroutine rescue (n, npt, xl, xu, iprint, maxfun, xbase, xpt, fval, &
                   hq (ihq) = hq (ihq) + temp * ptsaux (1, iq) ** 2
                   iw = max0 (ihp, ihq) - iabs (iq-ip)
                   hq (iw) = hq (iw) + temp * ptsaux (1, ip) * ptsaux &
-                 & (1, iq)
+                   (1, iq)
                End If
             End If
          End If

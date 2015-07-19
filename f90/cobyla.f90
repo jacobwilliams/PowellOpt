@@ -350,7 +350,7 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
       idxnew = isdirn + n
       ivmd = idxnew + n
       Call trstlp (n, m, a, con, rho, dx, ifull, iact, w(iz), &
-     & w(izdota), w(ivmc), w(isdirn), w(idxnew), w(ivmd))
+       w(izdota), w(ivmc), w(isdirn), w(idxnew), w(ivmd))
       If (ifull == 0) Then
          temp = 0.0
          Do 380 i = 1, n
@@ -512,7 +512,7 @@ Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
 580      Format (/ 3 x, 'Reduction in RHO to', 1 pe13.6, '  and PARMU =', 1 pe13.6)
          If (iprint == 2) Then
             Print 70, nfvals, datmat (mp, np), datmat (mpp, np), &
-           & (sim(i, np), i=1, iptem)
+             (sim(i, np), i=1, iptem)
             If (iptem < n) Print 80, (x(i), i=iptemp, n)
          End If
          Go To 140
@@ -1156,7 +1156,7 @@ contains
     !
              f = x (1) * x (2) * x (3)
              con (1) = 1.0 - x (1) ** 2 - 2.0 * x (2) ** 2 - 3.0 * x (3) ** &
-            & 2
+              2
           Else If (nprob == 4) Then
     !
     !     Test problem 4 (Weak Rosenbrock)
@@ -1187,35 +1187,35 @@ contains
     !     Test problem 8 (Rosen-Suzuki)
     !
              f = x (1) ** 2 + x (2) ** 2 + 2.0 * x (3) ** 2 + x (4) ** 2 - &
-            & 5.0 * x (1) - 5.0 * x (2) - 21.0 * x (3) + 7.0 * x (4)
+              5.0 * x (1) - 5.0 * x (2) - 21.0 * x (3) + 7.0 * x (4)
              con (1) = 8.0 - x (1) ** 2 - x (2) ** 2 - x (3) ** 2 - x (4) &
-            & ** 2 - x (1) + x (2) - x (3) + x (4)
+              ** 2 - x (1) + x (2) - x (3) + x (4)
              con (2) = 10.0 - x (1) ** 2 - 2.0 * x (2) ** 2 - x (3) ** 2 - &
-            & 2.0 * x (4) ** 2 + x (1) + x (4)
+              2.0 * x (4) ** 2 + x (1) + x (4)
              con (3) = 5.0 - 2.0 * x (1) ** 2 - x (2) ** 2 - x (3) ** 2 - &
-            & 2.0 * x (1) + x (2) + x (4)
+              2.0 * x (1) + x (2) + x (4)
           Else If (nprob == 9) Then
     !
     !     Test problem 9 (Hock and Schittkowski 100)
     !
              f = (x(1)-10.0) ** 2 + 5.0 * (x(2)-12.0) ** 2 + x (3) ** 4 + &
-            & 3.0 * (x(4)-11.0) ** 2 + 10.0 * x (5) ** 6 + 7.0 * x (6) ** 2 &
-            & + x (7) ** 4 - 4.0 * x (6) * x (7) - 10.0 * x (6) - 8.0 * x &
-            & (7)
+              3.0 * (x(4)-11.0) ** 2 + 10.0 * x (5) ** 6 + 7.0 * x (6) ** 2 &
+              + x (7) ** 4 - 4.0 * x (6) * x (7) - 10.0 * x (6) - 8.0 * x &
+              (7)
              con (1) = 127.0 - 2.0 * x (1) ** 2 - 3.0 * x (2) ** 4 - x (3) &
-            & - 4.0 * x (4) ** 2 - 5.0 * x (5)
+              - 4.0 * x (4) ** 2 - 5.0 * x (5)
              con (2) = 282.0 - 7.0 * x (1) - 3.0 * x (2) - 10.0 * x (3) ** &
-            & 2 - x (4) + x (5)
+              2 - x (4) + x (5)
              con (3) = 196.0 - 23.0 * x (1) - x (2) ** 2 - 6.0 * x (6) ** 2 &
-            & + 8.0 * x (7)
+              + 8.0 * x (7)
              con (4) = - 4.0 * x (1) ** 2 - x (2) ** 2 + 3.0 * x (1) * x &
-            & (2) - 2.0 * x (3) ** 2 - 5.0 * x (6) + 11.0 * x (7)
+              (2) - 2.0 * x (3) ** 2 - 5.0 * x (6) + 11.0 * x (7)
           Else If (nprob == 10) Then
     !
     !     Test problem 10 (Hexagon area)
     !
              f = - 0.5 * &
-            & (x(1)*x(4)-x(2)*x(3)+x(3)*x(9)-x(5)*x(9)+x(5)*x(8)-x(6)*x(7))
+              (x(1)*x(4)-x(2)*x(3)+x(3)*x(9)-x(5)*x(9)+x(5)*x(8)-x(6)*x(7))
              con (1) = 1.0 - x (3) ** 2 - x (4) ** 2
              con (2) = 1.0 - x (9) ** 2
              con (3) = 1.0 - x (5) ** 2 - x (6) ** 2

@@ -231,7 +231,7 @@ Subroutine bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
       denex (4) = alpha * den (4) + tempa + par (2) - par (3)
       tempa = two * prod (knew, 1) * prod (knew, 5)
       denex (5) = alpha * den (5) + tempa + prod (knew, 2) * prod &
-     & (knew, 3)
+       (knew, 3)
       denex (8) = alpha * den (8) + par (4) - par (5)
       denex (9) = alpha * den (9) + prod (knew, 4) * prod (knew, 5)
 !
@@ -835,7 +835,7 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
 !
    If (knew > 0) Then
       Call biglag (n, npt, xopt, xpt, bmat, zmat, idz, ndim, knew, &
-     & dstep, d, alpha, vlag, vlag(npt+1), w, w(np), w(np+n))
+       dstep, d, alpha, vlag, vlag(npt+1), w, w(np), w(np+n))
    End If
 !
 !     Calculate VLAG and BETA for the current choice of D. The first NPT
@@ -888,7 +888,7 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
       temp = one + alpha * beta / vlag (knew) ** 2
       If (dabs(temp) <= 0.8d0) Then
          Call bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
-        & knew, d, w, vlag, beta, xnew, w(ndim+1), w(6*ndim+1))
+          knew, d, w, vlag, beta, xnew, w(ndim+1), w(6*ndim+1))
       End If
    End If
 !
