@@ -1,95 +1,102 @@
-subroutine calcfc (n,m,x,f,con)
-common nprob
-dimension x(*),con(*)
-if (nprob .eq. 1) then
+Subroutine calcfc (n, m, x, f, con)
+      Common nprob
+      Dimension x (*), con (*)
+      If (nprob .Eq. 1) Then
 !
 !     Test problem 1 (Simple quadratic)
-!     
-    f=10.0*(x(1)+1.0)**2+x(2)**2
-else if (nprob .eq. 2) then
+!
+         f = 10.0 * (x(1)+1.0) ** 2 + x (2) ** 2
+      Else If (nprob .Eq. 2) Then
 !
 !    Test problem 2 (2D unit circle calculation)
 !
-    f=x(1)*x(2)
-    con(1)=1.0-x(1)**2-x(2)**2
-else if (nprob .eq. 3) then
+         f = x (1) * x (2)
+         con (1) = 1.0 - x (1) ** 2 - x (2) ** 2
+      Else If (nprob .Eq. 3) Then
 !
 !     Test problem 3 (3D ellipsoid calculation)
 !
-    f=x(1)*x(2)*x(3)
-    con(1)=1.0-x(1)**2-2.0*x(2)**2-3.0*x(3)**2
-else if (nprob .eq. 4) then
+         f = x (1) * x (2) * x (3)
+         con (1) = 1.0 - x (1) ** 2 - 2.0 * x (2) ** 2 - 3.0 * x (3) ** &
+        & 2
+      Else If (nprob .Eq. 4) Then
 !
 !     Test problem 4 (Weak Rosenbrock)
 !
-    f=(x(1)**2-x(2))**2+(1.0+x(1))**2
-else if (nprob .eq. 5) then
+         f = (x(1)**2-x(2)) ** 2 + (1.0+x(1)) ** 2
+      Else If (nprob .Eq. 5) Then
 !
 !     Test problem 5 (Intermediate Rosenbrock)
 !
-    f=10.0*(x(1)**2-x(2))**2+(1.0+x(1))**2
-else if (nprob .eq. 6) then
+         f = 10.0 * (x(1)**2-x(2)) ** 2 + (1.0+x(1)) ** 2
+      Else If (nprob .Eq. 6) Then
 !
 !     Test problem 6 (Equation (9.1.15) in Fletcher's book)
 !
-    f=-x(1)-x(2)
-    con(1)=x(2)-x(1)**2
-    con(2)=1.0-x(1)**2-x(2)**2
-else if (nprob .eq. 7) then
+         f = - x (1) - x (2)
+         con (1) = x (2) - x (1) ** 2
+         con (2) = 1.0 - x (1) ** 2 - x (2) ** 2
+      Else If (nprob .Eq. 7) Then
 !
 !     Test problem 7 (Equation (14.4.2) in Fletcher's book)
 !
-    f=x(3)
-    con(1)=5.0*x(1)-x(2)+x(3)
-    con(2)=x(3)-x(1)**2-x(2)**2-4.0*x(2)
-    con(3)=x(3)-5.0*x(1)-x(2)
-else if (nprob .eq. 8) then
+         f = x (3)
+         con (1) = 5.0 * x (1) - x (2) + x (3)
+         con (2) = x (3) - x (1) ** 2 - x (2) ** 2 - 4.0 * x (2)
+         con (3) = x (3) - 5.0 * x (1) - x (2)
+      Else If (nprob .Eq. 8) Then
 !
 !     Test problem 8 (Rosen-Suzuki)
 !
-    f=x(1)**2+x(2)**2+2.0*x(3)**2+x(4)**2-5.0*x(1)-5.0*x(2) &
-      -21.0*x(3)+7.0*x(4)
-    con(1)=8.0-x(1)**2-x(2)**2-x(3)**2-x(4)**2-x(1)+x(2) &
-      -x(3)+x(4)
-    con(2)=10.0-x(1)**2-2.0*x(2)**2-x(3)**2-2.0*x(4)**2+x(1)+x(4)
-    con(3)=5.0-2.0*x(1)**2-x(2)**2-x(3)**2-2.0*x(1)+x(2)+x(4)
-else if (nprob .eq. 9) then
+         f = x (1) ** 2 + x (2) ** 2 + 2.0 * x (3) ** 2 + x (4) ** 2 - &
+        & 5.0 * x (1) - 5.0 * x (2) - 21.0 * x (3) + 7.0 * x (4)
+         con (1) = 8.0 - x (1) ** 2 - x (2) ** 2 - x (3) ** 2 - x (4) &
+        & ** 2 - x (1) + x (2) - x (3) + x (4)
+         con (2) = 10.0 - x (1) ** 2 - 2.0 * x (2) ** 2 - x (3) ** 2 - &
+        & 2.0 * x (4) ** 2 + x (1) + x (4)
+         con (3) = 5.0 - 2.0 * x (1) ** 2 - x (2) ** 2 - x (3) ** 2 - &
+        & 2.0 * x (1) + x (2) + x (4)
+      Else If (nprob .Eq. 9) Then
 !
 !     Test problem 9 (Hock and Schittkowski 100)
 !
-    f=(x(1)-10.0)**2+5.0*(x(2)-12.0)**2+x(3)**4+3.0*(x(4)-11.0)**2 &
-      +10.0*x(5)**6+7.0*x(6)**2+x(7)**4-4.0*x(6)*x(7)-10.0*x(6) &
-      -8.0*x(7)
-    con(1)=127.0-2.0*x(1)**2-3.0*x(2)**4-x(3)-4.0*x(4)**2-5.0*x(5)
-    con(2)=282.0-7.0*x(1)-3.0*x(2)-10.0*x(3)**2-x(4)+x(5)
-    con(3)=196.0-23.0*x(1)-x(2)**2-6.0*x(6)**2+8.0*x(7)
-    con(4)=-4.0*x(1)**2-x(2)**2+3.0*x(1)*x(2)-2.0*x(3)**2-5.0*x(6) &
-      +11.0*x(7)
-else if (nprob .eq. 10) then
+         f = (x(1)-10.0) ** 2 + 5.0 * (x(2)-12.0) ** 2 + x (3) ** 4 + &
+        & 3.0 * (x(4)-11.0) ** 2 + 10.0 * x (5) ** 6 + 7.0 * x (6) ** 2 &
+        & + x (7) ** 4 - 4.0 * x (6) * x (7) - 10.0 * x (6) - 8.0 * x &
+        & (7)
+         con (1) = 127.0 - 2.0 * x (1) ** 2 - 3.0 * x (2) ** 4 - x (3) &
+        & - 4.0 * x (4) ** 2 - 5.0 * x (5)
+         con (2) = 282.0 - 7.0 * x (1) - 3.0 * x (2) - 10.0 * x (3) ** &
+        & 2 - x (4) + x (5)
+         con (3) = 196.0 - 23.0 * x (1) - x (2) ** 2 - 6.0 * x (6) ** 2 &
+        & + 8.0 * x (7)
+         con (4) = - 4.0 * x (1) ** 2 - x (2) ** 2 + 3.0 * x (1) * x &
+        & (2) - 2.0 * x (3) ** 2 - 5.0 * x (6) + 11.0 * x (7)
+      Else If (nprob .Eq. 10) Then
 !
 !     Test problem 10 (Hexagon area)
 !
-    f=-0.5*(x(1)*x(4)-x(2)*x(3)+x(3)*x(9)-x(5)*x(9)+x(5)*x(8) &
-      -x(6)*x(7))
-    con(1)=1.0-x(3)**2-x(4)**2
-    con(2)=1.0-x(9)**2
-    con(3)=1.0-x(5)**2-x(6)**2
-    con(4)=1.0-x(1)**2-(x(2)-x(9))**2
-    con(5)=1.0-(x(1)-x(5))**2-(x(2)-x(6))**2
-    con(6)=1.0-(x(1)-x(7))**2-(x(2)-x(8))**2
-    con(7)=1.0-(x(3)-x(5))**2-(x(4)-x(6))**2
-    con(8)=1.0-(x(3)-x(7))**2-(x(4)-x(8))**2
-    con(9)=1.0-x(7)**2-(x(8)-x(9))**2
-    con(10)=x(1)*x(4)-x(2)*x(3)
-    con(11)=x(3)*x(9)
-    con(12)=-x(5)*x(9)
-    con(13)=x(5)*x(8)-x(6)*x(7)
-    con(14)=x(9)
-end if
-return
-end
-subroutine cobyla (n,m,x,rhobeg,rhoend,iprint,maxfun,w,iact)
-dimension x(*),w(*),iact(*)
+         f = - 0.5 * &
+        & (x(1)*x(4)-x(2)*x(3)+x(3)*x(9)-x(5)*x(9)+x(5)*x(8)-x(6)*x(7))
+         con (1) = 1.0 - x (3) ** 2 - x (4) ** 2
+         con (2) = 1.0 - x (9) ** 2
+         con (3) = 1.0 - x (5) ** 2 - x (6) ** 2
+         con (4) = 1.0 - x (1) ** 2 - (x(2)-x(9)) ** 2
+         con (5) = 1.0 - (x(1)-x(5)) ** 2 - (x(2)-x(6)) ** 2
+         con (6) = 1.0 - (x(1)-x(7)) ** 2 - (x(2)-x(8)) ** 2
+         con (7) = 1.0 - (x(3)-x(5)) ** 2 - (x(4)-x(6)) ** 2
+         con (8) = 1.0 - (x(3)-x(7)) ** 2 - (x(4)-x(8)) ** 2
+         con (9) = 1.0 - x (7) ** 2 - (x(8)-x(9)) ** 2
+         con (10) = x (1) * x (4) - x (2) * x (3)
+         con (11) = x (3) * x (9)
+         con (12) = - x (5) * x (9)
+         con (13) = x (5) * x (8) - x (6) * x (7)
+         con (14) = x (9)
+      End If
+      Return
+End
+Subroutine cobyla (n, m, x, rhobeg, rhoend, iprint, maxfun, w, iact)
+      Dimension x (*), w (*), iact (*)
 !
 !     This subroutine minimizes an objective function F(X) subject to M
 !     inequality constraints on X, where X is a vector of variables that has
@@ -101,7 +108,7 @@ dimension x(*),w(*),iact(*)
 !     automatically from RHOBEG to RHOEND. For each RHO the subroutine tries
 !     to achieve a good vector of variables for the current size, and then
 !     RHO is reduced until the value RHOEND is reached. Therefore RHOBEG and
-!     RHOEND should be set to reasonable initial changes to and the required   
+!     RHOEND should be set to reasonable initial changes to and the required
 !     accuracy in the variables respectively, but this accuracy should be
 !     viewed as a subject for experimentation because it is not guaranteed.
 !     The subroutine has an advantage over many of its competitors, however,
@@ -146,26 +153,26 @@ dimension x(*),w(*),iact(*)
 !     Partition the working space array W to provide the storage that is needed
 !     for the main calculation.
 !
-mpp=m+2
-icon=1
-isim=icon+mpp
-isimi=isim+n*n+n
-idatm=isimi+n*n
-ia=idatm+n*mpp+mpp
-ivsig=ia+m*n+n
-iveta=ivsig+n
-isigb=iveta+n
-idx=isigb+n
-iwork=idx+n
-call cobylb (n,m,mpp,x,rhobeg,rhoend,iprint,maxfun,w(icon), &
-  w(isim),w(isimi),w(idatm),w(ia),w(ivsig),w(iveta),w(isigb), &
-  w(idx),w(iwork),iact)
-return
-end
-subroutine cobylb (n,m,mpp,x,rhobeg,rhoend,iprint,maxfun, &
-  con,sim,simi,datmat,a,vsig,veta,sigbar,dx,w,iact)
-dimension x(*),con(*),sim(n,*),simi(n,*),datmat(mpp,*), &
-  a(n,*),vsig(*),veta(*),sigbar(*),dx(*),w(*),iact(*)
+      mpp = m + 2
+      icon = 1
+      isim = icon + mpp
+      isimi = isim + n * n + n
+      idatm = isimi + n * n
+      ia = idatm + n * mpp + mpp
+      ivsig = ia + m * n + n
+      iveta = ivsig + n
+      isigb = iveta + n
+      idx = isigb + n
+      iwork = idx + n
+      Call cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, &
+     & w(icon), w(isim), w(isimi), w(idatm), w(ia), w(ivsig), w(iveta), &
+     & w(isigb), w(idx), w(iwork), iact)
+      Return
+End
+Subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, &
+& sim, simi, datmat, a, vsig, veta, sigbar, dx, w, iact)
+      Dimension x (*), con (*), sim (n,*), simi (n,*), datmat (mpp,*), &
+     & a (n,*), vsig (*), veta (*), sigbar (*), dx (*), w (*), iact (*)
 !
 !     Set the initial values of some parameters. The last column of SIM holds
 !     the optimal vertex of the current simplex, and the preceding N columns
@@ -173,58 +180,58 @@ dimension x(*),con(*),sim(n,*),simi(n,*),datmat(mpp,*), &
 !     Further, SIMI holds the inverse of the matrix that is contained in the
 !     first N columns of SIM.
 !
-iptem=min0(n,5)
-iptemp=iptem+1
-np=n+1
-mp=m+1
-alpha=0.25
-beta=2.1
-gamma=0.5
-delta=1.1
-rho=rhobeg
-parmu=0.0
-if (iprint .ge. 2) print 10, rho
-10 format (/3x,'The initial value of RHO is',1pe13.6,2x, &
-  'and PARMU is set to zero.')
-nfvals=0
-temp=1.0/rho
-do 30 i=1,n
-sim(i,np)=x(i)
-do 20 j=1,n
-sim(i,j)=0.0
-20 simi(i,j)=0.0
-sim(i,i)=rho
-30 simi(i,i)=temp
-jdrop=np
-ibrnch=0
+      iptem = min0 (n, 5)
+      iptemp = iptem + 1
+      np = n + 1
+      mp = m + 1
+      alpha = 0.25
+      beta = 2.1
+      gamma = 0.5
+      delta = 1.1
+      rho = rhobeg
+      parmu = 0.0
+      If (iprint .Ge. 2) Print 10, rho
+10    Format (/ 3 x, 'The initial value of RHO is', 1 pe13.6, 2 x, 'and&
+     & PARMU is set to zero.')
+      nfvals = 0
+      temp = 1.0 / rho
+      Do 30 i = 1, n
+         sim (i, np) = x (i)
+         Do 20 j = 1, n
+            sim (i, j) = 0.0
+20       simi (i, j) = 0.0
+         sim (i, i) = rho
+30    simi (i, i) = temp
+      jdrop = np
+      ibrnch = 0
 !
 !     Make the next call of the user-supplied subroutine CALCFC. These
 !     instructions are also used for calling CALCFC during the iterations of
 !     the algorithm.
 !
-40 if (nfvals .ge. maxfun .and. nfvals .gt. 0) then
-    if (iprint .ge. 1) print 50
-50     format (/3x,'Return from subroutine COBYLA because the ', &
-      'MAXFUN limit has been reached.')
-    goto 600
-end if
-nfvals=nfvals+1
-call calcfc (n,m,x,f,con)
-resmax=0.0
-if (m .gt. 0) then
-    do 60 k=1,m
-60     resmax=amax1(resmax,-con(k))
-end if
-if (nfvals .eq. iprint-1 .or. iprint .eq. 3) then
-    print 70, nfvals,f,resmax,(x(i),i=1,iptem)
-70     format (/3x,'NFVALS =',i5,3x,'F =',1pe13.6,4x,'MAXCV =', &
-      1pe13.6/3x,'X =',1pe13.6,1p4e15.6)
-    if (iptem .lt. n) print 80, (x(i),i=iptemp,n)
-80     format (1pe19.6,1p4e15.6)
-end if
-con(mp)=f
-con(mpp)=resmax
-if (ibrnch .eq. 1) goto 440
+40    If (nfvals .Ge. maxfun .And. nfvals .Gt. 0) Then
+         If (iprint .Ge. 1) Print 50
+50       Format (/ 3 x, 'Return from subroutine COBYLA because the ', '&
+        &MAXFUN limit has been reached.')
+         Go To 600
+      End If
+      nfvals = nfvals + 1
+      Call calcfc (n, m, x, f, con)
+      resmax = 0.0
+      If (m .Gt. 0) Then
+         Do 60 k = 1, m
+60       resmax = amax1 (resmax,-con(k))
+      End If
+      If (nfvals .Eq. iprint-1 .Or. iprint .Eq. 3) Then
+         Print 70, nfvals, f, resmax, (x(i), i=1, iptem)
+70       Format (/ 3 x, 'NFVALS =', i5, 3 x, 'F =', 1 pe13.6, 4 x, 'MAX&
+        &CV =', 1 pe13.6 / 3 x, 'X =', 1 pe13.6, 1 p4e15.6)
+         If (iptem .Lt. n) Print 80, (x(i), i=iptemp, n)
+80       Format (1 pe19.6, 1 p4e15.6)
+      End If
+      con (mp) = f
+      con (mpp) = resmax
+      If (ibrnch .Eq. 1) Go To 440
 !
 !     Set the recently calculated function values in a column of DATMAT. This
 !     array has a column for each vertex of the current simplex, the entries of
@@ -232,541 +239,541 @@ if (ibrnch .eq. 1) goto 440
 !     followed by the objective function and the greatest constraint violation
 !     at the vertex.
 !
-do 90 k=1,mpp
-90 datmat(k,jdrop)=con(k)
-if (nfvals .gt. np) goto 130
+      Do 90 k = 1, mpp
+90    datmat (k, jdrop) = con (k)
+      If (nfvals .Gt. np) Go To 130
 !
 !     Exchange the new vertex of the initial simplex with the optimal vertex if
 !     necessary. Then, if the initial simplex is not complete, pick its next
 !     vertex and calculate the function values there.
 !
-if (jdrop .le. n) then
-    if (datmat(mp,np) .le. f) then
-        x(jdrop)=sim(jdrop,np)
-    else
-        sim(jdrop,np)=x(jdrop)
-        do 100 k=1,mpp
-        datmat(k,jdrop)=datmat(k,np)
-100         datmat(k,np)=con(k)
-        do 120 k=1,jdrop
-        sim(jdrop,k)=-rho
-        temp=0.0
-        do 110 i=k,jdrop
-110         temp=temp-simi(i,k)
-120         simi(jdrop,k)=temp
-    end if
-end if
-if (nfvals .le. n) then
-    jdrop=nfvals
-    x(jdrop)=x(jdrop)+rho
-    goto 40
-end if
-130 ibrnch=1
+      If (jdrop .Le. n) Then
+         If (datmat(mp, np) .Le. f) Then
+            x (jdrop) = sim (jdrop, np)
+         Else
+            sim (jdrop, np) = x (jdrop)
+            Do 100 k = 1, mpp
+               datmat (k, jdrop) = datmat (k, np)
+100         datmat (k, np) = con (k)
+            Do 120 k = 1, jdrop
+               sim (jdrop, k) = - rho
+               temp = 0.0
+               Do 110 i = k, jdrop
+110            temp = temp - simi (i, k)
+120         simi (jdrop, k) = temp
+         End If
+      End If
+      If (nfvals .Le. n) Then
+         jdrop = nfvals
+         x (jdrop) = x (jdrop) + rho
+         Go To 40
+      End If
+130   ibrnch = 1
 !
 !     Identify the optimal vertex of the current simplex.
 !
-140 phimin=datmat(mp,np)+parmu*datmat(mpp,np)
-nbest=np
-do 150 j=1,n
-temp=datmat(mp,j)+parmu*datmat(mpp,j)
-if (temp .lt. phimin) then
-    nbest=j
-    phimin=temp
-else if (temp .eq. phimin .and. parmu .eq. 0.0) then
-    if (datmat(mpp,j) .lt. datmat(mpp,nbest)) nbest=j
-end if
-150 continue
+140   phimin = datmat (mp, np) + parmu * datmat (mpp, np)
+      nbest = np
+      Do 150 j = 1, n
+         temp = datmat (mp, j) + parmu * datmat (mpp, j)
+         If (temp .Lt. phimin) Then
+            nbest = j
+            phimin = temp
+         Else If (temp .Eq. phimin .And. parmu .Eq. 0.0) Then
+            If (datmat(mpp, j) .Lt. datmat(mpp, nbest)) nbest = j
+         End If
+150   Continue
 !
 !     Switch the best vertex into pole position if it is not there already,
 !     and also update SIM, SIMI and DATMAT.
 !
-if (nbest .le. n) then
-    do 160 i=1,mpp
-    temp=datmat(i,np)
-    datmat(i,np)=datmat(i,nbest)
-160     datmat(i,nbest)=temp
-    do 180 i=1,n
-    temp=sim(i,nbest)
-    sim(i,nbest)=0.0
-    sim(i,np)=sim(i,np)+temp
-    tempa=0.0
-    do 170 k=1,n
-    sim(i,k)=sim(i,k)-temp
-170     tempa=tempa-simi(k,i)
-180     simi(nbest,i)=tempa
-end if
+      If (nbest .Le. n) Then
+         Do 160 i = 1, mpp
+            temp = datmat (i, np)
+            datmat (i, np) = datmat (i, nbest)
+160      datmat (i, nbest) = temp
+         Do 180 i = 1, n
+            temp = sim (i, nbest)
+            sim (i, nbest) = 0.0
+            sim (i, np) = sim (i, np) + temp
+            tempa = 0.0
+            Do 170 k = 1, n
+               sim (i, k) = sim (i, k) - temp
+170         tempa = tempa - simi (k, i)
+180      simi (nbest, i) = tempa
+      End If
 !
 !     Make an error return if SIGI is a poor approximation to the inverse of
 !     the leading N by N submatrix of SIG.
 !
-error=0.0
-do 200 i=1,n
-do 200 j=1,n
-temp=0.0
-if (i .eq. j) temp=temp-1.0
-do 190 k=1,n
-190 temp=temp+simi(i,k)*sim(k,j)
-200 error=amax1(error,abs(temp))
-if (error .gt. 0.1) then
-    if (iprint .ge. 1) print 210
-210     format (/3x,'Return from subroutine COBYLA because ', &
-      'rounding errors are becoming damaging.')
-    goto 600
-end if
+      error = 0.0
+      Do 200 i = 1, n
+         Do 200 j = 1, n
+            temp = 0.0
+            If (i .Eq. j) temp = temp - 1.0
+            Do 190 k = 1, n
+190         temp = temp + simi (i, k) * sim (k, j)
+200   error = amax1 (error, Abs(temp))
+      If (error .Gt. 0.1) Then
+         If (iprint .Ge. 1) Print 210
+210      Format (/ 3 x, 'Return from subroutine COBYLA because ', 'roun&
+        &ding errors are becoming damaging.')
+         Go To 600
+      End If
 !
 !     Calculate the coefficients of the linear approximations to the objective
 !     and constraint functions, placing minus the objective function gradient
 !     after the constraint gradients in the array A. The vector W is used for
 !     working space.
 !
-do 240 k=1,mp
-con(k)=-datmat(k,np)
-do 220 j=1,n
-220 w(j)=datmat(k,j)+con(k)
-do 240 i=1,n
-temp=0.0
-do 230 j=1,n
-230 temp=temp+w(j)*simi(j,i)
-if (k .eq. mp) temp=-temp
-240 a(i,k)=temp
+      Do 240 k = 1, mp
+         con (k) = - datmat (k, np)
+         Do 220 j = 1, n
+220      w (j) = datmat (k, j) + con (k)
+         Do 240 i = 1, n
+            temp = 0.0
+            Do 230 j = 1, n
+230         temp = temp + w (j) * simi (j, i)
+            If (k .Eq. mp) temp = - temp
+240   a (i, k) = temp
 !
 !     Calculate the values of sigma and eta, and set IFLAG=0 if the current
 !     simplex is not acceptable.
 !
-iflag=1
-parsig=alpha*rho
-pareta=beta*rho
-do 260 j=1,n
-wsig=0.0
-weta=0.0
-do 250 i=1,n
-wsig=wsig+simi(j,i)**2
-250 weta=weta+sim(i,j)**2
-vsig(j)=1.0/sqrt(wsig)
-veta(j)=sqrt(weta)
-if (vsig(j) .lt. parsig .or. veta(j) .gt. pareta) iflag=0
-260 continue
+      iflag = 1
+      parsig = alpha * rho
+      pareta = beta * rho
+      Do 260 j = 1, n
+         wsig = 0.0
+         weta = 0.0
+         Do 250 i = 1, n
+            wsig = wsig + simi (j, i) ** 2
+250      weta = weta + sim (i, j) ** 2
+         vsig (j) = 1.0 / Sqrt (wsig)
+         veta (j) = Sqrt (weta)
+         If (vsig(j) .Lt. parsig .Or. veta(j) .Gt. pareta) iflag = 0
+260   Continue
 !
 !     If a new vertex is needed to improve acceptability, then decide which
 !     vertex to drop from the simplex.
 !
-if (ibrnch .eq. 1 .or. iflag .eq. 1) goto 370
-jdrop=0
-temp=pareta
-do 270 j=1,n
-if (veta(j) .gt. temp) then
-    jdrop=j
-    temp=veta(j)
-end if
-270 continue
-if (jdrop .eq. 0) then
-    do 280 j=1,n
-    if (vsig(j) .lt. temp) then
-        jdrop=j
-        temp=vsig(j)
-    end if
-280     continue
-end if
+      If (ibrnch .Eq. 1 .Or. iflag .Eq. 1) Go To 370
+      jdrop = 0
+      temp = pareta
+      Do 270 j = 1, n
+         If (veta(j) .Gt. temp) Then
+            jdrop = j
+            temp = veta (j)
+         End If
+270   Continue
+      If (jdrop .Eq. 0) Then
+         Do 280 j = 1, n
+            If (vsig(j) .Lt. temp) Then
+               jdrop = j
+               temp = vsig (j)
+            End If
+280      Continue
+      End If
 !
 !     Calculate the step to the new vertex and its sign.
 !
-temp=gamma*rho*vsig(jdrop)
-do 290 i=1,n
-290 dx(i)=temp*simi(jdrop,i)
-cvmaxp=0.0
-cvmaxm=0.0
-do 310 k=1,mp
-sum=0.0
-do 300 i=1,n
-300 sum=sum+a(i,k)*dx(i)
-if (k .lt. mp) then
-    temp=datmat(k,np)
-    cvmaxp=amax1(cvmaxp,-sum-temp)
-    cvmaxm=amax1(cvmaxm,sum-temp)
-end if
-310 continue
-dxsign=1.0
-if (parmu*(cvmaxp-cvmaxm) .gt. sum+sum) dxsign=-1.0
+      temp = gamma * rho * vsig (jdrop)
+      Do 290 i = 1, n
+290   dx (i) = temp * simi (jdrop, i)
+      cvmaxp = 0.0
+      cvmaxm = 0.0
+      Do 310 k = 1, mp
+         sum = 0.0
+         Do 300 i = 1, n
+300      sum = sum + a (i, k) * dx (i)
+         If (k .Lt. mp) Then
+            temp = datmat (k, np)
+            cvmaxp = amax1 (cvmaxp,-sum-temp)
+            cvmaxm = amax1 (cvmaxm, sum-temp)
+         End If
+310   Continue
+      dxsign = 1.0
+      If (parmu*(cvmaxp-cvmaxm) .Gt. sum+sum) dxsign = - 1.0
 !
 !     Update the elements of SIM and SIMI, and set the next X.
 !
-temp=0.0
-do 320 i=1,n
-dx(i)=dxsign*dx(i)
-sim(i,jdrop)=dx(i)
-320 temp=temp+simi(jdrop,i)*dx(i)
-do 330 i=1,n
-330 simi(jdrop,i)=simi(jdrop,i)/temp
-do 360 j=1,n
-if (j .ne. jdrop) then
-    temp=0.0
-    do 340 i=1,n
-340     temp=temp+simi(j,i)*dx(i)
-    do 350 i=1,n
-350     simi(j,i)=simi(j,i)-temp*simi(jdrop,i)
-end if
-360 x(j)=sim(j,np)+dx(j)
-goto 40
+      temp = 0.0
+      Do 320 i = 1, n
+         dx (i) = dxsign * dx (i)
+         sim (i, jdrop) = dx (i)
+320   temp = temp + simi (jdrop, i) * dx (i)
+      Do 330 i = 1, n
+330   simi (jdrop, i) = simi (jdrop, i) / temp
+      Do 360 j = 1, n
+         If (j .Ne. jdrop) Then
+            temp = 0.0
+            Do 340 i = 1, n
+340         temp = temp + simi (j, i) * dx (i)
+            Do 350 i = 1, n
+350         simi (j, i) = simi (j, i) - temp * simi (jdrop, i)
+         End If
+360   x (j) = sim (j, np) + dx (j)
+      Go To 40
 !
 !     Calculate DX=x(*)-x(0). Branch if the length of DX is less than 0.5*RHO.
 !
-370 iz=1
-izdota=iz+n*n
-ivmc=izdota+n
-isdirn=ivmc+mp
-idxnew=isdirn+n
-ivmd=idxnew+n
-call trstlp (n,m,a,con,rho,dx,ifull,iact,w(iz),w(izdota), &
-  w(ivmc),w(isdirn),w(idxnew),w(ivmd))
-if (ifull .eq. 0) then
-    temp=0.0
-    do 380 i=1,n
-380     temp=temp+dx(i)**2
-    if (temp .lt. 0.25*rho*rho) then
-        ibrnch=1
-        goto 550
-    end if
-end if
+370   iz = 1
+      izdota = iz + n * n
+      ivmc = izdota + n
+      isdirn = ivmc + mp
+      idxnew = isdirn + n
+      ivmd = idxnew + n
+      Call trstlp (n, m, a, con, rho, dx, ifull, iact, w(iz), &
+     & w(izdota), w(ivmc), w(isdirn), w(idxnew), w(ivmd))
+      If (ifull .Eq. 0) Then
+         temp = 0.0
+         Do 380 i = 1, n
+380      temp = temp + dx (i) ** 2
+         If (temp .Lt. 0.25*rho*rho) Then
+            ibrnch = 1
+            Go To 550
+         End If
+      End If
 !
 !     Predict the change to F and the new maximum constraint violation if the
 !     variables are altered from x(0) to x(0)+DX.
 !
-resnew=0.0
-con(mp)=0.0
-do 400 k=1,mp
-sum=con(k)
-do 390 i=1,n
-390 sum=sum-a(i,k)*dx(i)
-if (k .lt. mp) resnew=amax1(resnew,sum)
-400 continue
+      resnew = 0.0
+      con (mp) = 0.0
+      Do 400 k = 1, mp
+         sum = con (k)
+         Do 390 i = 1, n
+390      sum = sum - a (i, k) * dx (i)
+         If (k .Lt. mp) resnew = amax1 (resnew, sum)
+400   Continue
 !
 !     Increase PARMU if necessary and branch back if this change alters the
 !     optimal vertex. Otherwise PREREM and PREREC will be set to the predicted
 !     reductions in the merit function and the maximum constraint violation
 !     respectively.
 !
-barmu=0.0
-prerec=datmat(mpp,np)-resnew
-if (prerec .gt. 0.0) barmu=sum/prerec
-if (parmu .lt. 1.5*barmu) then
-    parmu=2.0*barmu
-    if (iprint .ge. 2) print 410, parmu
-410     format (/3x,'Increase in PARMU to',1pe13.6)
-    phi=datmat(mp,np)+parmu*datmat(mpp,np)
-    do 420 j=1,n
-    temp=datmat(mp,j)+parmu*datmat(mpp,j)
-    if (temp .lt. phi) goto 140
-    if (temp .eq. phi .and. parmu .eq. 0.0) then
-        if (datmat(mpp,j) .lt. datmat(mpp,np)) goto 140
-    end if
-420     continue
-end if
-prerem=parmu*prerec-sum
+      barmu = 0.0
+      prerec = datmat (mpp, np) - resnew
+      If (prerec .Gt. 0.0) barmu = sum / prerec
+      If (parmu .Lt. 1.5*barmu) Then
+         parmu = 2.0 * barmu
+         If (iprint .Ge. 2) Print 410, parmu
+410      Format (/ 3 x, 'Increase in PARMU to', 1 pe13.6)
+         phi = datmat (mp, np) + parmu * datmat (mpp, np)
+         Do 420 j = 1, n
+            temp = datmat (mp, j) + parmu * datmat (mpp, j)
+            If (temp .Lt. phi) Go To 140
+            If (temp .Eq. phi .And. parmu .Eq. 0.0) Then
+               If (datmat(mpp, j) .Lt. datmat(mpp, np)) Go To 140
+            End If
+420      Continue
+      End If
+      prerem = parmu * prerec - sum
 !
 !     Calculate the constraint and objective functions at x(*). Then find the
 !     actual reduction in the merit function.
 !
-do 430 i=1,n
-430 x(i)=sim(i,np)+dx(i)
-ibrnch=1
-goto 40
-440 vmold=datmat(mp,np)+parmu*datmat(mpp,np)
-vmnew=f+parmu*resmax
-trured=vmold-vmnew
-if (parmu .eq. 0.0 .and. f .eq. datmat(mp,np)) then
-    prerem=prerec
-    trured=datmat(mpp,np)-resmax
-end if
+      Do 430 i = 1, n
+430   x (i) = sim (i, np) + dx (i)
+      ibrnch = 1
+      Go To 40
+440   vmold = datmat (mp, np) + parmu * datmat (mpp, np)
+      vmnew = f + parmu * resmax
+      trured = vmold - vmnew
+      If (parmu .Eq. 0.0 .And. f .Eq. datmat(mp, np)) Then
+         prerem = prerec
+         trured = datmat (mpp, np) - resmax
+      End If
 !
 !     Begin the operations that decide whether x(*) should replace one of the
 !     vertices of the current simplex, the change being mandatory if TRURED is
 !     positive. Firstly, JDROP is set to the index of the vertex that is to be
 !     replaced.
 !
-ratio=0.0
-if (trured .le. 0.0) ratio=1.0
-jdrop=0
-do 460 j=1,n
-temp=0.0
-do 450 i=1,n
-450 temp=temp+simi(j,i)*dx(i)
-temp=abs(temp)
-if (temp .gt. ratio) then
-    jdrop=j
-    ratio=temp
-end if
-460 sigbar(j)=temp*vsig(j)
+      ratio = 0.0
+      If (trured .Le. 0.0) ratio = 1.0
+      jdrop = 0
+      Do 460 j = 1, n
+         temp = 0.0
+         Do 450 i = 1, n
+450      temp = temp + simi (j, i) * dx (i)
+         temp = Abs (temp)
+         If (temp .Gt. ratio) Then
+            jdrop = j
+            ratio = temp
+         End If
+460   sigbar (j) = temp * vsig (j)
 !
 !     Calculate the value of ell.
 !
-edgmax=delta*rho
-l=0
-do 480 j=1,n
-if (sigbar(j) .ge. parsig .or. sigbar(j) .ge. vsig(j)) then
-    temp=veta(j)
-    if (trured .gt. 0.0) then
-        temp=0.0
-        do 470 i=1,n
-470         temp=temp+(dx(i)-sim(i,j))**2
-        temp=sqrt(temp)
-    end if
-    if (temp .gt. edgmax) then
-        l=j
-        edgmax=temp
-    end if
-end if
-480 continue
-if (l .gt. 0) jdrop=l
-if (jdrop .eq. 0) goto 550
+      edgmax = delta * rho
+      l = 0
+      Do 480 j = 1, n
+         If (sigbar(j) .Ge. parsig .Or. sigbar(j) .Ge. vsig(j)) Then
+            temp = veta (j)
+            If (trured .Gt. 0.0) Then
+               temp = 0.0
+               Do 470 i = 1, n
+470            temp = temp + (dx(i)-sim(i, j)) ** 2
+               temp = Sqrt (temp)
+            End If
+            If (temp .Gt. edgmax) Then
+               l = j
+               edgmax = temp
+            End If
+         End If
+480   Continue
+      If (l .Gt. 0) jdrop = l
+      If (jdrop .Eq. 0) Go To 550
 !
 !     Revise the simplex by updating the elements of SIM, SIMI and DATMAT.
 !
-temp=0.0
-do 490 i=1,n
-sim(i,jdrop)=dx(i)
-490 temp=temp+simi(jdrop,i)*dx(i)
-do 500 i=1,n
-500 simi(jdrop,i)=simi(jdrop,i)/temp
-do 530 j=1,n
-if (j .ne. jdrop) then
-    temp=0.0
-    do 510 i=1,n
-510     temp=temp+simi(j,i)*dx(i)
-    do 520 i=1,n
-520     simi(j,i)=simi(j,i)-temp*simi(jdrop,i)
-end if
-530 continue
-do 540 k=1,mpp
-540 datmat(k,jdrop)=con(k)
+      temp = 0.0
+      Do 490 i = 1, n
+         sim (i, jdrop) = dx (i)
+490   temp = temp + simi (jdrop, i) * dx (i)
+      Do 500 i = 1, n
+500   simi (jdrop, i) = simi (jdrop, i) / temp
+      Do 530 j = 1, n
+         If (j .Ne. jdrop) Then
+            temp = 0.0
+            Do 510 i = 1, n
+510         temp = temp + simi (j, i) * dx (i)
+            Do 520 i = 1, n
+520         simi (j, i) = simi (j, i) - temp * simi (jdrop, i)
+         End If
+530   Continue
+      Do 540 k = 1, mpp
+540   datmat (k, jdrop) = con (k)
 !
 !     Branch back for further iterations with the current RHO.
 !
-if (trured .gt. 0.0 .and. trured .ge. 0.1*prerem) goto 140
-550 if (iflag .eq. 0) then
-    ibrnch=0
-    goto 140
-end if
+      If (trured .Gt. 0.0 .And. trured .Ge. 0.1*prerem) Go To 140
+550   If (iflag .Eq. 0) Then
+         ibrnch = 0
+         Go To 140
+      End If
 !
 !     Otherwise reduce RHO if it is not at its least value and reset PARMU.
 !
-if (rho .gt. rhoend) then
-    rho=0.5*rho
-    if (rho .le. 1.5*rhoend) rho=rhoend
-    if (parmu .gt. 0.0) then
-        denom=0.0
-        do 570 k=1,mp
-        cmin=datmat(k,np)
-        cmax=cmin
-        do 560 i=1,n
-        cmin=amin1(cmin,datmat(k,i))
-560         cmax=amax1(cmax,datmat(k,i))
-        if (k .le. m .and. cmin .lt. 0.5*cmax) then
-            temp=amax1(cmax,0.0)-cmin
-            if (denom .le. 0.0) then
-                denom=temp
-            else
-                denom=amin1(denom,temp)
-            end if
-        end if
-570         continue
-        if (denom .eq. 0.0) then
-            parmu=0.0
-        else if (cmax-cmin .lt. parmu*denom) then
-            parmu=(cmax-cmin)/denom
-        end if
-    end if
-    if (iprint .ge. 2) print 580, rho,parmu
-580     format (/3x,'Reduction in RHO to',1pe13.6,'  and PARMU =', &
-      1pe13.6)
-    if (iprint .eq. 2) then
-        print 70, nfvals,datmat(mp,np),datmat(mpp,np), &
-          (sim(i,np),i=1,iptem)
-        if (iptem .lt. n) print 80, (x(i),i=iptemp,n)
-    end if
-    goto 140
-end if
+      If (rho .Gt. rhoend) Then
+         rho = 0.5 * rho
+         If (rho .Le. 1.5*rhoend) rho = rhoend
+         If (parmu .Gt. 0.0) Then
+            denom = 0.0
+            Do 570 k = 1, mp
+               cmin = datmat (k, np)
+               cmax = cmin
+               Do 560 i = 1, n
+                  cmin = amin1 (cmin, datmat(k, i))
+560            cmax = amax1 (cmax, datmat(k, i))
+               If (k .Le. m .And. cmin .Lt. 0.5*cmax) Then
+                  temp = amax1 (cmax, 0.0) - cmin
+                  If (denom .Le. 0.0) Then
+                     denom = temp
+                  Else
+                     denom = amin1 (denom, temp)
+                  End If
+               End If
+570         Continue
+            If (denom .Eq. 0.0) Then
+               parmu = 0.0
+            Else If (cmax-cmin .Lt. parmu*denom) Then
+               parmu = (cmax-cmin) / denom
+            End If
+         End If
+         If (iprint .Ge. 2) Print 580, rho, parmu
+580      Format (/ 3 x, 'Reduction in RHO to', 1 pe13.6, '  and PARMU =&
+        &', 1 pe13.6)
+         If (iprint .Eq. 2) Then
+            Print 70, nfvals, datmat (mp, np), datmat (mpp, np), &
+           & (sim(i, np), i=1, iptem)
+            If (iptem .Lt. n) Print 80, (x(i), i=iptemp, n)
+         End If
+         Go To 140
+      End If
 !
 !     Return the best calculated values of the variables.
 !
-if (iprint .ge. 1) print 590
-590 format (/3x,'Normal return from subroutine COBYLA')
-if (ifull .eq. 1) goto 620
-600 do 610 i=1,n
-610 x(i)=sim(i,np)
-f=datmat(mp,np)
-resmax=datmat(mpp,np)
-620 if (iprint .ge. 1) then
-    print 70, nfvals,f,resmax,(x(i),i=1,iptem)
-    if (iptem .lt. n) print 80, (x(i),i=iptemp,n)
-end if
-maxfun=nfvals
-return
-end
+      If (iprint .Ge. 1) Print 590
+590   Format (/ 3 x, 'Normal return from subroutine COBYLA')
+      If (ifull .Eq. 1) Go To 620
+600   Do 610 i = 1, n
+610   x (i) = sim (i, np)
+      f = datmat (mp, np)
+      resmax = datmat (mpp, np)
+620   If (iprint .Ge. 1) Then
+         Print 70, nfvals, f, resmax, (x(i), i=1, iptem)
+         If (iptem .Lt. n) Print 80, (x(i), i=iptemp, n)
+      End If
+      maxfun = nfvals
+      Return
+End
 !------------------------------------------------------------------------------
 !     Main program of test problems in Report DAMTP 1992/NA5.
 !------------------------------------------------------------------------------
-common nprob
-dimension x(10),xopt(10),w(3000),iact(51)
-do 180 nprob=1,10
-if (nprob .eq. 1) then
+Common nprob
+Dimension x (10), xopt (10), w (3000), iact (51)
+Do 180 nprob = 1, 10
+   If (nprob .Eq. 1) Then
 !
 !     Minimization of a simple quadratic function of two variables.
 !
-    print 10
-10     format (/7x,'Output from test problem 1 (Simple quadratic)')
-    n=2
-    m=0
-    xopt(1)=-1.0
-    xopt(2)=0.0
-else if (nprob .eq. 2) then
+      Print 10
+10    Format (/ 7 x, 'Output from test problem 1 (Simple quadratic)')
+      n = 2
+      m = 0
+      xopt (1) = - 1.0
+      xopt (2) = 0.0
+   Else If (nprob .Eq. 2) Then
 !
 !     Easy two dimensional minimization in unit circle.
 !
-    print 20
-20     format (/7x,'Output from test problem 2 (2D unit circle ', &
-      'calculation)')
-    n=2
-    m=1
-    xopt(1)=sqrt(0.5)
-    xopt(2)=-xopt(1)
-else if (nprob .eq. 3) then
+      Print 20
+20    Format (/ 7 x, 'Output from test problem 2 (2D unit circle ', 'ca&
+     &lculation)')
+      n = 2
+      m = 1
+      xopt (1) = Sqrt (0.5)
+      xopt (2) = - xopt (1)
+   Else If (nprob .Eq. 3) Then
 !
 !     Easy three dimensional minimization in ellipsoid.
 !
-    print 30
-30     format (/7x,'Output from test problem 3 (3D ellipsoid ', &
-      'calculation)')
-    n=3
-    m=1
-    xopt(1)=1.0/sqrt(3.0)
-    xopt(2)=1.0/sqrt(6.0)
-    xopt(3)=-1.0/3.0
-else if (nprob .eq. 4) then
+      Print 30
+30    Format (/ 7 x, 'Output from test problem 3 (3D ellipsoid ', 'calc&
+     &ulation)')
+      n = 3
+      m = 1
+      xopt (1) = 1.0 / Sqrt (3.0)
+      xopt (2) = 1.0 / Sqrt (6.0)
+      xopt (3) = - 1.0 / 3.0
+   Else If (nprob .Eq. 4) Then
 !
 !     Weak version of Rosenbrock's problem.
 !
-    print 40
-40     format (/7x,'Output from test problem 4 (Weak Rosenbrock)')
-    n=2
-    m=0
-    xopt(1)=-1.0
-    xopt(2)=1.0
-else if (nprob .eq. 5) then
+      Print 40
+40    Format (/ 7 x, 'Output from test problem 4 (Weak Rosenbrock)')
+      n = 2
+      m = 0
+      xopt (1) = - 1.0
+      xopt (2) = 1.0
+   Else If (nprob .Eq. 5) Then
 !
 !     Intermediate version of Rosenbrock's problem.
 !
-    print 50
-50     format (/7x,'Output from test problem 5 (Intermediate ', &
-      'Rosenbrock)')
-    n=2
-    m=0
-    xopt(1)=-1.0
-    xopt(2)=1.0
-else if (nprob .eq. 6) then
+      Print 50
+50    Format (/ 7 x, 'Output from test problem 5 (Intermediate ', 'Rose&
+     &nbrock)')
+      n = 2
+      m = 0
+      xopt (1) = - 1.0
+      xopt (2) = 1.0
+   Else If (nprob .Eq. 6) Then
 !
 !     This problem is taken from Fletcher's book Practical Methods of
 !     Optimization and has the equation number (9.1.15).
 !
-    print 60
-60     format (/7x,'Output from test problem 6 (Equation ', &
-      '(9.1.15) in Fletcher)')
-    n=2
-    m=2
-    xopt(1)=sqrt(0.5)
-    xopt(2)=xopt(1)
-else if (nprob .eq. 7) then
+      Print 60
+60    Format (/ 7 x, 'Output from test problem 6 (Equation ', '(9.1.15)&
+     & in Fletcher)')
+      n = 2
+      m = 2
+      xopt (1) = Sqrt (0.5)
+      xopt (2) = xopt (1)
+   Else If (nprob .Eq. 7) Then
 !
 !     This problem is taken from Fletcher's book Practical Methods of
 !     Optimization and has the equation number (14.4.2).
 !
-    print 70
-70     format (/7x,'Output from test problem 7 (Equation ', &
-      '(14.4.2) in Fletcher)')
-    n=3
-    m=3
-    xopt(1)=0.0
-    xopt(2)=-3.0
-    xopt(3)=-3.0
-else if (nprob .eq. 8) then
+      Print 70
+70    Format (/ 7 x, 'Output from test problem 7 (Equation ', '(14.4.2)&
+     & in Fletcher)')
+      n = 3
+      m = 3
+      xopt (1) = 0.0
+      xopt (2) = - 3.0
+      xopt (3) = - 3.0
+   Else If (nprob .Eq. 8) Then
 !
 !     This problem is taken from page 66 of Hock and Schittkowski's book Test
 !     Examples for Nonlinear Programming Codes. It is their test problem Number
 !     43, and has the name Rosen-Suzuki.
 !
-    print 80
-80     format (/7x,'Output from test problem 8 (Rosen-Suzuki)')
-    n=4
-    m=3
-    xopt(1)=0.0
-    xopt(2)=1.0
-    xopt(3)=2.0
-    xopt(4)=-1.0
-else if (nprob .eq. 9) then
+      Print 80
+80    Format (/ 7 x, 'Output from test problem 8 (Rosen-Suzuki)')
+      n = 4
+      m = 3
+      xopt (1) = 0.0
+      xopt (2) = 1.0
+      xopt (3) = 2.0
+      xopt (4) = - 1.0
+   Else If (nprob .Eq. 9) Then
 !
 !     This problem is taken from page 111 of Hock and Schittkowski's
 !     book Test Examples for Nonlinear Programming Codes. It is their
 !     test problem Number 100.
 !
-    print 90
-90     format (/7x,'Output from test problem 9 (Hock and ', &
-      'Schittkowski 100)')
-    n=7
-    m=4
-    xopt(1)=2.330499
-    xopt(2)=1.951372
-    xopt(3)=-0.4775414
-    xopt(4)=4.365726
-    xopt(5)=-0.624487
-    xopt(6)=1.038131
-    xopt(7)=1.594227
-else if (nprob .eq. 10) then
+      Print 90
+90    Format (/ 7 x, 'Output from test problem 9 (Hock and ', 'Schittko&
+     &wski 100)')
+      n = 7
+      m = 4
+      xopt (1) = 2.330499
+      xopt (2) = 1.951372
+      xopt (3) = - 0.4775414
+      xopt (4) = 4.365726
+      xopt (5) = - 0.624487
+      xopt (6) = 1.038131
+      xopt (7) = 1.594227
+   Else If (nprob .Eq. 10) Then
 !
 !     This problem is taken from page 415 of Luenberger's book Applied
 !     Nonlinear Programming. It is to maximize the area of a hexagon of
 !     unit diameter.
 !
-    print 100
-100     format (/7x,'Output from test problem 10 (Hexagon area)')
-    n=9
-    m=14
-end if
-do 160 icase=1,2
-do 120 i=1,n
-120 x(i)=1.0
-rhobeg=0.5
-rhoend=0.001
-if (icase .eq. 2) rhoend=0.0001
-iprint=1
-maxfun=2000
-call cobyla (n,m,x,rhobeg,rhoend,iprint,maxfun,w,iact)
-if (nprob .eq. 10) then
-    tempa=x(1)+x(3)+x(5)+x(7)
-    tempb=x(2)+x(4)+x(6)+x(8)
-    tempc=0.5/sqrt(tempa*tempa+tempb*tempb)
-    tempd=tempc*sqrt(3.0)
-    xopt(1)=tempd*tempa+tempc*tempb
-    xopt(2)=tempd*tempb-tempc*tempa
-    xopt(3)=tempd*tempa-tempc*tempb
-    xopt(4)=tempd*tempb+tempc*tempa
-    do 130 i=1,4
-130     xopt(i+4)=xopt(i)
-end if
-temp=0.0
-do 140 i=1,n
-140 temp=temp+(x(i)-xopt(i))**2
-print 150, sqrt(temp)
-150 format (/5x,'Least squares error in variables =',1pe16.6)
-160 continue
-print 170
-170 format (2x,'----------------------------------------------', &
-  '--------------------')
-180 continue
-stop
-end
-subroutine trstlp (n,m,a,b,rho,dx,ifull,iact,z,zdota,vmultc, &
-  sdirn,dxnew,vmultd) 
-dimension a(n,*),b(*),dx(*),iact(*),z(n,*),zdota(*), &
-  vmultc(*),sdirn(*),dxnew(*),vmultd(*)
+      Print 100
+100   Format (/ 7 x, 'Output from test problem 10 (Hexagon area)')
+      n = 9
+      m = 14
+   End If
+   Do 160 icase = 1, 2
+      Do 120 i = 1, n
+120   x (i) = 1.0
+      rhobeg = 0.5
+      rhoend = 0.001
+      If (icase .Eq. 2) rhoend = 0.0001
+      iprint = 1
+      maxfun = 2000
+      Call cobyla (n, m, x, rhobeg, rhoend, iprint, maxfun, w, iact)
+      If (nprob .Eq. 10) Then
+         tempa = x (1) + x (3) + x (5) + x (7)
+         tempb = x (2) + x (4) + x (6) + x (8)
+         tempc = 0.5 / Sqrt (tempa*tempa+tempb*tempb)
+         tempd = tempc * Sqrt (3.0)
+         xopt (1) = tempd * tempa + tempc * tempb
+         xopt (2) = tempd * tempb - tempc * tempa
+         xopt (3) = tempd * tempa - tempc * tempb
+         xopt (4) = tempd * tempb + tempc * tempa
+         Do 130 i = 1, 4
+130      xopt (i+4) = xopt (i)
+      End If
+      temp = 0.0
+      Do 140 i = 1, n
+140   temp = temp + (x(i)-xopt(i)) ** 2
+      Print 150, Sqrt (temp)
+150   Format (/ 5 x, 'Least squares error in variables =', 1 pe16.6)
+160 Continue
+   Print 170
+170 Format (2 x, '----------------------------------------------', '---&
+  &-----------------')
+180 Continue
+Stop
+End
+Subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, &
+& sdirn, dxnew, vmultd)
+   Dimension a (n,*), b (*), dx (*), iact (*), z (n,*), zdota (*), &
+  & vmultc (*), sdirn (*), dxnew (*), vmultd (*)
 !
 !     This subroutine calculates an N-component vector DX by applying the
 !     following two stages. In the first stage, DX is set to the shortest
@@ -805,29 +812,29 @@ dimension a(n,*),b(*),dx(*),iact(*),z(n,*),zdota(*), &
 !     vector SDIRN gives a search direction that reduces all the active
 !     constraint violations by one simultaneously.
 !
-ifull=1
-mcon=m
-nact=0
-resmax=0.0
-do 20 i=1,n
-do 10 j=1,n
-10 z(i,j)=0.0
-z(i,i)=1.0
-20 dx(i)=0.0
-if (m .ge. 1) then
-    do 30 k=1,m
-    if (b(k) .gt. resmax) then
-        resmax=b(k)
-        icon=k
-    end if
-30     continue
-    do 40 k=1,m
-    iact(k)=k
-40     vmultc(k)=resmax-b(k)
-end if
-if (resmax .eq. 0.0) goto 480
-do 50 i=1,n
-50 sdirn(i)=0.0
+   ifull = 1
+   mcon = m
+   nact = 0
+   resmax = 0.0
+   Do 20 i = 1, n
+      Do 10 j = 1, n
+10    z (i, j) = 0.0
+      z (i, i) = 1.0
+20 dx (i) = 0.0
+   If (m .Ge. 1) Then
+      Do 30 k = 1, m
+         If (b(k) .Gt. resmax) Then
+            resmax = b (k)
+            icon = k
+         End If
+30    Continue
+      Do 40 k = 1, m
+         iact (k) = k
+40    vmultc (k) = resmax - b (k)
+   End If
+   If (resmax .Eq. 0.0) Go To 480
+   Do 50 i = 1, n
+50 sdirn (i) = 0.0
 !
 !     End the current stage of the calculation if 3 consecutive iterations
 !     have either failed to reduce the best calculated value of the objective
@@ -835,26 +842,26 @@ do 50 i=1,n
 !     value was calculated. This strategy prevents cycling, but there is a
 !     remote possibility that it will cause premature termination.
 !
-60 optold=0.0
-icount=0
-70 if (mcon .eq. m) then
-    optnew=resmax
-else
-    optnew=0.0
-    do 80 i=1,n
-80     optnew=optnew-dx(i)*a(i,mcon)
-end if
-if (icount .eq. 0 .or. optnew .lt. optold) then
-    optold=optnew
-    nactx=nact
-    icount=3
-else if (nact .gt. nactx) then
-    nactx=nact
-    icount=3
-else
-    icount=icount-1
-    if (icount .eq. 0) goto 490
-end if
+60 optold = 0.0
+   icount = 0
+70 If (mcon .Eq. m) Then
+      optnew = resmax
+   Else
+      optnew = 0.0
+      Do 80 i = 1, n
+80    optnew = optnew - dx (i) * a (i, mcon)
+   End If
+   If (icount .Eq. 0 .Or. optnew .Lt. optold) Then
+      optold = optnew
+      nactx = nact
+      icount = 3
+   Else If (nact .Gt. nactx) Then
+      nactx = nact
+      icount = 3
+   Else
+      icount = icount - 1
+      If (icount .Eq. 0) Go To 490
+   End If
 !
 !     If ICON exceeds NACT, then we add the constraint with index IACT(ICON) to
 !     the active set. Apply Givens rotations so that the last N-NACT-1 columns
@@ -862,49 +869,49 @@ end if
 !     product being set to zero if its nonzero value could be due to computer
 !     rounding errors. The array DXNEW is used for working space.
 !
-if (icon .le. nact) goto 260
-kk=iact(icon)
-do 90 i=1,n
-90 dxnew(i)=a(i,kk)
-tot=0.0
-k=n
-100 if (k .gt. nact) then
-    sp=0.0
-    spabs=0.0
-    do 110 i=1,n
-    temp=z(i,k)*dxnew(i)
-    sp=sp+temp
-110     spabs=spabs+abs(temp)
-    acca=spabs+0.1*abs(sp)
-    accb=spabs+0.2*abs(sp)
-    if (spabs .ge. acca .or. acca .ge. accb) sp=0.0
-    if (tot .eq. 0.0) then
-        tot=sp
-    else
-        kp=k+1
-        temp=sqrt(sp*sp+tot*tot)
-        alpha=sp/temp
-        beta=tot/temp
-        tot=temp
-        do 120 i=1,n
-        temp=alpha*z(i,k)+beta*z(i,kp)
-        z(i,kp)=alpha*z(i,kp)-beta*z(i,k)
-120         z(i,k)=temp
-    end if
-    k=k-1
-    goto 100
-end if
+   If (icon .Le. nact) Go To 260
+   kk = iact (icon)
+   Do 90 i = 1, n
+90 dxnew (i) = a (i, kk)
+   tot = 0.0
+   k = n
+100 If (k .Gt. nact) Then
+      sp = 0.0
+      spabs = 0.0
+      Do 110 i = 1, n
+         temp = z (i, k) * dxnew (i)
+         sp = sp + temp
+110   spabs = spabs + Abs (temp)
+      acca = spabs + 0.1 * Abs (sp)
+      accb = spabs + 0.2 * Abs (sp)
+      If (spabs .Ge. acca .Or. acca .Ge. accb) sp = 0.0
+      If (tot .Eq. 0.0) Then
+         tot = sp
+      Else
+         kp = k + 1
+         temp = Sqrt (sp*sp+tot*tot)
+         alpha = sp / temp
+         beta = tot / temp
+         tot = temp
+         Do 120 i = 1, n
+            temp = alpha * z (i, k) + beta * z (i, kp)
+            z (i, kp) = alpha * z (i, kp) - beta * z (i, k)
+120      z (i, k) = temp
+      End If
+      k = k - 1
+      Go To 100
+   End If
 !
 !     Add the new constraint if this can be done without a deletion from the
 !     active set.
 !
-if (tot .ne. 0.0) then
-    nact=nact+1
-    zdota(nact)=tot
-    vmultc(icon)=vmultc(nact)
-    vmultc(nact)=0.0
-    goto 210
-end if
+   If (tot .Ne. 0.0) Then
+      nact = nact + 1
+      zdota (nact) = tot
+      vmultc (icon) = vmultc (nact)
+      vmultc (nact) = 0.0
+      Go To 210
+   End If
 !
 !     The next instruction is reached if a deletion has to be made from the
 !     active set in order to make room for the new active constraint, because
@@ -913,162 +920,162 @@ end if
 !     of the linear combination. Further, set IOUT to the index of the
 !     constraint to be deleted, but branch if no suitable index can be found.
 !
-ratio=-1.0
-k=nact
-130 zdotv=0.0
-zdvabs=0.0
-do 140 i=1,n
-temp=z(i,k)*dxnew(i)
-zdotv=zdotv+temp
-140 zdvabs=zdvabs+abs(temp)
-acca=zdvabs+0.1*abs(zdotv)
-accb=zdvabs+0.2*abs(zdotv)
-if (zdvabs .lt. acca .and. acca .lt. accb) then
-    temp=zdotv/zdota(k)
-    if (temp .gt. 0.0 .and. iact(k) .le. m) then
-        tempa=vmultc(k)/temp
-        if (ratio .lt. 0.0 .or. tempa .lt. ratio) then
-            ratio=tempa
-            iout=k
-        end if
-     end if
-    if (k .ge. 2) then
-        kw=iact(k)
-        do 150 i=1,n
-150         dxnew(i)=dxnew(i)-temp*a(i,kw)
-    end if
-    vmultd(k)=temp
-else
-    vmultd(k)=0.0
-end if
-k=k-1
-if (k .gt. 0) goto 130
-if (ratio .lt. 0.0) goto 490
+   ratio = - 1.0
+   k = nact
+130 zdotv = 0.0
+   zdvabs = 0.0
+   Do 140 i = 1, n
+      temp = z (i, k) * dxnew (i)
+      zdotv = zdotv + temp
+140 zdvabs = zdvabs + Abs (temp)
+   acca = zdvabs + 0.1 * Abs (zdotv)
+   accb = zdvabs + 0.2 * Abs (zdotv)
+   If (zdvabs .Lt. acca .And. acca .Lt. accb) Then
+      temp = zdotv / zdota (k)
+      If (temp .Gt. 0.0 .And. iact(k) .Le. m) Then
+         tempa = vmultc (k) / temp
+         If (ratio .Lt. 0.0 .Or. tempa .Lt. ratio) Then
+            ratio = tempa
+            iout = k
+         End If
+      End If
+      If (k .Ge. 2) Then
+         kw = iact (k)
+         Do 150 i = 1, n
+150      dxnew (i) = dxnew (i) - temp * a (i, kw)
+      End If
+      vmultd (k) = temp
+   Else
+      vmultd (k) = 0.0
+   End If
+   k = k - 1
+   If (k .Gt. 0) Go To 130
+   If (ratio .Lt. 0.0) Go To 490
 !
 !     Revise the Lagrange multipliers and reorder the active constraints so
 !     that the one to be replaced is at the end of the list. Also calculate the
 !     new value of ZDOTA(NACT) and branch if it is not acceptable.
 !
-do 160 k=1,nact
-160 vmultc(k)=amax1(0.0,vmultc(k)-ratio*vmultd(k))
-if (icon .lt. nact) then
-    isave=iact(icon)
-    vsave=vmultc(icon)
-    k=icon
-170     kp=k+1
-    kw=iact(kp)
-    sp=0.0
-    do 180 i=1,n
-180     sp=sp+z(i,k)*a(i,kw)
-    temp=sqrt(sp*sp+zdota(kp)**2)
-    alpha=zdota(kp)/temp
-    beta=sp/temp
-    zdota(kp)=alpha*zdota(k)
-    zdota(k)=temp
-    do 190 i=1,n
-    temp=alpha*z(i,kp)+beta*z(i,k)
-    z(i,kp)=alpha*z(i,k)-beta*z(i,kp)
-190     z(i,k)=temp
-    iact(k)=kw
-    vmultc(k)=vmultc(kp)
-    k=kp
-    if (k .lt. nact) goto 170
-    iact(k)=isave
-    vmultc(k)=vsave
-end if
-temp=0.0
-do 200 i=1,n
-200 temp=temp+z(i,nact)*a(i,kk)
-if (temp .eq. 0.0) goto 490
-zdota(nact)=temp
-vmultc(icon)=0.0
-vmultc(nact)=ratio
+   Do 160 k = 1, nact
+160 vmultc (k) = amax1 (0.0, vmultc(k)-ratio*vmultd(k))
+   If (icon .Lt. nact) Then
+      isave = iact (icon)
+      vsave = vmultc (icon)
+      k = icon
+170   kp = k + 1
+      kw = iact (kp)
+      sp = 0.0
+      Do 180 i = 1, n
+180   sp = sp + z (i, k) * a (i, kw)
+      temp = Sqrt (sp*sp+zdota(kp)**2)
+      alpha = zdota (kp) / temp
+      beta = sp / temp
+      zdota (kp) = alpha * zdota (k)
+      zdota (k) = temp
+      Do 190 i = 1, n
+         temp = alpha * z (i, kp) + beta * z (i, k)
+         z (i, kp) = alpha * z (i, k) - beta * z (i, kp)
+190   z (i, k) = temp
+      iact (k) = kw
+      vmultc (k) = vmultc (kp)
+      k = kp
+      If (k .Lt. nact) Go To 170
+      iact (k) = isave
+      vmultc (k) = vsave
+   End If
+   temp = 0.0
+   Do 200 i = 1, n
+200 temp = temp + z (i, nact) * a (i, kk)
+   If (temp .Eq. 0.0) Go To 490
+   zdota (nact) = temp
+   vmultc (icon) = 0.0
+   vmultc (nact) = ratio
 !
 !     Update IACT and ensure that the objective function continues to be
 !     treated as the last active constraint when MCON>M.
 !
-210 iact(icon)=iact(nact)
-iact(nact)=kk
-if (mcon .gt. m .and. kk .ne. mcon) then
-    k=nact-1
-    sp=0.0
-    do 220 i=1,n
-220     sp=sp+z(i,k)*a(i,kk)
-    temp=sqrt(sp*sp+zdota(nact)**2)
-    alpha=zdota(nact)/temp
-    beta=sp/temp
-    zdota(nact)=alpha*zdota(k)
-    zdota(k)=temp
-    do 230 i=1,n
-    temp=alpha*z(i,nact)+beta*z(i,k)
-    z(i,nact)=alpha*z(i,k)-beta*z(i,nact)
-230     z(i,k)=temp
-    iact(nact)=iact(k)
-    iact(k)=kk
-    temp=vmultc(k)
-    vmultc(k)=vmultc(nact)
-    vmultc(nact)=temp
-end if
+210 iact (icon) = iact (nact)
+   iact (nact) = kk
+   If (mcon .Gt. m .And. kk .Ne. mcon) Then
+      k = nact - 1
+      sp = 0.0
+      Do 220 i = 1, n
+220   sp = sp + z (i, k) * a (i, kk)
+      temp = Sqrt (sp*sp+zdota(nact)**2)
+      alpha = zdota (nact) / temp
+      beta = sp / temp
+      zdota (nact) = alpha * zdota (k)
+      zdota (k) = temp
+      Do 230 i = 1, n
+         temp = alpha * z (i, nact) + beta * z (i, k)
+         z (i, nact) = alpha * z (i, k) - beta * z (i, nact)
+230   z (i, k) = temp
+      iact (nact) = iact (k)
+      iact (k) = kk
+      temp = vmultc (k)
+      vmultc (k) = vmultc (nact)
+      vmultc (nact) = temp
+   End If
 !
 !     If stage one is in progress, then set SDIRN to the direction of the next
 !     change to the current vector of variables.
 !
-if (mcon .gt. m) goto 320
-kk=iact(nact)
-temp=0.0
-do 240 i=1,n
-240 temp=temp+sdirn(i)*a(i,kk)
-temp=temp-1.0
-temp=temp/zdota(nact)
-do 250 i=1,n
-250 sdirn(i)=sdirn(i)-temp*z(i,nact)
-goto 340
+   If (mcon .Gt. m) Go To 320
+   kk = iact (nact)
+   temp = 0.0
+   Do 240 i = 1, n
+240 temp = temp + sdirn (i) * a (i, kk)
+   temp = temp - 1.0
+   temp = temp / zdota (nact)
+   Do 250 i = 1, n
+250 sdirn (i) = sdirn (i) - temp * z (i, nact)
+   Go To 340
 !
 !     Delete the constraint that has the index IACT(ICON) from the active set.
 !
-260 if (icon .lt. nact) then
-    isave=iact(icon)
-    vsave=vmultc(icon)
-    k=icon
-270     kp=k+1
-    kk=iact(kp)
-    sp=0.0
-    do 280 i=1,n
-280     sp=sp+z(i,k)*a(i,kk)
-    temp=sqrt(sp*sp+zdota(kp)**2)
-    alpha=zdota(kp)/temp
-    beta=sp/temp
-    zdota(kp)=alpha*zdota(k)
-    zdota(k)=temp
-    do 290 i=1,n
-    temp=alpha*z(i,kp)+beta*z(i,k)
-    z(i,kp)=alpha*z(i,k)-beta*z(i,kp)
-290     z(i,k)=temp
-    iact(k)=kk
-    vmultc(k)=vmultc(kp)
-    k=kp
-    if (k .lt. nact) goto 270
-    iact(k)=isave
-    vmultc(k)=vsave
-end if
-nact=nact-1
+260 If (icon .Lt. nact) Then
+      isave = iact (icon)
+      vsave = vmultc (icon)
+      k = icon
+270   kp = k + 1
+      kk = iact (kp)
+      sp = 0.0
+      Do 280 i = 1, n
+280   sp = sp + z (i, k) * a (i, kk)
+      temp = Sqrt (sp*sp+zdota(kp)**2)
+      alpha = zdota (kp) / temp
+      beta = sp / temp
+      zdota (kp) = alpha * zdota (k)
+      zdota (k) = temp
+      Do 290 i = 1, n
+         temp = alpha * z (i, kp) + beta * z (i, k)
+         z (i, kp) = alpha * z (i, k) - beta * z (i, kp)
+290   z (i, k) = temp
+      iact (k) = kk
+      vmultc (k) = vmultc (kp)
+      k = kp
+      If (k .Lt. nact) Go To 270
+      iact (k) = isave
+      vmultc (k) = vsave
+   End If
+   nact = nact - 1
 !
 !     If stage one is in progress, then set SDIRN to the direction of the next
 !     change to the current vector of variables.
 !
-if (mcon .gt. m) goto 320
-temp=0.0
-do 300 i=1,n
-300 temp=temp+sdirn(i)*z(i,nact+1)
-do 310 i=1,n
-310 sdirn(i)=sdirn(i)-temp*z(i,nact+1)
-go to 340
+   If (mcon .Gt. m) Go To 320
+   temp = 0.0
+   Do 300 i = 1, n
+300 temp = temp + sdirn (i) * z (i, nact+1)
+   Do 310 i = 1, n
+310 sdirn (i) = sdirn (i) - temp * z (i, nact+1)
+   Go To 340
 !
 !     Pick the next search direction of stage two.
 !
-320 temp=1.0/zdota(nact)
-do 330 i=1,n
-330 sdirn(i)=temp*z(i,nact)
+320 temp = 1.0 / zdota (nact)
+   Do 330 i = 1, n
+330 sdirn (i) = temp * z (i, nact)
 !
 !     Calculate the step to the boundary of the trust region or take the step
 !     that reduces RESMAX to zero. The two statements below that include the
@@ -1076,127 +1083,127 @@ do 330 i=1,n
 !     calculation. Further, we skip the step if it could be zero within a
 !     reasonable tolerance for computer rounding errors.
 !
-340 dd=rho*rho
-sd=0.0
-ss=0.0
-do 350 i=1,n
-if (abs(dx(i)) .ge. 1.0e-6*rho) dd=dd-dx(i)**2
-sd=sd+dx(i)*sdirn(i)
-350 ss=ss+sdirn(i)**2
-if (dd .le. 0.0) goto 490
-temp=sqrt(ss*dd)
-if (abs(sd) .ge. 1.0e-6*temp) temp=sqrt(ss*dd+sd*sd)
-stpful=dd/(temp+sd)
-step=stpful
-if (mcon .eq. m) then
-    acca=step+0.1*resmax
-    accb=step+0.2*resmax
-    if (step .ge. acca .or. acca .ge. accb) goto 480
-    step=amin1(step,resmax)
-end if
+340 dd = rho * rho
+   sd = 0.0
+   ss = 0.0
+   Do 350 i = 1, n
+      If (Abs(dx(i)) .Ge. 1.0e-6*rho) dd = dd - dx (i) ** 2
+      sd = sd + dx (i) * sdirn (i)
+350 ss = ss + sdirn (i) ** 2
+   If (dd .Le. 0.0) Go To 490
+   temp = Sqrt (ss*dd)
+   If (Abs(sd) .Ge. 1.0e-6*temp) temp = Sqrt (ss*dd+sd*sd)
+   stpful = dd / (temp+sd)
+   step = stpful
+   If (mcon .Eq. m) Then
+      acca = step + 0.1 * resmax
+      accb = step + 0.2 * resmax
+      If (step .Ge. acca .Or. acca .Ge. accb) Go To 480
+      step = amin1 (step, resmax)
+   End If
 !
 !     Set DXNEW to the new variables if STEP is the steplength, and reduce
 !     RESMAX to the corresponding maximum residual if stage one is being done.
 !     Because DXNEW will be changed during the calculation of some Lagrange
 !     multipliers, it will be restored to the following value later.
 !
-do 360 i=1,n
-360 dxnew(i)=dx(i)+step*sdirn(i)
-if (mcon .eq. m) then
-    resold=resmax
-    resmax=0.0
-    do 380 k=1,nact
-    kk=iact(k)
-    temp=b(kk)
-    do 370 i=1,n
-370     temp=temp-a(i,kk)*dxnew(i)
-    resmax=amax1(resmax,temp)
-380     continue
-end if
+   Do 360 i = 1, n
+360 dxnew (i) = dx (i) + step * sdirn (i)
+   If (mcon .Eq. m) Then
+      resold = resmax
+      resmax = 0.0
+      Do 380 k = 1, nact
+         kk = iact (k)
+         temp = b (kk)
+         Do 370 i = 1, n
+370      temp = temp - a (i, kk) * dxnew (i)
+         resmax = amax1 (resmax, temp)
+380   Continue
+   End If
 !
 !     Set VMULTD to the VMULTC vector that would occur if DX became DXNEW. A
 !     device is included to force VMULTD(K)=0.0 if deviations from this value
 !     can be attributed to computer rounding errors. First calculate the new
 !     Lagrange multipliers.
 !
-k=nact
-390 zdotw=0.0
-zdwabs=0.0
-do 400 i=1,n
-temp=z(i,k)*dxnew(i)
-zdotw=zdotw+temp
-400 zdwabs=zdwabs+abs(temp)
-acca=zdwabs+0.1*abs(zdotw)
-accb=zdwabs+0.2*abs(zdotw)
-if (zdwabs .ge. acca .or. acca .ge. accb) zdotw=0.0
-vmultd(k)=zdotw/zdota(k)
-if (k .ge. 2) then
-    kk=iact(k)
-    do 410 i=1,n
-410     dxnew(i)=dxnew(i)-vmultd(k)*a(i,kk)
-    k=k-1
-    goto 390
-end if
-if (mcon .gt. m) vmultd(nact)=amax1(0.0,vmultd(nact))
+   k = nact
+390 zdotw = 0.0
+   zdwabs = 0.0
+   Do 400 i = 1, n
+      temp = z (i, k) * dxnew (i)
+      zdotw = zdotw + temp
+400 zdwabs = zdwabs + Abs (temp)
+   acca = zdwabs + 0.1 * Abs (zdotw)
+   accb = zdwabs + 0.2 * Abs (zdotw)
+   If (zdwabs .Ge. acca .Or. acca .Ge. accb) zdotw = 0.0
+   vmultd (k) = zdotw / zdota (k)
+   If (k .Ge. 2) Then
+      kk = iact (k)
+      Do 410 i = 1, n
+410   dxnew (i) = dxnew (i) - vmultd (k) * a (i, kk)
+      k = k - 1
+      Go To 390
+   End If
+   If (mcon .Gt. m) vmultd (nact) = amax1 (0.0, vmultd(nact))
 !
 !     Complete VMULTC by finding the new constraint residuals.
 !
-do 420 i=1,n
-420 dxnew(i)=dx(i)+step*sdirn(i)
-if (mcon .gt. nact) then
-    kl=nact+1
-    do 440 k=kl,mcon
-    kk=iact(k)
-    sum=resmax-b(kk)
-    sumabs=resmax+abs(b(kk))
-    do 430 i=1,n
-    temp=a(i,kk)*dxnew(i)
-    sum=sum+temp
-430     sumabs=sumabs+abs(temp)
-    acca=sumabs+0.1*abs(sum)
-    accb=sumabs+0.2*abs(sum)
-    if (sumabs .ge. acca .or. acca .ge. accb) sum=0.0
-440     vmultd(k)=sum
-end if
+   Do 420 i = 1, n
+420 dxnew (i) = dx (i) + step * sdirn (i)
+   If (mcon .Gt. nact) Then
+      kl = nact + 1
+      Do 440 k = kl, mcon
+         kk = iact (k)
+         sum = resmax - b (kk)
+         sumabs = resmax + Abs (b(kk))
+         Do 430 i = 1, n
+            temp = a (i, kk) * dxnew (i)
+            sum = sum + temp
+430      sumabs = sumabs + Abs (temp)
+         acca = sumabs + 0.1 * Abs (sum)
+         accb = sumabs + 0.2 * Abs (sum)
+         If (sumabs .Ge. acca .Or. acca .Ge. accb) sum = 0.0
+440   vmultd (k) = sum
+   End If
 !
 !     Calculate the fraction of the step from DX to DXNEW that will be taken.
 !
-ratio=1.0
-icon=0
-do 450 k=1,mcon
-if (vmultd(k) .lt. 0.0) then
-    temp=vmultc(k)/(vmultc(k)-vmultd(k))
-    if (temp .lt. ratio) then
-        ratio=temp
-        icon=k
-    end if
-end if
-450 continue
+   ratio = 1.0
+   icon = 0
+   Do 450 k = 1, mcon
+      If (vmultd(k) .Lt. 0.0) Then
+         temp = vmultc (k) / (vmultc(k)-vmultd(k))
+         If (temp .Lt. ratio) Then
+            ratio = temp
+            icon = k
+         End If
+      End If
+450 Continue
 !
 !     Update DX, VMULTC and RESMAX.
 !
-temp=1.0-ratio
-do 460 i=1,n
-460 dx(i)=temp*dx(i)+ratio*dxnew(i)
-do 470 k=1,mcon
-470 vmultc(k)=amax1(0.0,temp*vmultc(k)+ratio*vmultd(k))
-if (mcon .eq. m) resmax=resold+ratio*(resmax-resold)
+   temp = 1.0 - ratio
+   Do 460 i = 1, n
+460 dx (i) = temp * dx (i) + ratio * dxnew (i)
+   Do 470 k = 1, mcon
+470 vmultc (k) = amax1 (0.0, temp*vmultc(k)+ratio*vmultd(k))
+   If (mcon .Eq. m) resmax = resold + ratio * (resmax-resold)
 !
 !     If the full step is not acceptable then begin another iteration.
 !     Otherwise switch to stage two or end the calculation.
 !
-if (icon .gt. 0) goto 70
-if (step .eq. stpful) goto 500
-480 mcon=m+1
-icon=mcon
-iact(mcon)=mcon
-vmultc(mcon)=0.0
-goto 60
+   If (icon .Gt. 0) Go To 70
+   If (step .Eq. stpful) Go To 500
+480 mcon = m + 1
+   icon = mcon
+   iact (mcon) = mcon
+   vmultc (mcon) = 0.0
+   Go To 60
 !
 !     We employ any freedom that may be available to reduce the objective
 !     function before returning a DX whose length is less than RHO.
 !
-490 if (mcon .eq. m) goto 480
-ifull=0
-500 return
-end
+490 If (mcon .Eq. m) Go To 480
+   ifull = 0
+500 Return
+End

@@ -1,28 +1,28 @@
-subroutine calfun (n,x,f)
-implicit real*8 (a-h,o-z)
-dimension x(*),y(10,10)
-do 10 j=1,n
-y(1,j)=1.0d0
-10 y(2,j)=2.0d0*x(j)-1.0d0
-do 20 i=2,n
-do 20 j=1,n
-20 y(i+1,j)=2.0d0*y(2,j)*y(i,j)-y(i-1,j)
-f=0.0d0
-np=n+1
-iw=1
-do 40 i=1,np
-sum=0.0d0
-do 30 j=1,n
-30 sum=sum+y(i,j)
-sum=sum/dfloat(n)
-if (iw .gt. 0) sum=sum+1.0/dfloat(i*i-2*i)
-iw=-iw
-40 f=f+sum*sum
-return
-end
-subroutine lagmax (n,g,h,rho,d,v,vmax)
-implicit real*8 (a-h,o-z)
-dimension g(*),h(n,*),d(*),v(*)
+Subroutine calfun (n, x, f)
+      Implicit real * 8 (a-h, o-z)
+      Dimension x (*), y (10, 10)
+      Do 10 j = 1, n
+         y (1, j) = 1.0d0
+10    y (2, j) = 2.0d0 * x (j) - 1.0d0
+      Do 20 i = 2, n
+         Do 20 j = 1, n
+20    y (i+1, j) = 2.0d0 * y (2, j) * y (i, j) - y (i-1, j)
+      f = 0.0d0
+      np = n + 1
+      iw = 1
+      Do 40 i = 1, np
+         sum = 0.0d0
+         Do 30 j = 1, n
+30       sum = sum + y (i, j)
+         sum = sum / dfloat (n)
+         If (iw .Gt. 0) sum = sum + 1.0 / dfloat (i*i-2*i)
+         iw = - iw
+40    f = f + sum * sum
+      Return
+End
+Subroutine lagmax (n, g, h, rho, d, v, vmax)
+      Implicit real * 8 (a-h, o-z)
+      Dimension g (*), h (n,*), d (*), v (*)
 !
 !     N is the number of variables of a quadratic objective function, Q say.
 !     G is the gradient of Q at the origin.
@@ -41,176 +41,179 @@ dimension g(*),h(n,*),d(*),v(*)
 !
 !     Preliminary calculations.
 !
-half=0.5d0
-halfrt=dsqrt(half)
-one=1.0d0
-zero=0.0d0
+      half = 0.5d0
+      halfrt = dsqrt (half)
+      one = 1.0d0
+      zero = 0.0d0
 !
 !     Pick V such that ||HV|| / ||V|| is large.
 !
-hmax=zero
-do 20 i=1,n
-sum=zero
-do 10 j=1,n
-h(j,i)=h(i,j)
-10 sum=sum+h(i,j)**2
-if (sum .gt. hmax) then
-    hmax=sum
-    k=i
-end if
-20 continue
-do 30 j=1,n
-30 v(j)=h(k,j)
+      hmax = zero
+      Do 20 i = 1, n
+         sum = zero
+         Do 10 j = 1, n
+            h (j, i) = h (i, j)
+10       sum = sum + h (i, j) ** 2
+         If (sum .Gt. hmax) Then
+            hmax = sum
+            k = i
+         End If
+20    Continue
+      Do 30 j = 1, n
+30    v (j) = h (k, j)
 !
 !     Set D to a vector in the subspace spanned by V and HV that maximizes
 !     |(D,HD)|/(D,D), except that we set D=HV if V and HV are nearly parallel.
 !     The vector that has the name D at label 60 used to be the vector W.
 !
-vsq=zero
-vhv=zero
-dsq=zero
-do 50 i=1,n
-vsq=vsq+v(i)**2
-d(i)=zero
-do 40 j=1,n
-40 d(i)=d(i)+h(i,j)*v(j)
-vhv=vhv+v(i)*d(i)
-50 dsq=dsq+d(i)**2
-if (vhv*vhv .le. 0.9999d0*dsq*vsq) then
-    temp=vhv/vsq
-    wsq=zero
-    do 60 i=1,n
-    d(i)=d(i)-temp*v(i)
-60     wsq=wsq+d(i)**2
-    whw=zero
-    ratio=dsqrt(wsq/vsq)
-    do 80 i=1,n
-    temp=zero
-    do 70 j=1,n
-70     temp=temp+h(i,j)*d(j)
-    whw=whw+temp*d(i)
-80     v(i)=ratio*v(i)
-    vhv=ratio*ratio*vhv
-    vhw=ratio*wsq
-    temp=half*(whw-vhv)
-    temp=temp+dsign(dsqrt(temp**2+vhw**2),whw+vhv)
-    do 90 i=1,n
-90     d(i)=vhw*v(i)+temp*d(i)
-end if
+      vsq = zero
+      vhv = zero
+      dsq = zero
+      Do 50 i = 1, n
+         vsq = vsq + v (i) ** 2
+         d (i) = zero
+         Do 40 j = 1, n
+40       d (i) = d (i) + h (i, j) * v (j)
+         vhv = vhv + v (i) * d (i)
+50    dsq = dsq + d (i) ** 2
+      If (vhv*vhv .Le. 0.9999d0*dsq*vsq) Then
+         temp = vhv / vsq
+         wsq = zero
+         Do 60 i = 1, n
+            d (i) = d (i) - temp * v (i)
+60       wsq = wsq + d (i) ** 2
+         whw = zero
+         ratio = dsqrt (wsq/vsq)
+         Do 80 i = 1, n
+            temp = zero
+            Do 70 j = 1, n
+70          temp = temp + h (i, j) * d (j)
+            whw = whw + temp * d (i)
+80       v (i) = ratio * v (i)
+         vhv = ratio * ratio * vhv
+         vhw = ratio * wsq
+         temp = half * (whw-vhv)
+         temp = temp + dsign (dsqrt(temp**2+vhw**2), whw+vhv)
+         Do 90 i = 1, n
+90       d (i) = vhw * v (i) + temp * d (i)
+      End If
 !
 !     We now turn our attention to the subspace spanned by G and D. A multiple
 !     of the current D is returned if that choice seems to be adequate.
 !
-gg=zero
-gd=zero
-dd=zero
-dhd=zero
-do 110 i=1,n
-gg=gg+g(i)**2
-gd=gd+g(i)*d(i)
-dd=dd+d(i)**2
-sum=zero
-do 100 j=1,n
-100 sum=sum+h(i,j)*d(j)
-110 dhd=dhd+sum*d(i)
-temp=gd/gg
-vv=zero
-scale=dsign(rho/dsqrt(dd),gd*dhd)
-do 120 i=1,n
-v(i)=d(i)-temp*g(i)
-vv=vv+v(i)**2
-120 d(i)=scale*d(i)
-gnorm=dsqrt(gg)
-if (gnorm*dd .le. 0.5d-2*rho*dabs(dhd) .or. &
-  vv/dd .le. 1.0d-4) then
-    vmax=dabs(scale*(gd+half*scale*dhd))
-    goto 170
-end if
+      gg = zero
+      gd = zero
+      dd = zero
+      dhd = zero
+      Do 110 i = 1, n
+         gg = gg + g (i) ** 2
+         gd = gd + g (i) * d (i)
+         dd = dd + d (i) ** 2
+         sum = zero
+         Do 100 j = 1, n
+100      sum = sum + h (i, j) * d (j)
+110   dhd = dhd + sum * d (i)
+      temp = gd / gg
+      vv = zero
+      scale = dsign (rho/dsqrt(dd), gd*dhd)
+      Do 120 i = 1, n
+         v (i) = d (i) - temp * g (i)
+         vv = vv + v (i) ** 2
+120   d (i) = scale * d (i)
+      gnorm = dsqrt (gg)
+      If (gnorm*dd .Le. 0.5d-2*rho*dabs(dhd) .Or. vv/dd .Le. 1.0d-4) &
+     & Then
+         vmax = dabs (scale*(gd+half*scale*dhd))
+         Go To 170
+      End If
 !
 !     G and V are now orthogonal in the subspace spanned by G and D. Hence
 !     we generate an orthonormal basis of this subspace such that (D,HV) is
 !     negligible or zero, where D and V will be the basis vectors.
 !
-ghg=zero
-vhg=zero
-vhv=zero
-do 140 i=1,n
-sum=zero
-sumv=zero
-do 130 j=1,n
-sum=sum+h(i,j)*g(j)
-130 sumv=sumv+h(i,j)*v(j)
-ghg=ghg+sum*g(i)
-vhg=vhg+sumv*g(i)
-140 vhv=vhv+sumv*v(i)
-vnorm=dsqrt(vv)
-ghg=ghg/gg
-vhg=vhg/(vnorm*gnorm)
-vhv=vhv/vv
-if (dabs(vhg) .le. 0.01d0*dmax1(dabs(ghg),dabs(vhv))) then
-    vmu=ghg-vhv
-    wcos=one
-    wsin=zero
-else
-    temp=half*(ghg-vhv)
-    vmu=temp+dsign(dsqrt(temp**2+vhg**2),temp)
-    temp=dsqrt(vmu**2+vhg**2)
-    wcos=vmu/temp
-    wsin=vhg/temp
-end if
-tempa=wcos/gnorm
-tempb=wsin/vnorm
-tempc=wcos/vnorm
-tempd=wsin/gnorm
-do 150 i=1,n
-d(i)=tempa*g(i)+tempb*v(i)
-150 v(i)=tempc*v(i)-tempd*g(i)
+      ghg = zero
+      vhg = zero
+      vhv = zero
+      Do 140 i = 1, n
+         sum = zero
+         sumv = zero
+         Do 130 j = 1, n
+            sum = sum + h (i, j) * g (j)
+130      sumv = sumv + h (i, j) * v (j)
+         ghg = ghg + sum * g (i)
+         vhg = vhg + sumv * g (i)
+140   vhv = vhv + sumv * v (i)
+      vnorm = dsqrt (vv)
+      ghg = ghg / gg
+      vhg = vhg / (vnorm*gnorm)
+      vhv = vhv / vv
+      If (dabs(vhg) .Le. 0.01d0*dmax1(dabs(ghg), dabs(vhv))) Then
+         vmu = ghg - vhv
+         wcos = one
+         wsin = zero
+      Else
+         temp = half * (ghg-vhv)
+         vmu = temp + dsign (dsqrt(temp**2+vhg**2), temp)
+         temp = dsqrt (vmu**2+vhg**2)
+         wcos = vmu / temp
+         wsin = vhg / temp
+      End If
+      tempa = wcos / gnorm
+      tempb = wsin / vnorm
+      tempc = wcos / vnorm
+      tempd = wsin / gnorm
+      Do 150 i = 1, n
+         d (i) = tempa * g (i) + tempb * v (i)
+150   v (i) = tempc * v (i) - tempd * g (i)
 !
 !     The final D is a multiple of the current D, V, D+V or D-V. We make the
 !     choice from these possibilities that is optimal.
 !
-dlin=wcos*gnorm/rho
-vlin=-wsin*gnorm/rho
-tempa=dabs(dlin)+half*dabs(vmu+vhv)
-tempb=dabs(vlin)+half*dabs(ghg-vmu)
-tempc=halfrt*(dabs(dlin)+dabs(vlin))+0.25d0*dabs(ghg+vhv)
-if (tempa .ge. tempb .and. tempa .ge. tempc) then
-    tempd=dsign(rho,dlin*(vmu+vhv))
-    tempv=zero
-else if (tempb .ge. tempc) then
-    tempd=zero
-    tempv=dsign(rho,vlin*(ghg-vmu))
-else
-    tempd=dsign(halfrt*rho,dlin*(ghg+vhv))
-    tempv=dsign(halfrt*rho,vlin*(ghg+vhv))
-end if
-do 160 i=1,n
-160 d(i)=tempd*d(i)+tempv*v(i)
-vmax=rho*rho*dmax1(tempa,tempb,tempc)
-170 return
-end
+      dlin = wcos * gnorm / rho
+      vlin = - wsin * gnorm / rho
+      tempa = dabs (dlin) + half * dabs (vmu+vhv)
+      tempb = dabs (vlin) + half * dabs (ghg-vmu)
+      tempc = halfrt * (dabs(dlin)+dabs(vlin)) + 0.25d0 * dabs &
+     & (ghg+vhv)
+      If (tempa .Ge. tempb .And. tempa .Ge. tempc) Then
+         tempd = dsign (rho, dlin*(vmu+vhv))
+         tempv = zero
+      Else If (tempb .Ge. tempc) Then
+         tempd = zero
+         tempv = dsign (rho, vlin*(ghg-vmu))
+      Else
+         tempd = dsign (halfrt*rho, dlin*(ghg+vhv))
+         tempv = dsign (halfrt*rho, vlin*(ghg+vhv))
+      End If
+      Do 160 i = 1, n
+160   d (i) = tempd * d (i) + tempv * v (i)
+      vmax = rho * rho * dmax1 (tempa, tempb, tempc)
+170   Return
+End
 !
 !     The Chebyquad test problem (Fletcher, 1965) for N = 2,4,6,8.
 !
-implicit real*8 (a-h,o-z)
-dimension x(10),w(10000)
-iprint=2
-maxfun=5000
-rhoend=1.0d-8
-do 30 n=2,8,2
-do 10 i=1,n
-10 x(i)=dfloat(i)/dfloat(n+1)
-rhobeg=0.2d0*x(1)
-print 20, n
-20 format (//5x,'******************'/5x, &
-  'Results with N =',i2,/5x,'******************')
-call uobyqa (n,x,rhobeg,rhoend,iprint,maxfun,w)
-30 continue
-stop
-end
-subroutine trstep (n,g,h,delta,tol,d,gg,td,tn,w,piv,z,evalue)
-implicit real*8 (a-h,o-z)
-dimension g(*),h(n,*),d(*),gg(*),td(*),tn(*),w(*),piv(*),z(*)
+Implicit real * 8 (a-h, o-z)
+Dimension x (10), w (10000)
+iprint = 2
+maxfun = 5000
+rhoend = 1.0d-8
+Do 30 n = 2, 8, 2
+   Do 10 i = 1, n
+10 x (i) = dfloat (i) / dfloat (n+1)
+   rhobeg = 0.2d0 * x (1)
+   Print 20, n
+20 Format (/ / 5 x, '******************' / 5 x, 'Results with N =', i2, &
+  & / 5 x, '******************')
+   Call uobyqa (n, x, rhobeg, rhoend, iprint, maxfun, w)
+30 Continue
+Stop
+End
+Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
+& evalue)
+   Implicit real * 8 (a-h, o-z)
+   Dimension g (*), h (n,*), d (*), gg (*), td (*), tn (*), w (*), piv &
+  & (*), z (*)
 !
 !     N is the number of variables of a quadratic objective function, Q say.
 !     G is the gradient of Q at the origin.
@@ -237,356 +240,357 @@ dimension g(*),h(n,*),d(*),gg(*),td(*),tn(*),w(*),piv(*),z(*)
 !
 !     Initialization.
 !
-one=1.0d0
-two=2.0d0
-zero=0.0d0
-delsq=delta*delta
-evalue=zero
-nm=n-1
-do 10 i=1,n
-d(i)=zero
-td(i)=h(i,i)
-do 10 j=1,i
-10 h(i,j)=h(j,i)
+   one = 1.0d0
+   two = 2.0d0
+   zero = 0.0d0
+   delsq = delta * delta
+   evalue = zero
+   nm = n - 1
+   Do 10 i = 1, n
+      d (i) = zero
+      td (i) = h (i, i)
+      Do 10 j = 1, i
+10 h (i, j) = h (j, i)
 !
 !     Apply Householder transformations to obtain a tridiagonal matrix that
 !     is similar to H, and put the elements of the Householder vectors in
 !     the lower triangular part of H. Further, TD and TN will contain the
 !     diagonal and other nonzero elements of the tridiagonal matrix.
 !
-do 80 k=1,nm
-kp=k+1
-sum=zero
-if (kp .lt. n) then
-    kpp=kp+1
-    do 20 i=kpp,n
-20     sum=sum+h(i,k)**2
-end if
-if (sum .eq. zero) then
-    tn(k)=h(kp,k)
-    h(kp,k)=zero
-else
-    temp=h(kp,k)
-    tn(k)=dsign(dsqrt(sum+temp*temp),temp)
-    h(kp,k)=-sum/(temp+tn(k))
-    temp=dsqrt(two/(sum+h(kp,k)**2))
-    do 30 i=kp,n
-    w(i)=temp*h(i,k)
-    h(i,k)=w(i)
-30     z(i)=td(i)*w(i)
-    wz=zero
-    do 50 j=kp,nm
-    jp=j+1
-    do 40 i=jp,n
-    z(i)=z(i)+h(i,j)*w(j)
-40     z(j)=z(j)+h(i,j)*w(i)
-50     wz=wz+w(j)*z(j)
-    wz=wz+w(n)*z(n)
-    do 70 j=kp,n
-    td(j)=td(j)+w(j)*(wz*w(j)-two*z(j))
-    if (j .lt. n) then
-        jp=j+1
-        do 60 i=jp,n
-60         h(i,j)=h(i,j)-w(i)*z(j)-w(j)*(z(i)-wz*w(i))
-    end if
-70     continue
-end if
-80 continue
+   Do 80 k = 1, nm
+      kp = k + 1
+      sum = zero
+      If (kp .Lt. n) Then
+         kpp = kp + 1
+         Do 20 i = kpp, n
+20       sum = sum + h (i, k) ** 2
+      End If
+      If (sum .Eq. zero) Then
+         tn (k) = h (kp, k)
+         h (kp, k) = zero
+      Else
+         temp = h (kp, k)
+         tn (k) = dsign (dsqrt(sum+temp*temp), temp)
+         h (kp, k) = - sum / (temp+tn(k))
+         temp = dsqrt (two/(sum+h(kp, k)**2))
+         Do 30 i = kp, n
+            w (i) = temp * h (i, k)
+            h (i, k) = w (i)
+30       z (i) = td (i) * w (i)
+         wz = zero
+         Do 50 j = kp, nm
+            jp = j + 1
+            Do 40 i = jp, n
+               z (i) = z (i) + h (i, j) * w (j)
+40          z (j) = z (j) + h (i, j) * w (i)
+50       wz = wz + w (j) * z (j)
+         wz = wz + w (n) * z (n)
+         Do 70 j = kp, n
+            td (j) = td (j) + w (j) * (wz*w(j)-two*z(j))
+            If (j .Lt. n) Then
+               jp = j + 1
+               Do 60 i = jp, n
+60             h (i, j) = h (i, j) - w (i) * z (j) - w (j) * &
+              & (z(i)-wz*w(i))
+            End If
+70       Continue
+      End If
+80 Continue
 !
 !     Form GG by applying the similarity transformation to G.
 !
-gsq=zero
-do 90 i=1,n
-gg(i)=g(i)
-90 gsq=gsq+g(i)**2
-gnorm=dsqrt(gsq)
-do 110 k=1,nm
-kp=k+1
-sum=zero
-do 100 i=kp,n
-100 sum=sum+gg(i)*h(i,k)
-do 110 i=kp,n
-110 gg(i)=gg(i)-sum*h(i,k)
+   gsq = zero
+   Do 90 i = 1, n
+      gg (i) = g (i)
+90 gsq = gsq + g (i) ** 2
+   gnorm = dsqrt (gsq)
+   Do 110 k = 1, nm
+      kp = k + 1
+      sum = zero
+      Do 100 i = kp, n
+100   sum = sum + gg (i) * h (i, k)
+      Do 110 i = kp, n
+110 gg (i) = gg (i) - sum * h (i, k)
 !
 !     Begin the trust region calculation with a tridiagonal matrix by
 !     calculating the norm of H. Then treat the case when H is zero.
 !
-hnorm=dabs(td(1))+dabs(tn(1))
-tdmin=td(1)
-tn(n)=zero
-do 120 i=2,n
-temp=dabs(tn(i-1))+dabs(td(i))+dabs(tn(i))
-hnorm=dmax1(hnorm,temp)
-120 tdmin=dmin1(tdmin,td(i))
-if (hnorm .eq. zero) then
-    if (gnorm .eq. zero) goto 400
-    scale=delta/gnorm
-    do 130 i=1,n
-130     d(i)=-scale*gg(i)
-    goto 370
-end if
+   hnorm = dabs (td(1)) + dabs (tn(1))
+   tdmin = td (1)
+   tn (n) = zero
+   Do 120 i = 2, n
+      temp = dabs (tn(i-1)) + dabs (td(i)) + dabs (tn(i))
+      hnorm = dmax1 (hnorm, temp)
+120 tdmin = dmin1 (tdmin, td(i))
+   If (hnorm .Eq. zero) Then
+      If (gnorm .Eq. zero) Go To 400
+      scale = delta / gnorm
+      Do 130 i = 1, n
+130   d (i) = - scale * gg (i)
+      Go To 370
+   End If
 !
 !     Set the initial values of PAR and its bounds.
 !
-parl=dmax1(zero,-tdmin,gnorm/delta-hnorm)
-parlest=parl
-par=parl
-paru=zero
-paruest=zero
-posdef=zero
-iterc=0
+   parl = dmax1 (zero,-tdmin, gnorm/delta-hnorm)
+   parlest = parl
+   par = parl
+   paru = zero
+   paruest = zero
+   posdef = zero
+   iterc = 0
 !
 !     Calculate the pivots of the Cholesky factorization of (H+PAR*I).
 !
-140 iterc=iterc+1
-ksav=0
-piv(1)=td(1)+par
-k=1
-150 if (piv(k) .gt. zero) then
-    piv(k+1)=td(k+1)+par-tn(k)**2/piv(k)
-else
-    if (piv(k) .lt. zero .or. tn(k) .ne. zero) goto 160
-    ksav=k
-    piv(k+1)=td(k+1)+par
-end if
-k=k+1
-if (k .lt. n) goto 150
-if (piv(k) .lt. zero) goto 160
-if (piv(k) .eq. zero) ksav=k
+140 iterc = iterc + 1
+   ksav = 0
+   piv (1) = td (1) + par
+   k = 1
+150 If (piv(k) .Gt. zero) Then
+      piv (k+1) = td (k+1) + par - tn (k) ** 2 / piv (k)
+   Else
+      If (piv(k) .Lt. zero .Or. tn(k) .Ne. zero) Go To 160
+      ksav = k
+      piv (k+1) = td (k+1) + par
+   End If
+   k = k + 1
+   If (k .Lt. n) Go To 150
+   If (piv(k) .Lt. zero) Go To 160
+   If (piv(k) .Eq. zero) ksav = k
 !
 !     Branch if all the pivots are positive, allowing for the case when
 !     G is zero.
 !
-if (ksav .eq. 0 .and. gsq .gt. zero) goto 230
-if (gsq .eq. zero) then
-    if (par .eq. zero) goto 370
-    paru=par
-    paruest=par
-    if (ksav .eq. 0) goto 190
-end if
-k=ksav
+   If (ksav .Eq. 0 .And. gsq .Gt. zero) Go To 230
+   If (gsq .Eq. zero) Then
+      If (par .Eq. zero) Go To 370
+      paru = par
+      paruest = par
+      If (ksav .Eq. 0) Go To 190
+   End If
+   k = ksav
 !
 !     Set D to a direction of nonpositive curvature of the given tridiagonal
 !     matrix, and thus revise PARLEST.
 !
-160 d(k)=one
-if (dabs(tn(k)) .le. dabs(piv(k))) then
-    dsq=one
-    dhd=piv(k)
-else
-    temp=td(k+1)+par
-    if (temp .le. dabs(piv(k))) then
-        d(k+1)=dsign(one,-tn(k))
-        dhd=piv(k)+temp-two*dabs(tn(k))
-    else
-        d(k+1)=-tn(k)/temp
-        dhd=piv(k)+tn(k)*d(k+1)
-    end if
-    dsq=one+d(k+1)**2
-end if
-170 if (k .gt. 1) then
-    k=k-1
-    if (tn(k) .ne. zero) then
-        d(k)=-tn(k)*d(k+1)/piv(k)
-        dsq=dsq+d(k)**2
-        goto 170
-    end if
-    do 180 i=1,k
-180     d(i)=zero
-end if
-parl=par
-parlest=par-dhd/dsq
+160 d (k) = one
+   If (dabs(tn(k)) .Le. dabs(piv(k))) Then
+      dsq = one
+      dhd = piv (k)
+   Else
+      temp = td (k+1) + par
+      If (temp .Le. dabs(piv(k))) Then
+         d (k+1) = dsign (one,-tn(k))
+         dhd = piv (k) + temp - two * dabs (tn(k))
+      Else
+         d (k+1) = - tn (k) / temp
+         dhd = piv (k) + tn (k) * d (k+1)
+      End If
+      dsq = one + d (k+1) ** 2
+   End If
+170 If (k .Gt. 1) Then
+      k = k - 1
+      If (tn(k) .Ne. zero) Then
+         d (k) = - tn (k) * d (k+1) / piv (k)
+         dsq = dsq + d (k) ** 2
+         Go To 170
+      End If
+      Do 180 i = 1, k
+180   d (i) = zero
+   End If
+   parl = par
+   parlest = par - dhd / dsq
 !
 !     Terminate with D set to a multiple of the current D if the following
 !     test suggests that it suitable to do so.
 !
-190 temp=paruest
-if (gsq .eq. zero) temp=temp*(one-tol)
-if (paruest .gt. zero .and. parlest .ge. temp) then
-    dtg=zero
-    do 200 i=1,n
-200     dtg=dtg+d(i)*gg(i)
-    scale=-dsign(delta/dsqrt(dsq),dtg)
-    do 210 i=1,n
-210     d(i)=scale*d(i)
-    goto 370
-end if
+190 temp = paruest
+   If (gsq .Eq. zero) temp = temp * (one-tol)
+   If (paruest .Gt. zero .And. parlest .Ge. temp) Then
+      dtg = zero
+      Do 200 i = 1, n
+200   dtg = dtg + d (i) * gg (i)
+      scale = - dsign (delta/dsqrt(dsq), dtg)
+      Do 210 i = 1, n
+210   d (i) = scale * d (i)
+      Go To 370
+   End If
 !
 !     Pick the value of PAR for the next iteration.
 !
-220 if (paru .eq. zero) then
-    par=two*parlest+gnorm/delta
-else
-    par=0.5d0*(parl+paru)
-    par=dmax1(par,parlest)
-end if
-if (paruest .gt. zero) par=dmin1(par,paruest)
-goto 140
+220 If (paru .Eq. zero) Then
+      par = two * parlest + gnorm / delta
+   Else
+      par = 0.5d0 * (parl+paru)
+      par = dmax1 (par, parlest)
+   End If
+   If (paruest .Gt. zero) par = dmin1 (par, paruest)
+   Go To 140
 !
 !     Calculate D for the current PAR in the positive definite case.
 !
-230 w(1)=-gg(1)/piv(1)
-do 240 i=2,n
-240 w(i)=(-gg(i)-tn(i-1)*w(i-1))/piv(i)
-d(n)=w(n)
-do 250 i=nm,1,-1
-250 d(i)=w(i)-tn(i)*d(i+1)/piv(i)
+230 w (1) = - gg (1) / piv (1)
+   Do 240 i = 2, n
+240 w (i) = (-gg(i)-tn(i-1)*w(i-1)) / piv (i)
+   d (n) = w (n)
+   Do 250 i = nm, 1, - 1
+250 d (i) = w (i) - tn (i) * d (i+1) / piv (i)
 !
 !     Branch if a Newton-Raphson step is acceptable.
 !
-dsq=zero
-wsq=zero
-do 260 i=1,n
-dsq=dsq+d(i)**2
-260 wsq=wsq+piv(i)*w(i)**2
-if (par .eq. zero .and. dsq .le. delsq) goto 320
+   dsq = zero
+   wsq = zero
+   Do 260 i = 1, n
+      dsq = dsq + d (i) ** 2
+260 wsq = wsq + piv (i) * w (i) ** 2
+   If (par .Eq. zero .And. dsq .Le. delsq) Go To 320
 !
 !     Make the usual test for acceptability of a full trust region step.
 !
-dnorm=dsqrt(dsq)
-phi=one/dnorm-one/delta
-temp=tol*(one+par*dsq/wsq)-dsq*phi*phi
-if (temp .ge. zero) then
-    scale=delta/dnorm
-    do 270 i=1,n
-270     d(i)=scale*d(i)
-    goto 370
-end if
-if (iterc .ge. 2 .and. par .le. parl) goto 370
-if (paru .gt. zero .and. par .ge. paru) goto 370
+   dnorm = dsqrt (dsq)
+   phi = one / dnorm - one / delta
+   temp = tol * (one+par*dsq/wsq) - dsq * phi * phi
+   If (temp .Ge. zero) Then
+      scale = delta / dnorm
+      Do 270 i = 1, n
+270   d (i) = scale * d (i)
+      Go To 370
+   End If
+   If (iterc .Ge. 2 .And. par .Le. parl) Go To 370
+   If (paru .Gt. zero .And. par .Ge. paru) Go To 370
 !
 !     Complete the iteration when PHI is negative.
 !
-if (phi .lt. zero) then
-    parlest=par
-    if (posdef .eq. one) then
-        if (phi .le. phil) goto 370
-        slope=(phi-phil)/(par-parl)
-        parlest=par-phi/slope
-    end if
-    slope=one/gnorm
-    if (paru .gt. zero) slope=(phiu-phi)/(paru-par)
-    temp=par-phi/slope
-    if (paruest .gt. zero) temp=dmin1(temp,paruest)
-    paruest=temp
-    posdef=one
-    parl=par
-    phil=phi
-    goto 220
-end if
+   If (phi .Lt. zero) Then
+      parlest = par
+      If (posdef .Eq. one) Then
+         If (phi .Le. phil) Go To 370
+         slope = (phi-phil) / (par-parl)
+         parlest = par - phi / slope
+      End If
+      slope = one / gnorm
+      If (paru .Gt. zero) slope = (phiu-phi) / (paru-par)
+      temp = par - phi / slope
+      If (paruest .Gt. zero) temp = dmin1 (temp, paruest)
+      paruest = temp
+      posdef = one
+      parl = par
+      phil = phi
+      Go To 220
+   End If
 !
 !     If required, calculate Z for the alternative test for convergence.
 !
-if (posdef .eq. zero) then
-    w(1)=one/piv(1)
-    do 280 i=2,n
-    temp=-tn(i-1)*w(i-1)
-280     w(i)=(dsign(one,temp)+temp)/piv(i)
-    z(n)=w(n)
-    do 290 i=nm,1,-1
-290     z(i)=w(i)-tn(i)*z(i+1)/piv(i)
-    wwsq=zero
-    zsq=zero
-    dtz=zero
-    do 300 i=1,n
-    wwsq=wwsq+piv(i)*w(i)**2
-    zsq=zsq+z(i)**2
-300     dtz=dtz+d(i)*z(i)
+   If (posdef .Eq. zero) Then
+      w (1) = one / piv (1)
+      Do 280 i = 2, n
+         temp = - tn (i-1) * w (i-1)
+280   w (i) = (dsign(one, temp)+temp) / piv (i)
+      z (n) = w (n)
+      Do 290 i = nm, 1, - 1
+290   z (i) = w (i) - tn (i) * z (i+1) / piv (i)
+      wwsq = zero
+      zsq = zero
+      dtz = zero
+      Do 300 i = 1, n
+         wwsq = wwsq + piv (i) * w (i) ** 2
+         zsq = zsq + z (i) ** 2
+300   dtz = dtz + d (i) * z (i)
 !
 !     Apply the alternative test for convergence.
 !
-    tempa=dabs(delsq-dsq)
-    tempb=dsqrt(dtz*dtz+tempa*zsq)
-    gam=tempa/(dsign(tempb,dtz)+dtz)
-    temp=tol*(wsq+par*delsq)-gam*gam*wwsq
-    if (temp .ge. zero) then
-        do 310 i=1,n
-310         d(i)=d(i)+gam*z(i)
-        goto 370
-    end if
-    parlest=dmax1(parlest,par-wwsq/zsq)
-end if
+      tempa = dabs (delsq-dsq)
+      tempb = dsqrt (dtz*dtz+tempa*zsq)
+      gam = tempa / (dsign(tempb, dtz)+dtz)
+      temp = tol * (wsq+par*delsq) - gam * gam * wwsq
+      If (temp .Ge. zero) Then
+         Do 310 i = 1, n
+310      d (i) = d (i) + gam * z (i)
+         Go To 370
+      End If
+      parlest = dmax1 (parlest, par-wwsq/zsq)
+   End If
 !
 !     Complete the iteration when PHI is positive.
 !
-slope=one/gnorm
-if (paru .gt. zero) then
-    if (phi .ge. phiu) goto 370
-    slope=(phiu-phi)/(paru-par)
-end if
-parlest=dmax1(parlest,par-phi/slope)
-paruest=par
-if (posdef .eq. one) then
-    slope=(phi-phil)/(par-parl)
-    paruest=par-phi/slope
-end if
-paru=par
-phiu=phi
-goto 220
+   slope = one / gnorm
+   If (paru .Gt. zero) Then
+      If (phi .Ge. phiu) Go To 370
+      slope = (phiu-phi) / (paru-par)
+   End If
+   parlest = dmax1 (parlest, par-phi/slope)
+   paruest = par
+   If (posdef .Eq. one) Then
+      slope = (phi-phil) / (par-parl)
+      paruest = par - phi / slope
+   End If
+   paru = par
+   phiu = phi
+   Go To 220
 !
 !     Set EVALUE to the least eigenvalue of the second derivative matrix if
 !     D is a Newton-Raphson step. SHFMAX will be an upper bound on EVALUE.
 !
-320 shfmin=zero
-pivot=td(1)
-shfmax=pivot
-do 330 k=2,n
-pivot=td(k)-tn(k-1)**2/pivot
-330 shfmax=dmin1(shfmax,pivot)
+320 shfmin = zero
+   pivot = td (1)
+   shfmax = pivot
+   Do 330 k = 2, n
+      pivot = td (k) - tn (k-1) ** 2 / pivot
+330 shfmax = dmin1 (shfmax, pivot)
 !
 !     Find EVALUE by a bisection method, but occasionally SHFMAX may be
 !     adjusted by the rule of false position.
 !
-ksave=0
-340 shift=0.5d0*(shfmin+shfmax)
-k=1
-temp=td(1)-shift
-350 if (temp .gt. zero) then
-    piv(k)=temp
-    if (k .lt. n) then
-        temp=td(k+1)-shift-tn(k)**2/temp
-        k=k+1
-        goto 350
-    end if
-    shfmin=shift
-else
-    if (k .lt. ksave) goto 360
-    if (k .eq. ksave) then
-        if (pivksv .eq. zero) goto 360
-        if (piv(k)-temp .lt. temp-pivksv) then
-            pivksv=temp
-            shfmax=shift
-        else
-            pivksv=zero
-            shfmax=(shift*piv(k)-shfmin*temp)/(piv(k)-temp)
-        end if
-    else
-        ksave=k
-        pivksv=temp
-        shfmax=shift
-    end if
-end if
-if (shfmin .le. 0.99d0*shfmax) goto 340
-360 evalue=shfmin
+   ksave = 0
+340 shift = 0.5d0 * (shfmin+shfmax)
+   k = 1
+   temp = td (1) - shift
+350 If (temp .Gt. zero) Then
+      piv (k) = temp
+      If (k .Lt. n) Then
+         temp = td (k+1) - shift - tn (k) ** 2 / temp
+         k = k + 1
+         Go To 350
+      End If
+      shfmin = shift
+   Else
+      If (k .Lt. ksave) Go To 360
+      If (k .Eq. ksave) Then
+         If (pivksv .Eq. zero) Go To 360
+         If (piv(k)-temp .Lt. temp-pivksv) Then
+            pivksv = temp
+            shfmax = shift
+         Else
+            pivksv = zero
+            shfmax = (shift*piv(k)-shfmin*temp) / (piv(k)-temp)
+         End If
+      Else
+         ksave = k
+         pivksv = temp
+         shfmax = shift
+      End If
+   End If
+   If (shfmin .Le. 0.99d0*shfmax) Go To 340
+360 evalue = shfmin
 !
 !     Apply the inverse Householder transformations to D.
 !
-370 nm=n-1
-do 390 k=nm,1,-1
-kp=k+1
-sum=zero
-do 380 i=kp,n
-380 sum=sum+d(i)*h(i,k)
-do 390 i=kp,n
-390 d(i)=d(i)-sum*h(i,k)
+370 nm = n - 1
+   Do 390 k = nm, 1, - 1
+      kp = k + 1
+      sum = zero
+      Do 380 i = kp, n
+380   sum = sum + d (i) * h (i, k)
+      Do 390 i = kp, n
+390 d (i) = d (i) - sum * h (i, k)
 !
 !     Return from the subroutine.
 !
-400 return
-end
-subroutine uobyqa (n,x,rhobeg,rhoend,iprint,maxfun,w)
-implicit real*8 (a-h,o-z)
-dimension x(*),w(*)
+400 Return
+End
+Subroutine uobyqa (n, x, rhobeg, rhoend, iprint, maxfun, w)
+   Implicit real * 8 (a-h, o-z)
+   Dimension x (*), w (*)
 !
 !     This subroutine seeks the least value of a function of many variables,
 !     by a trust region method that forms quadratic models by interpolation.
@@ -618,27 +622,28 @@ dimension x(*),w(*)
 !     Partition the working space array, so that different parts of it can be
 !     treated separately by the subroutine that performs the main calculation.
 !
-npt=(n*n+3*n+2)/2
-ixb=1
-ixo=ixb+n
-ixn=ixo+n
-ixp=ixn+n
-ipq=ixp+n*npt
-ipl=ipq+npt-1
-ih=ipl+(npt-1)*npt
-ig=ih+n*n
-id=ig+n
-ivl=ih
-iw=id+n
-call uobyqb (n,x,rhobeg,rhoend,iprint,maxfun,npt,w(ixb),w(ixo), &
-  w(ixn),w(ixp),w(ipq),w(ipl),w(ih),w(ig),w(id),w(ivl),w(iw))
-return
-end
-subroutine uobyqb (n,x,rhobeg,rhoend,iprint,maxfun,npt,xbase, &
-  xopt,xnew,xpt,pq,pl,h,g,d,vlag,w)
-implicit real*8 (a-h,o-z)
-dimension x(*),xbase(*),xopt(*),xnew(*),xpt(npt,*),pq(*), &
-  pl(npt,*),h(n,*),g(*),d(*),vlag(*),w(*)
+   npt = (n*n+3*n+2) / 2
+   ixb = 1
+   ixo = ixb + n
+   ixn = ixo + n
+   ixp = ixn + n
+   ipq = ixp + n * npt
+   ipl = ipq + npt - 1
+   ih = ipl + (npt-1) * npt
+   ig = ih + n * n
+   id = ig + n
+   ivl = ih
+   iw = id + n
+   Call uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, w(ixb), &
+  & w(ixo), w(ixn), w(ixp), w(ipq), w(ipl), w(ih), w(ig), w(id), &
+  & w(ivl), w(iw))
+   Return
+End
+Subroutine uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, xbase, &
+& xopt, xnew, xpt, pq, pl, h, g, d, vlag, w)
+   Implicit real * 8 (a-h, o-z)
+   Dimension x (*), xbase (*), xopt (*), xnew (*), xpt (npt,*), pq (*), &
+  & pl (npt,*), h (n,*), g (*), d (*), vlag (*), w (*)
 !
 !     The arguments N, X, RHOBEG, RHOEND, IPRINT and MAXFUN are identical to
 !       the corresponding arguments in SUBROUTINE UOBYQA.
@@ -662,427 +667,427 @@ dimension x(*),xbase(*),xopt(*),xnew(*),xpt(npt,*),pq(*), &
 !
 !     Set some constants.
 !
-one=1.0d0
-two=2.0d0
-zero=0.0d0
-half=0.5d0
-tol=0.01d0
-nnp=n+n+1
-nptm=npt-1
-nftest=max0(maxfun,1)
+   one = 1.0d0
+   two = 2.0d0
+   zero = 0.0d0
+   half = 0.5d0
+   tol = 0.01d0
+   nnp = n + n + 1
+   nptm = npt - 1
+   nftest = max0 (maxfun, 1)
 !
 !     Initialization. NF is the number of function calculations so far.
 !
-rho=rhobeg
-rhosq=rho*rho
-nf=0
-do 10 i=1,n
-xbase(i)=x(i)
-do 10 k=1,npt
-10 xpt(k,i)=zero
-do 20 k=1,npt
-do 20 j=1,nptm
-20 pl(k,j)=zero
+   rho = rhobeg
+   rhosq = rho * rho
+   nf = 0
+   Do 10 i = 1, n
+      xbase (i) = x (i)
+      Do 10 k = 1, npt
+10 xpt (k, i) = zero
+   Do 20 k = 1, npt
+      Do 20 j = 1, nptm
+20 pl (k, j) = zero
 !
 !     The branch to label 120 obtains a new value of the objective function
 !     and then there is a branch back to label 50, because the new function
 !     value is needed to form the initial quadratic model. The least function
 !     value so far and its index are noted below.
 !
-30 do 40 i=1,n
-40 x(i)=xbase(i)+xpt(nf+1,i)
-goto 120
-50 if (nf .eq. 1) then
-    fopt=f
-    kopt=nf
-    fbase=f
-    j=0
-    jswitch=-1
-    ih=n
-else
-    if (f .lt. fopt) then
-        fopt=f
-        kopt=nf
-    end if
-end if
+30 Do 40 i = 1, n
+40 x (i) = xbase (i) + xpt (nf+1, i)
+   Go To 120
+50 If (nf .Eq. 1) Then
+      fopt = f
+      kopt = nf
+      fbase = f
+      j = 0
+      jswitch = - 1
+      ih = n
+   Else
+      If (f .Lt. fopt) Then
+         fopt = f
+         kopt = nf
+      End If
+   End If
 !
 !     Form the gradient and diagonal second derivatives of the initial
 !     quadratic model and Lagrange functions.
 !
-if (nf .le. nnp) then
-    jswitch=-jswitch
-    if (jswitch .gt. 0) then
-        if (j .ge. 1) then
-            ih=ih+j
-            if (w(j) .lt. zero) then
-                d(j)=(fsave+f-two*fbase)/rhosq
-                pq(j)=(fsave-f)/(two*rho)
-                pl(1,ih)=-two/rhosq
-                pl(nf-1,j)=half/rho
-                pl(nf-1,ih)=one/rhosq
-            else
-                pq(j)=(4.0d0*fsave-3.0d0*fbase-f)/(two*rho)
-                d(j)=(fbase+f-two*fsave)/rhosq
-                pl(1,j)=-1.5d0/rho
-                pl(1,ih)=one/rhosq
-                pl(nf-1,j)=two/rho
-                pl(nf-1,ih)=-two/rhosq
-            end if
-            pq(ih)=d(j)
-            pl(nf,j)=-half/rho
-            pl(nf,ih)=one/rhosq
-        end if
+   If (nf .Le. nnp) Then
+      jswitch = - jswitch
+      If (jswitch .Gt. 0) Then
+         If (j .Ge. 1) Then
+            ih = ih + j
+            If (w(j) .Lt. zero) Then
+               d (j) = (fsave+f-two*fbase) / rhosq
+               pq (j) = (fsave-f) / (two*rho)
+               pl (1, ih) = - two / rhosq
+               pl (nf-1, j) = half / rho
+               pl (nf-1, ih) = one / rhosq
+            Else
+               pq (j) = (4.0d0*fsave-3.0d0*fbase-f) / (two*rho)
+               d (j) = (fbase+f-two*fsave) / rhosq
+               pl (1, j) = - 1.5d0 / rho
+               pl (1, ih) = one / rhosq
+               pl (nf-1, j) = two / rho
+               pl (nf-1, ih) = - two / rhosq
+            End If
+            pq (ih) = d (j)
+            pl (nf, j) = - half / rho
+            pl (nf, ih) = one / rhosq
+         End If
 !
 !     Pick the shift from XBASE to the next initial interpolation point
 !     that provides diagonal second derivatives.
 !
-        if (j .lt. n) then
-            j=j+1
-            xpt(nf+1,j)=rho
-        end if
-    else
-        fsave=f
-        if (f .lt. fbase) then
-            w(j)=rho
-            xpt(nf+1,j)=two*rho
-        else
-            w(j)=-rho
-            xpt(nf+1,j)=-rho
-        end if
-    end if
-    if (nf .lt. nnp) goto 30
+         If (j .Lt. n) Then
+            j = j + 1
+            xpt (nf+1, j) = rho
+         End If
+      Else
+         fsave = f
+         If (f .Lt. fbase) Then
+            w (j) = rho
+            xpt (nf+1, j) = two * rho
+         Else
+            w (j) = - rho
+            xpt (nf+1, j) = - rho
+         End If
+      End If
+      If (nf .Lt. nnp) Go To 30
 !
 !     Form the off-diagonal second derivatives of the initial quadratic model.
 !
-    ih=n
-    ip=1
-    iq=2
-end if
-ih=ih+1
-if (nf .gt. nnp) then
-    temp=one/(w(ip)*w(iq))
-    tempa=f-fbase-w(ip)*pq(ip)-w(iq)*pq(iq)
-    pq(ih)=(tempa-half*rhosq*(d(ip)+d(iq)))*temp
-    pl(1,ih)=temp
-    iw=ip+ip
-    if (w(ip) .lt. zero) iw=iw+1
-    pl(iw,ih)=-temp
-    iw=iq+iq
-    if (w(iq) .lt. zero) iw=iw+1
-    pl(iw,ih)=-temp
-    pl(nf,ih)=temp
+      ih = n
+      ip = 1
+      iq = 2
+   End If
+   ih = ih + 1
+   If (nf .Gt. nnp) Then
+      temp = one / (w(ip)*w(iq))
+      tempa = f - fbase - w (ip) * pq (ip) - w (iq) * pq (iq)
+      pq (ih) = (tempa-half*rhosq*(d(ip)+d(iq))) * temp
+      pl (1, ih) = temp
+      iw = ip + ip
+      If (w(ip) .Lt. zero) iw = iw + 1
+      pl (iw, ih) = - temp
+      iw = iq + iq
+      If (w(iq) .Lt. zero) iw = iw + 1
+      pl (iw, ih) = - temp
+      pl (nf, ih) = temp
 !
 !     Pick the shift from XBASE to the next initial interpolation point
 !     that provides off-diagonal second derivatives.
 !
-    ip=ip+1
-end if
-if (ip .eq. iq) then
-    ih=ih+1
-    ip=1
-    iq=iq+1
-end if
-if (nf .lt. npt) then
-    xpt(nf+1,ip)=w(ip)
-    xpt(nf+1,iq)=w(iq)
-    goto 30
-end if
+      ip = ip + 1
+   End If
+   If (ip .Eq. iq) Then
+      ih = ih + 1
+      ip = 1
+      iq = iq + 1
+   End If
+   If (nf .Lt. npt) Then
+      xpt (nf+1, ip) = w (ip)
+      xpt (nf+1, iq) = w (iq)
+      Go To 30
+   End If
 !
 !     Set parameters to begin the iterations for the current RHO.
 !
-sixthm=zero
-delta=rho
-60 tworsq=(two*rho)**2
-rhosq=rho*rho
+   sixthm = zero
+   delta = rho
+60 tworsq = (two*rho) ** 2
+   rhosq = rho * rho
 !
 !     Form the gradient of the quadratic model at the trust region centre.
 !
-70 knew=0
-ih=n
-do 80 j=1,n
-xopt(j)=xpt(kopt,j)
-g(j)=pq(j)
-do 80 i=1,j
-ih=ih+1
-g(i)=g(i)+pq(ih)*xopt(j)
-if (i .lt. j) g(j)=g(j)+pq(ih)*xopt(i)
-80 h(i,j)=pq(ih)
+70 knew = 0
+   ih = n
+   Do 80 j = 1, n
+      xopt (j) = xpt (kopt, j)
+      g (j) = pq (j)
+      Do 80 i = 1, j
+         ih = ih + 1
+         g (i) = g (i) + pq (ih) * xopt (j)
+         If (i .Lt. j) g (j) = g (j) + pq (ih) * xopt (i)
+80 h (i, j) = pq (ih)
 !
 !     Generate the next trust region step and test its length. Set KNEW
 !     to -1 if the purpose of the next F will be to improve conditioning,
 !     and also calculate a lower bound on the Hessian term of the model Q.
 !
-call trstep (n,g,h,delta,tol,d,w(1),w(n+1),w(2*n+1),w(3*n+1), &
-  w(4*n+1),w(5*n+1),evalue)
-temp=zero
-do 90 i=1,n
-90 temp=temp+d(i)**2
-dnorm=dmin1(delta,dsqrt(temp))
-errtol=-one
-if (dnorm .lt. half*rho) then
-    knew=-1
-    errtol=half*evalue*rho*rho
-    if (nf .le. npt+9) errtol=zero
-    goto 290
-end if
+   Call trstep (n, g, h, delta, tol, d, w(1), w(n+1), w(2*n+1), &
+  & w(3*n+1), w(4*n+1), w(5*n+1), evalue)
+   temp = zero
+   Do 90 i = 1, n
+90 temp = temp + d (i) ** 2
+   dnorm = dmin1 (delta, dsqrt(temp))
+   errtol = - one
+   If (dnorm .Lt. half*rho) Then
+      knew = - 1
+      errtol = half * evalue * rho * rho
+      If (nf .Le. npt+9) errtol = zero
+      Go To 290
+   End If
 !
 !     Calculate the next value of the objective function.
 !
-100 do 110 i=1,n
-xnew(i)=xopt(i)+d(i)
-110 x(i)=xbase(i)+xnew(i)
-120 if (nf .ge. nftest) then
-    if (iprint .gt. 0) print 130
-130     format (/4x,'Return from UOBYQA because CALFUN has been', &
-      ' called MAXFUN times')
-    goto 420
-end if
-nf=nf+1
-call calfun (n,x,f)
-if (iprint .eq. 3) then
-    print 140, nf,f,(x(i),i=1,n)
-140      format (/4x,'Function number',i6,'    F =',1pd18.10, &
-       '    The corresponding X is:'/(2x,5d15.6))
-end if
-if (nf .le. npt) goto 50
-if (knew .eq. -1) goto 420
+100 Do 110 i = 1, n
+      xnew (i) = xopt (i) + d (i)
+110 x (i) = xbase (i) + xnew (i)
+120 If (nf .Ge. nftest) Then
+      If (iprint .Gt. 0) Print 130
+130   Format (/ 4 x, 'Return from UOBYQA because CALFUN has been', ' ca&
+     &lled MAXFUN times')
+      Go To 420
+   End If
+   nf = nf + 1
+   Call calfun (n, x, f)
+   If (iprint .Eq. 3) Then
+      Print 140, nf, f, (x(i), i=1, n)
+140   Format (/ 4 x, 'Function number', i6, '    F =', 1 pd18.10, '    &
+     &The corresponding X is:' / (2 x, 5d15.6))
+   End If
+   If (nf .Le. npt) Go To 50
+   If (knew .Eq.-1) Go To 420
 !
 !     Use the quadratic model to predict the change in F due to the step D,
 !     and find the values of the Lagrange functions at the new point.
 !
-vquad=zero
-ih=n
-do 150 j=1,n
-w(j)=d(j)
-vquad=vquad+w(j)*pq(j)
-do 150 i=1,j
-ih=ih+1
-w(ih)=d(i)*xnew(j)+d(j)*xopt(i)
-if (i .eq. j) w(ih)=half*w(ih)
-150 vquad=vquad+w(ih)*pq(ih)
-do 170 k=1,npt
-temp=zero
-do 160 j=1,nptm
-160 temp=temp+w(j)*pl(k,j)
-170 vlag(k)=temp
-vlag(kopt)=vlag(kopt)+one
+   vquad = zero
+   ih = n
+   Do 150 j = 1, n
+      w (j) = d (j)
+      vquad = vquad + w (j) * pq (j)
+      Do 150 i = 1, j
+         ih = ih + 1
+         w (ih) = d (i) * xnew (j) + d (j) * xopt (i)
+         If (i .Eq. j) w (ih) = half * w (ih)
+150 vquad = vquad + w (ih) * pq (ih)
+   Do 170 k = 1, npt
+      temp = zero
+      Do 160 j = 1, nptm
+160   temp = temp + w (j) * pl (k, j)
+170 vlag (k) = temp
+   vlag (kopt) = vlag (kopt) + one
 !
 !     Update SIXTHM, which is a lower bound on one sixth of the greatest
 !     third derivative of F.
 !
-diff=f-fopt-vquad
-sum=zero
-do 190 k=1,npt
-temp=zero
-do 180 i=1,n
-180 temp=temp+(xpt(k,i)-xnew(i))**2
-temp=dsqrt(temp)
-190 sum=sum+dabs(temp*temp*temp*vlag(k))
-sixthm=dmax1(sixthm,dabs(diff)/sum)
+   diff = f - fopt - vquad
+   sum = zero
+   Do 190 k = 1, npt
+      temp = zero
+      Do 180 i = 1, n
+180   temp = temp + (xpt(k, i)-xnew(i)) ** 2
+      temp = dsqrt (temp)
+190 sum = sum + dabs (temp*temp*temp*vlag(k))
+   sixthm = dmax1 (sixthm, dabs(diff)/sum)
 !
 !     Update FOPT and XOPT if the new F is the least value of the objective
 !     function so far. Then branch if D is not a trust region step.
 !
-fsave=fopt
-if (f .lt. fopt) then
-    fopt=f
-    do 200 i=1,n
-200     xopt(i)=xnew(i)
-end if
-ksave=knew
-if (knew .gt. 0) goto 240
+   fsave = fopt
+   If (f .Lt. fopt) Then
+      fopt = f
+      Do 200 i = 1, n
+200   xopt (i) = xnew (i)
+   End If
+   ksave = knew
+   If (knew .Gt. 0) Go To 240
 !
 !     Pick the next value of DELTA after a trust region step.
 !
-if (vquad .ge. zero) then
-    if (iprint .gt. 0) print 210
-210     format (/4x,'Return from UOBYQA because a trust', &
-      ' region step has failed to reduce Q')
-    goto 420
-end if
-ratio=(f-fsave)/vquad
-if (ratio .le. 0.1d0) then
-    delta=half*dnorm
-else if (ratio .le. 0.7d0) then
-    delta=dmax1(half*delta,dnorm)
-else
-    delta=dmax1(delta,1.25d0*dnorm,dnorm+rho)
-end if
-if (delta .le. 1.5d0*rho) delta=rho
+   If (vquad .Ge. zero) Then
+      If (iprint .Gt. 0) Print 210
+210   Format (/ 4 x, 'Return from UOBYQA because a trust', ' region ste&
+     &p has failed to reduce Q')
+      Go To 420
+   End If
+   ratio = (f-fsave) / vquad
+   If (ratio .Le. 0.1d0) Then
+      delta = half * dnorm
+   Else If (ratio .Le. 0.7d0) Then
+      delta = dmax1 (half*delta, dnorm)
+   Else
+      delta = dmax1 (delta, 1.25d0*dnorm, dnorm+rho)
+   End If
+   If (delta .Le. 1.5d0*rho) delta = rho
 !
 !     Set KNEW to the index of the next interpolation point to be deleted.
 !
-ktemp=0
-detrat=zero
-if (f .ge. fsave) then
-    ktemp=kopt
-    detrat=one
-end if
-do 230 k=1,npt
-sum=zero
-do 220 i=1,n
-220 sum=sum+(xpt(k,i)-xopt(i))**2
-temp=dabs(vlag(k))
-if (sum .gt. rhosq) temp=temp*(sum/rhosq)**1.5d0
-if (temp .gt. detrat .and. k .ne. ktemp) then
-    detrat=temp
-    ddknew=sum
-    knew=k
-end if
-230 continue
-if (knew .eq. 0) goto 290
+   ktemp = 0
+   detrat = zero
+   If (f .Ge. fsave) Then
+      ktemp = kopt
+      detrat = one
+   End If
+   Do 230 k = 1, npt
+      sum = zero
+      Do 220 i = 1, n
+220   sum = sum + (xpt(k, i)-xopt(i)) ** 2
+      temp = dabs (vlag(k))
+      If (sum .Gt. rhosq) temp = temp * (sum/rhosq) ** 1.5d0
+      If (temp .Gt. detrat .And. k .Ne. ktemp) Then
+         detrat = temp
+         ddknew = sum
+         knew = k
+      End If
+230 Continue
+   If (knew .Eq. 0) Go To 290
 !
 !     Replace the interpolation point that has index KNEW by the point XNEW,
 !     and also update the Lagrange functions and the quadratic model.
 !
-240 do 250 i=1,n
-250 xpt(knew,i)=xnew(i)
-temp=one/vlag(knew)
-do 260 j=1,nptm
-pl(knew,j)=temp*pl(knew,j)
-260 pq(j)=pq(j)+diff*pl(knew,j)
-do 280 k=1,npt
-if (k .ne. knew) then
-    temp=vlag(k)
-    do 270 j=1,nptm
-270     pl(k,j)=pl(k,j)-temp*pl(knew,j)
-end if
-280 continue
+240 Do 250 i = 1, n
+250 xpt (knew, i) = xnew (i)
+   temp = one / vlag (knew)
+   Do 260 j = 1, nptm
+      pl (knew, j) = temp * pl (knew, j)
+260 pq (j) = pq (j) + diff * pl (knew, j)
+   Do 280 k = 1, npt
+      If (k .Ne. knew) Then
+         temp = vlag (k)
+         Do 270 j = 1, nptm
+270      pl (k, j) = pl (k, j) - temp * pl (knew, j)
+      End If
+280 Continue
 !
 !     Update KOPT if F is the least calculated value of the objective
 !     function. Then branch for another trust region calculation. The
 !     case KSAVE>0 indicates that a model step has just been taken.
 !
-if (f .lt. fsave) then
-    kopt=knew
-    goto 70
-end if
-if (ksave .gt. 0) goto 70
-if (dnorm .gt. two*rho) goto 70
-if (ddknew .gt. tworsq) goto 70
+   If (f .Lt. fsave) Then
+      kopt = knew
+      Go To 70
+   End If
+   If (ksave .Gt. 0) Go To 70
+   If (dnorm .Gt. two*rho) Go To 70
+   If (ddknew .Gt. tworsq) Go To 70
 !
 !     Alternatively, find out if the interpolation points are close
 !     enough to the best point so far.
 !
-290 do 300 k=1,npt
-w(k)=zero
-do 300 i=1,n
-300 w(k)=w(k)+(xpt(k,i)-xopt(i))**2
-310 knew=-1
-distest=tworsq
-do 320 k=1,npt
-if (w(k) .gt. distest) then
-    knew=k
-    distest=w(k)
-end if
-320 continue
+290 Do 300 k = 1, npt
+      w (k) = zero
+      Do 300 i = 1, n
+300 w (k) = w (k) + (xpt(k, i)-xopt(i)) ** 2
+310 knew = - 1
+   distest = tworsq
+   Do 320 k = 1, npt
+      If (w(k) .Gt. distest) Then
+         knew = k
+         distest = w (k)
+      End If
+320 Continue
 !
 !     If a point is sufficiently far away, then set the gradient and Hessian
 !     of its Lagrange function at the centre of the trust region, and find
 !     half the sum of squares of components of the Hessian.
 !
-if (knew .gt. 0) then
-    ih=n
-    sumh=zero
-    do 340 j=1,n
-    g(j)=pl(knew,j)
-    do 330 i=1,j
-    ih=ih+1
-    temp=pl(knew,ih)
-    g(j)=g(j)+temp*xopt(i)
-    if (i .lt. j) then
-        g(i)=g(i)+temp*xopt(j)
-        sumh=sumh+temp*temp
-    end if
-330     h(i,j)=temp
-340     sumh=sumh+half*temp*temp
+   If (knew .Gt. 0) Then
+      ih = n
+      sumh = zero
+      Do 340 j = 1, n
+         g (j) = pl (knew, j)
+         Do 330 i = 1, j
+            ih = ih + 1
+            temp = pl (knew, ih)
+            g (j) = g (j) + temp * xopt (i)
+            If (i .Lt. j) Then
+               g (i) = g (i) + temp * xopt (j)
+               sumh = sumh + temp * temp
+            End If
+330      h (i, j) = temp
+340   sumh = sumh + half * temp * temp
 !
 !     If ERRTOL is positive, test whether to replace the interpolation point
 !     with index KNEW, using a bound on the maximum modulus of its Lagrange
 !     function in the trust region.
 !
-    if (errtol .gt. zero) then
-        w(knew)=zero
-        sumg=zero
-        do 350 i=1,n
-350         sumg=sumg+g(i)**2
-        estim=rho*(dsqrt(sumg)+rho*dsqrt(half*sumh))
-        wmult=sixthm*distest**1.5d0
-        if (wmult*estim .le. errtol) goto 310
-    end if
+      If (errtol .Gt. zero) Then
+         w (knew) = zero
+         sumg = zero
+         Do 350 i = 1, n
+350      sumg = sumg + g (i) ** 2
+         estim = rho * (dsqrt(sumg)+rho*dsqrt(half*sumh))
+         wmult = sixthm * distest ** 1.5d0
+         If (wmult*estim .Le. errtol) Go To 310
+      End If
 !
 !     If the KNEW-th point may be replaced, then pick a D that gives a large
 !     value of the modulus of its Lagrange function within the trust region.
 !     Here the vector XNEW is used as temporary working space.
 !
-    call lagmax (n,g,h,rho,d,xnew,vmax)
-    if (errtol .gt. zero) then
-        if (wmult*vmax .le. errtol) goto 310
-    end if
-    goto 100
-end if
-if (dnorm .gt. rho) goto 70
+      Call lagmax (n, g, h, rho, d, xnew, vmax)
+      If (errtol .Gt. zero) Then
+         If (wmult*vmax .Le. errtol) Go To 310
+      End If
+      Go To 100
+   End If
+   If (dnorm .Gt. rho) Go To 70
 !
 !     Prepare to reduce RHO by shifting XBASE to the best point so far,
 !     and make the corresponding changes to the gradients of the Lagrange
 !     functions and the quadratic model.
 !
-if (rho .gt. rhoend) then
-    ih=n
-    do 380 j=1,n
-    xbase(j)=xbase(j)+xopt(j)
-    do 360 k=1,npt
-360     xpt(k,j)=xpt(k,j)-xopt(j)
-    do 380 i=1,j
-    ih=ih+1
-    pq(i)=pq(i)+pq(ih)*xopt(j)
-    if (i .lt. j) then
-        pq(j)=pq(j)+pq(ih)*xopt(i)
-        do 370 k=1,npt
-370         pl(k,j)=pl(k,j)+pl(k,ih)*xopt(i)
-    end if
-    do 380 k=1,npt
-380     pl(k,i)=pl(k,i)+pl(k,ih)*xopt(j)
+   If (rho .Gt. rhoend) Then
+      ih = n
+      Do 380 j = 1, n
+         xbase (j) = xbase (j) + xopt (j)
+         Do 360 k = 1, npt
+360      xpt (k, j) = xpt (k, j) - xopt (j)
+         Do 380 i = 1, j
+            ih = ih + 1
+            pq (i) = pq (i) + pq (ih) * xopt (j)
+            If (i .Lt. j) Then
+               pq (j) = pq (j) + pq (ih) * xopt (i)
+               Do 370 k = 1, npt
+370            pl (k, j) = pl (k, j) + pl (k, ih) * xopt (i)
+            End If
+            Do 380 k = 1, npt
+380   pl (k, i) = pl (k, i) + pl (k, ih) * xopt (j)
 !
 !     Pick the next values of RHO and DELTA.
 !
-    delta=half*rho
-    ratio=rho/rhoend
-    if (ratio .le. 16.0d0) then
-        rho=rhoend
-    else if (ratio .le. 250.0d0) then
-        rho=dsqrt(ratio)*rhoend
-    else
-        rho=0.1d0*rho
-    end if
-    delta=dmax1(delta,rho)
-    if (iprint .ge. 2) then
-        if (iprint .ge. 3) print 390
-390         format (5x)
-        print 400, rho,nf
-400         format (/4x,'New RHO =',1pd11.4,5x,'Number of', &
-          ' function values =',i6)
-        print 410, fopt,(xbase(i),i=1,n)
-410         format (4x,'Least value of F =',1pd23.15,9x, &
-          'The corresponding X is:'/(2x,5d15.6))
-    end if
-    goto 60
-end if
+      delta = half * rho
+      ratio = rho / rhoend
+      If (ratio .Le. 16.0d0) Then
+         rho = rhoend
+      Else If (ratio .Le. 250.0d0) Then
+         rho = dsqrt (ratio) * rhoend
+      Else
+         rho = 0.1d0 * rho
+      End If
+      delta = dmax1 (delta, rho)
+      If (iprint .Ge. 2) Then
+         If (iprint .Ge. 3) Print 390
+390      Format (5 x)
+         Print 400, rho, nf
+400      Format (/ 4 x, 'New RHO =', 1 pd11.4, 5 x, 'Number of', ' func&
+        &tion values =', i6)
+         Print 410, fopt, (xbase(i), i=1, n)
+410      Format (4 x, 'Least value of F =', 1 pd23.15, 9 x, 'The corres&
+        &ponding X is:'/(2 x, 5d15.6))
+      End If
+      Go To 60
+   End If
 !
 !     Return from the calculation, after another Newton-Raphson step, if
 !     it is too short to have been tried before.
 !
-if (errtol .ge. zero) goto 100
-420 if (fopt .le. f) then
-    do 430 i=1,n
-430     x(i)=xbase(i)+xopt(i)
-    f=fopt
-end if
-if (iprint .ge. 1) then
-    print 440, nf
-440     format (/4x,'At the return from UOBYQA',5x, &
-      'Number of function values =',i6)
-    print 410, f,(x(i),i=1,n)
-end if
-return
-end
+   If (errtol .Ge. zero) Go To 100
+420 If (fopt .Le. f) Then
+      Do 430 i = 1, n
+430   x (i) = xbase (i) + xopt (i)
+      f = fopt
+   End If
+   If (iprint .Ge. 1) Then
+      Print 440, nf
+440   Format (/ 4 x, 'At the return from UOBYQA', 5 x, 'Number of funct&
+     &ion values =', i6)
+      Print 410, f, (x(i), i=1, n)
+   End If
+   Return
+End
