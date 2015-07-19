@@ -69,7 +69,7 @@ Subroutine bobyqa (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, w, calfun)
          Print 10
 10       Format (/ 4 x, 'Return from BOBYQA because NPT is not in',&
          ' the required interval')
-         Go To 40
+         return
       End If
 !
 !     Partition the working space array, so that different parts of it can
@@ -109,7 +109,7 @@ Subroutine bobyqa (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, w, calfun)
             Print 20
 20          Format (/ 4 x, 'Return from BOBYQA because one of the',&
             ' differences XU(I)-XL(I)' / 6 x, ' is less than 2*RHOBEG.')
-            Go To 40
+            return
          End If
          jsl = isl + j - 1
          jsu = jsl + n
@@ -144,17 +144,16 @@ Subroutine bobyqa (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, w, calfun)
        w(ixb), w(ixp), w(ifv), w(ixo), w(igo), w(ihq), w(ipq), &
        w(ibmat), w(izmat), ndim, w(isl), w(isu), w(ixn), w(ixa), w(id), &
        w(ivl), w(iw), calfun)
-40    Return
+
 End Subroutine bobyqa
 
 Subroutine bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, &
  xbase, xpt, fval, xopt, gopt, hq, pq, bmat, zmat, ndim, sl, su, xnew, &
  xalt, d, vlag, w, calfun)
       Implicit real * 8 (a-h, o-z)
-      Dimension x (*), xl (*), xu (*), xbase (*), xpt (npt,*), fval &
-       (*), xopt (*), gopt (*), hq (*), pq (*), bmat (ndim,*), zmat &
-       (npt,*), sl (*), su (*), xnew (*), xalt (*), d (*), vlag (*), w &
-       (*)
+      Dimension x (*), xl (*), xu (*), xbase (*), xpt (npt,*), fval(*),&
+       xopt (*), gopt (*), hq (*), pq (*), bmat (ndim,*), zmat &
+       (npt,*), sl (*), su (*), xnew (*), xalt (*), d (*), vlag (*), w(*)
     procedure(func) :: calfun
 !
 !     The arguments N, NPT, X, XL, XU, RHOBEG, RHOEND, IPRINT and MAXFUN
@@ -619,8 +618,7 @@ Subroutine bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, &
 !     Update BMAT and ZMAT, so that the KNEW-th interpolation point can be
 !     moved. Also update the second derivative terms of the model.
 !
-      Call update (n, npt, bmat, zmat, ndim, vlag, beta, denom, knew, &
-       w)
+      Call update (n, npt, bmat, zmat, ndim, vlag, beta, denom, knew, w)
       ih = 0
       pqold = pq (knew)
       pq (knew) = zero
@@ -826,8 +824,8 @@ Subroutine altmov (n, npt, xpt, xopt, bmat, zmat, ndim, sl, su, kopt, &
     knew, adelt, xnew, xalt, alpha, cauchy, glag, hcol, w)
 
       Implicit real * 8 (a-h, o-z)
-      Dimension xpt (npt,*), xopt (*), bmat (ndim,*), zmat (npt,*), sl &
-       (*), su (*), xnew (*), xalt (*), glag (*), hcol (*), w (*)
+      Dimension xpt (npt,*), xopt (*), bmat (ndim,*), zmat (npt,*), sl(*),&
+       su (*), xnew (*), xalt (*), glag (*), hcol (*), w (*)
 !
 !     The arguments N, NPT, XPT, XOPT, BMAT, ZMAT, NDIM, SL and SU all have
 !       the same meanings as the corresponding arguments of BOBYQB.
@@ -1107,8 +1105,7 @@ Subroutine prelim (n, npt, x, xl, xu, rhobeg, iprint, maxfun, xbase, &
    xpt, fval, gopt, hq, pq, bmat, zmat, ndim, sl, su, nf, kopt, calfun)
    Implicit real * 8 (a-h, o-z)
    Dimension x (*), xl (*), xu (*), xbase (*), xpt (npt,*), fval (*), &
-  & gopt (*), hq (*), pq (*), bmat (ndim,*), zmat (npt,*), sl (*), su &
-  & (*)
+    gopt (*), hq (*), pq (*), bmat (ndim,*), zmat (npt,*), sl (*), su (*)
     procedure(func) :: calfun
 
 !
@@ -1266,9 +1263,9 @@ Subroutine rescue (n, npt, xl, xu, iprint, maxfun, xbase, xpt, fval, &
   xopt, gopt, hq, pq, bmat, zmat, ndim, sl, su, nf, delta, kopt, vlag, &
   ptsaux, ptsid, w, calfun)
    Implicit real * 8 (a-h, o-z)
-   Dimension xl (*), xu (*), xbase (*), xpt (npt,*), fval (*), xopt &
-  & (*), gopt (*), hq (*), pq (*), bmat (ndim,*), zmat (npt,*), sl (*), &
-  & su (*), vlag (*), ptsaux (2,*), ptsid (*), w (*)
+   Dimension xl (*), xu (*), xbase (*), xpt (npt,*), fval (*), xopt (*), &
+    gopt (*), hq (*), pq (*), bmat (ndim,*), zmat (npt,*), sl (*), &
+    su (*), vlag (*), ptsaux (2,*), ptsid (*), w (*)
     procedure(func) :: calfun
 
 !
@@ -1656,8 +1653,7 @@ Subroutine trsbox (n, npt, xpt, xopt, gopt, hq, pq, sl, su, delta, &
    xnew, d, gnew, xbdi, s, hs, hred, dsq, crvmin)
    Implicit real * 8 (a-h, o-z)
    Dimension xpt (npt,*), xopt (*), gopt (*), hq (*), pq (*), sl (*), &
-  & su (*), xnew (*), d (*), gnew (*), xbdi (*), s (*), hs (*), hred &
-  & (*)
+    su (*), xnew (*), d (*), gnew (*), xbdi (*), s (*), hs (*), hred (*)
 !
 !     The arguments N, NPT, XPT, XOPT, GOPT, HQ, PQ, SL and SU have the same
 !       meanings as the corresponding arguments of BOBYQB.
@@ -2154,15 +2150,16 @@ subroutine bobyqa_test()
 contains
 
     Subroutine calfun (n, x, f)
-          Implicit real * 8 (a-h, o-z)
-          Dimension x (*)
-          f = 0.0d0
-          Do 10 i = 4, n, 2
-             Do 10 j = 2, i - 2, 2
-                temp = (x(i-1)-x(j-1)) ** 2 + (x(i)-x(j)) ** 2
-                temp = dmax1 (temp, 1.0d-6)
-    10    f = f + 1.0d0 / dsqrt (temp)
-          Return
+      Implicit real * 8 (a-h, o-z)
+      Dimension x (*)
+      f = 0.0d0
+      Do i = 4, n, 2
+         Do j = 2, i - 2, 2
+            temp = (x(i-1)-x(j-1)) ** 2 + (x(i)-x(j)) ** 2
+            temp = dmax1 (temp, 1.0d-6)
+            f = f + 1.0d0 / dsqrt (temp)
+         end do
+      end do
     End Subroutine calfun
 
 End subroutine bobyqa_test

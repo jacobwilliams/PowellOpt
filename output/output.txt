@@ -1,0 +1,683 @@
+ 
+ ====================
+  bobyqa_test
+ ====================
+ 
+
+
+     2D output with M =   5,  N =  10  and  NPT =  16
+
+    New RHO = 1.0000D-02     Number of function values =    36
+    Least value of F =  5.680729791421956D+00         The corresponding X is:
+     2.221147D-01   1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00   3.265332D-01
+
+    New RHO = 1.0000D-03     Number of function values =    60
+    Least value of F =  5.680354430001146D+00         The corresponding X is:
+     2.603234D-01   1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00   2.612788D-01
+
+    New RHO = 1.0000D-04     Number of function values =    73
+    Least value of F =  5.680353929615947D+00         The corresponding X is:
+     2.606974D-01   1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00   2.615739D-01
+
+    New RHO = 1.0000D-05     Number of function values =    88
+    Least value of F =  5.680353888456104D+00         The corresponding X is:
+     2.613393D-01   1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00   2.611534D-01
+
+    New RHO = 1.0000D-06     Number of function values =   108
+    Least value of F =  5.680353888084572D+00         The corresponding X is:
+     2.612445D-01   1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00   2.612493D-01
+
+    At the return from BOBYQA     Number of function values =   123
+    Least value of F =  5.680353888084284D+00         The corresponding X is:
+     2.612471D-01   1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00   2.612470D-01
+
+
+     2D output with M =   5,  N =  10  and  NPT =  21
+
+    New RHO = 1.0000D-02     Number of function values =    44
+    Least value of F =  5.608887796858023D+00         The corresponding X is:
+     1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00
+    -1.000000D+00   9.776403D-01  -1.000000D+00   1.000000D+00  -1.767038D-13
+
+    New RHO = 1.0000D-03     Number of function values =    59
+    Least value of F =  5.601550934818603D+00         The corresponding X is:
+     1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00  -2.938660D-03
+
+    New RHO = 1.0000D-04     Number of function values =    73
+    Least value of F =  5.601533980345714D+00         The corresponding X is:
+     1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00  -6.445101D-05
+
+    New RHO = 1.0000D-05     Number of function values =    78
+    Least value of F =  5.601533972186777D+00         The corresponding X is:
+     1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00   3.999974D-07
+
+    New RHO = 1.0000D-06     Number of function values =    91
+    Least value of F =  5.601533972186777D+00         The corresponding X is:
+     1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00   3.999974D-07
+
+    At the return from BOBYQA     Number of function values =    98
+    Least value of F =  5.601533972186465D+00         The corresponding X is:
+     1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00   1.916017D-10
+
+
+     2D output with M =  10,  N =  20  and  NPT =  26
+
+    New RHO = 1.0000D-02     Number of function values =    34
+    Least value of F =  3.291200620948098D+01         The corresponding X is:
+     1.000000D+00   8.283285D-01   3.605841D-01   1.000000D+00  -3.605841D-01
+     1.000000D+00  -1.000000D+00   9.275342D-01  -9.994764D-01   8.783984D-02
+    -1.000000D+00  -9.995070D-01  -2.696121D-01  -1.000000D+00   2.706121D-01
+    -1.000000D+00   1.000000D+00  -1.000000D+00   9.994764D-01   8.783984D-02
+
+    New RHO = 1.0000D-03     Number of function values =    88
+    Least value of F =  3.220322024738166D+01         The corresponding X is:
+     1.000000D+00   1.000000D+00   3.645051D-01   1.000000D+00  -3.576367D-01
+     1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00  -2.759587D-03
+    -1.000000D+00  -1.000000D+00  -3.624180D-01  -1.000000D+00   3.623725D-01
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00  -3.349526D-03
+
+    New RHO = 1.0000D-04     Number of function values =   121
+    Least value of F =  3.220306285892322D+01         The corresponding X is:
+     1.000000D+00   1.000000D+00   3.618014D-01   1.000000D+00  -3.619181D-01
+     1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00  -1.322484D-03
+    -1.000000D+00  -1.000000D+00  -3.618304D-01  -1.000000D+00   3.619566D-01
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00  -8.843503D-04
+
+    New RHO = 1.0000D-05     Number of function values =   157
+    Least value of F =  3.220305336987249D+01         The corresponding X is:
+     1.000000D+00   1.000000D+00   3.616064D-01   1.000000D+00  -3.616179D-01
+     1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00  -5.332992D-06
+    -1.000000D+00  -1.000000D+00  -3.616083D-01  -1.000000D+00   3.616038D-01
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00   1.050698D-05
+
+    New RHO = 1.0000D-06     Number of function values =   179
+    Least value of F =  3.220305336890877D+01         The corresponding X is:
+     1.000000D+00   1.000000D+00   3.616077D-01   1.000000D+00  -3.616078D-01
+     1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00   2.565694D-06
+    -1.000000D+00  -1.000000D+00  -3.616071D-01  -1.000000D+00   3.616065D-01
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00   3.640768D-06
+
+    At the return from BOBYQA     Number of function values =   204
+    Least value of F =  3.220305336883049D+01         The corresponding X is:
+     1.000000D+00   1.000000D+00   3.616078D-01   1.000000D+00  -3.616079D-01
+     1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00  -2.472331D-07
+    -1.000000D+00  -1.000000D+00  -3.616079D-01  -1.000000D+00   3.616079D-01
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00   1.500336D-07
+
+
+     2D output with M =  10,  N =  20  and  NPT =  41
+
+    New RHO = 1.0000D-02     Number of function values =    45
+    Least value of F =  3.221724258591880D+01         The corresponding X is:
+     1.000000D+00   1.000000D+00   3.811180D-01   1.000000D+00  -3.811180D-01
+     1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00   1.224647D-16
+    -1.000000D+00  -1.000000D+00  -3.811180D-01  -1.000000D+00   3.811180D-01
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00  -2.449294D-16
+
+    New RHO = 1.0000D-03     Number of function values =    74
+    Least value of F =  3.220308936260134D+01         The corresponding X is:
+     1.000000D+00   1.000000D+00   3.625827D-01   1.000000D+00  -3.625827D-01
+     1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00   1.224647D-16
+    -1.000000D+00  -1.000000D+00  -3.625827D-01  -1.000000D+00   3.625827D-01
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00  -2.449294D-16
+
+    New RHO = 1.0000D-04     Number of function values =   105
+    Least value of F =  3.220305387743299D+01         The corresponding X is:
+     1.000000D+00   1.000000D+00   3.616324D-01   1.000000D+00  -3.614369D-01
+     1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00   2.621711D-04
+    -1.000000D+00  -1.000000D+00  -3.617098D-01  -1.000000D+00   3.616401D-01
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00  -2.317398D-04
+
+    New RHO = 1.0000D-05     Number of function values =   141
+    Least value of F =  3.220305337318172D+01         The corresponding X is:
+     1.000000D+00   1.000000D+00   3.616141D-01   1.000000D+00  -3.616111D-01
+     1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00  -3.484226D-05
+    -1.000000D+00  -1.000000D+00  -3.616008D-01  -1.000000D+00   3.616056D-01
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00   1.414052D-05
+
+    New RHO = 1.0000D-06     Number of function values =   164
+    Least value of F =  3.220305336888649D+01         The corresponding X is:
+     1.000000D+00   1.000000D+00   3.616061D-01   1.000000D+00  -3.616097D-01
+     1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00   9.942072D-07
+    -1.000000D+00  -1.000000D+00  -3.616080D-01  -1.000000D+00   3.616097D-01
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00  -5.038510D-07
+
+    At the return from BOBYQA     Number of function values =   193
+    Least value of F =  3.220305336883029D+01         The corresponding X is:
+     1.000000D+00   1.000000D+00   3.616078D-01   1.000000D+00  -3.616078D-01
+     1.000000D+00  -1.000000D+00   1.000000D+00  -1.000000D+00  -9.092641D-08
+    -1.000000D+00  -1.000000D+00  -3.616078D-01  -1.000000D+00   3.616079D-01
+    -1.000000D+00   1.000000D+00  -1.000000D+00   1.000000D+00   7.085963D-09
+ 
+ ====================
+  cobyla_test
+ ====================
+ 
+
+       Output from test problem 1 (Simple quadratic)
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =   37   F = 1.809750E-05    MAXCV = 0.000000E+00
+   X =-1.000879E+00   3.220609E-03
+
+     Least squares error in variables =    3.338389E-03
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =   65   F = 1.153291E-07    MAXCV = 0.000000E+00
+   X =-9.999341E-01   2.682342E-04
+
+     Least squares error in variables =    2.762020E-04
+  ------------------------------------------------------------------
+
+       Output from test problem 2 (2D unit circle calculation)
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =   37   F =-4.999994E-01    MAXCV = 2.026558E-06
+   X = 7.062163E-01  -7.079976E-01
+
+     Least squares error in variables =    1.259601E-03
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =   44   F =-5.000000E-01    MAXCV = 5.960464E-08
+   X = 7.071500E-01  -7.070636E-01
+
+     Least squares error in variables =    6.107080E-05
+  ------------------------------------------------------------------
+
+       Output from test problem 3 (3D ellipsoid calculation)
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =   52   F =-7.856688E-02    MAXCV = 6.288290E-06
+   X = 5.780203E-01   4.069204E-01  -3.340311E-01
+
+     Least squares error in variables =    1.642899E-03
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =   65   F =-7.856742E-02    MAXCV = 8.940697E-08
+   X = 5.773363E-01   4.082997E-01  -3.332995E-01
+
+     Least squares error in variables =    6.312904E-05
+  ------------------------------------------------------------------
+
+       Output from test problem 4 (Weak Rosenbrock)
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =  100   F = 3.125441E-05    MAXCV = 0.000000E+00
+   X =-9.958720E-01   9.879909E-01
+
+     Least squares error in variables =    1.269875E-02
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =  173   F = 6.409362E-07    MAXCV = 0.000000E+00
+   X =-9.994782E-01   9.983495E-01
+
+     Least squares error in variables =    1.730967E-03
+  ------------------------------------------------------------------
+
+       Output from test problem 5 (Intermediate Rosenbrock)
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =  347   F = 4.008353E-03    MAXCV = 0.000000E+00
+   X =-9.366965E-01   8.777190E-01
+
+     Least squares error in variables =    1.376952E-01
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =  698   F = 9.516375E-05    MAXCV = 0.000000E+00
+   X =-9.904447E-01   9.803594E-01
+
+     Least squares error in variables =    2.184159E-02
+  ------------------------------------------------------------------
+
+       Output from test problem 6 (Equation (9.1.15) in Fletcher)
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =   30   F =-1.414216E+00    MAXCV = 2.950430E-06
+   X = 7.071948E-01   7.070208E-01
+
+     Least squares error in variables =    1.230355E-04
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =   40   F =-1.414214E+00    MAXCV = 0.000000E+00
+   X = 7.071791E-01   7.070344E-01
+
+     Least squares error in variables =    1.023325E-04
+  ------------------------------------------------------------------
+
+       Output from test problem 7 (Equation (14.4.2) in Fletcher)
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =   28   F =-2.999881E+00    MAXCV = 0.000000E+00
+   X = 1.362514E-08  -2.999881E+00  -2.999881E+00
+
+     Least squares error in variables =    1.689246E-04
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =   32   F =-3.000046E+00    MAXCV = 4.673004E-05
+   X = 1.207445E-08  -3.000000E+00  -3.000046E+00
+
+     Least squares error in variables =    4.649224E-05
+  ------------------------------------------------------------------
+
+       Output from test problem 8 (Rosen-Suzuki)
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =   66   F =-4.400000E+01    MAXCV = 3.099442E-06
+   X =-6.020486E-04   9.995968E-01   2.000546E+00  -9.994259E-01
+
+     Least squares error in variables =    1.073541E-03
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =   79   F =-4.400000E+01    MAXCV = 1.251698E-06
+   X =-2.246869E-04   9.996516E-01   2.000260E+00  -9.997578E-01
+
+     Least squares error in variables =    5.460466E-04
+  ------------------------------------------------------------------
+
+       Output from test problem 9 (Hock and Schittkowski 100)
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =  208   F = 6.806301E+02    MAXCV = 4.053116E-06
+   X = 2.330593E+00   1.951539E+00  -4.734516E-01   4.365437E+00  -6.264274E-01
+       1.037488E+00   1.593289E+00
+
+     Least squares error in variables =    4.680154E-03
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =  226   F = 6.806301E+02    MAXCV = 1.430511E-05
+   X = 2.330569E+00   1.951836E+00  -4.744338E-01   4.364466E+00  -6.246935E-01
+       1.035748E+00   1.592556E+00
+
+     Least squares error in variables =    4.469852E-03
+  ------------------------------------------------------------------
+
+       Output from test problem 10 (Hexagon area)
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =  150   F =-8.660254E-01    MAXCV = 1.192093E-06
+   X = 6.605685E-01   7.507660E-01  -3.188329E-01   9.478114E-01   6.614124E-01
+       7.500232E-01  -3.198982E-01   9.474520E-01  -6.671554E-11
+
+     Least squares error in variables =    1.124314E-03
+
+   Normal return from subroutine COBYLA
+
+   NFVALS =  173   F =-8.660254E-01    MAXCV = 3.352761E-07
+   X = 6.606672E-01   7.506790E-01  -3.195507E-01   9.475691E-01   6.608437E-01
+       7.505235E-01  -3.197733E-01   9.474941E-01  -3.822812E-11
+
+     Least squares error in variables =    2.350494E-04
+  ------------------------------------------------------------------
+ 
+ ====================
+  lincoa_test
+ ====================
+ 
+
+
+    Output from LINCOA with  NPT =  15  and  RHOEND =  1.0000D-06
+
+    At the return from LINCOA     Number of function values =   148
+    Least value of F =  2.751575561533391D+00         The corresponding X is:
+    -1.210293D+00  -1.212501D+00  -9.512774D-01   1.157576D+00  -1.159364D+00
+     1.048821D+00   7.788128D-01   1.062499D+00  -7.734505D-01  -7.068258D-01
+     1.408297D+00   6.554269D-01
+
+
+    Output from LINCOA with  NPT =  20  and  RHOEND =  1.0000D-06
+
+    At the return from LINCOA     Number of function values =   165
+    Least value of F =  2.761312522335401D+00         The corresponding X is:
+    -1.233791D+00  -1.231348D+00  -8.870616D-01   1.129888D+00  -1.128285D+00
+     1.084034D+00   8.431308D-01   7.535399D-01  -8.461758D-01  -6.585848D-01
+     1.556805D+00   5.853412D-01
+
+
+    Output from LINCOA with  NPT =  25  and  RHOEND =  1.0000D-06
+
+    At the return from LINCOA     Number of function values =   147
+    Least value of F =  2.761312522888553D+00         The corresponding X is:
+    -1.233791D+00  -1.231348D+00  -8.870616D-01   1.129888D+00  -1.128285D+00
+     1.084034D+00   8.431307D-01   7.535404D-01  -8.461756D-01  -6.585848D-01
+     1.556805D+00   5.853412D-01
+
+
+    Output from LINCOA with  NPT =  30  and  RHOEND =  1.0000D-06
+
+    At the return from LINCOA     Number of function values =   211
+    Least value of F =  2.761312523174453D+00         The corresponding X is:
+    -1.233791D+00  -1.231348D+00  -8.870616D-01   1.129888D+00  -1.128285D+00
+     1.084034D+00   8.431306D-01   7.535407D-01  -8.461756D-01  -6.585848D-01
+     1.556805D+00   5.853412D-01
+
+
+    Output from LINCOA with  NPT =  35  and  RHOEND =  1.0000D-06
+
+    At the return from LINCOA     Number of function values =   184
+    Least value of F =  2.761312522640027D+00         The corresponding X is:
+    -8.431307D-01   7.535402D-01   8.461757D-01   1.233791D+00  -1.231348D+00
+     8.870616D-01  -1.129888D+00  -1.128285D+00  -1.084034D+00   6.585848D-01
+     1.556805D+00  -5.853412D-01
+
+
+    Output from LINCOA with  NPT =  40  and  RHOEND =  1.0000D-06
+
+    At the return from LINCOA     Number of function values =   218
+    Least value of F =  2.761312522250833D+00         The corresponding X is:
+    -8.431308D-01   7.535398D-01   8.461758D-01   1.233791D+00  -1.231348D+00
+     8.870616D-01  -1.129888D+00  -1.128285D+00  -1.084034D+00   6.585848D-01
+     1.556805D+00  -5.853412D-01
+ 
+ ====================
+  newuoa_test
+ ====================
+ 
+
+
+    Results with N = 2 and NPT =  5
+
+    New RHO = 6.6667D-03     Number of function values =    10
+    Least value of F =  2.306405855199982D-03         The corresponding X is:
+     2.382044D-01   8.080324D-01
+
+    New RHO = 6.6667D-04     Number of function values =    16
+    Least value of F =  1.227492922031232D-06         The corresponding X is:
+     2.108177D-01   7.885663D-01
+
+    New RHO = 6.6667D-05     Number of function values =    20
+    Least value of F =  2.435328676569651D-09         The corresponding X is:
+     2.113442D-01   7.886747D-01
+
+    New RHO = 8.1650D-06     Number of function values =    23
+    Least value of F =  2.435328676569651D-09         The corresponding X is:
+     2.113442D-01   7.886747D-01
+
+    New RHO = 1.0000D-06     Number of function values =    27
+    Least value of F =  1.820673222656559D-12         The corresponding X is:
+     2.113246D-01   7.886745D-01
+
+    At the return from NEWUOA     Number of function values =    31
+    Least value of F =  3.788471943857548D-19         The corresponding X is:
+     2.113249D-01   7.886751D-01
+
+
+    Results with N = 4 and NPT =  9
+
+    New RHO = 4.0000D-03     Number of function values =    21
+    Least value of F =  2.011890578520410D-03         The corresponding X is:
+     1.129585D-01   4.058318D-01   6.110858D-01   9.111412D-01
+
+    New RHO = 4.0000D-04     Number of function values =    34
+    Least value of F =  4.013272744364380D-04         The corresponding X is:
+     1.111816D-01   4.192043D-01   6.050995D-01   9.037598D-01
+
+    New RHO = 4.0000D-05     Number of function values =    60
+    Least value of F =  4.477976023994110D-08         The corresponding X is:
+     1.026265D-01   4.061774D-01   5.936825D-01   8.972424D-01
+
+    New RHO = 6.3246D-06     Number of function values =    75
+    Least value of F =  4.867092671848019D-10         The corresponding X is:
+     1.026742D-01   4.062069D-01   5.937875D-01   8.973192D-01
+
+    New RHO = 1.0000D-06     Number of function values =    83
+    Least value of F =  7.260321170150127D-12         The corresponding X is:
+     1.026724D-01   4.062045D-01   5.937957D-01   8.973269D-01
+
+    At the return from NEWUOA     Number of function values =    90
+    Least value of F =  3.526594591477742D-14         The corresponding X is:
+     1.026728D-01   4.062038D-01   5.937962D-01   8.973272D-01
+
+
+    Results with N = 6 and NPT = 13
+
+    New RHO = 2.8571D-03     Number of function values =    14
+    Least value of F =  3.052693663946804D-02         The corresponding X is:
+     1.142857D-01   2.857143D-01   4.285714D-01   5.714286D-01   7.142857D-01
+     8.571429D-01
+
+    New RHO = 2.8571D-04     Number of function values =    79
+    Least value of F =  1.937801736287749D-05         The corresponding X is:
+     6.822115D-02   2.926547D-01   3.677050D-01   6.359738D-01   7.128806D-01
+     9.344113D-01
+
+    New RHO = 2.8571D-05     Number of function values =   127
+    Least value of F =  1.510306293149611D-07         The corresponding X is:
+     6.686927D-02   2.887597D-01   3.666348D-01   6.334414D-01   7.109230D-01
+     9.330520D-01
+
+    New RHO = 5.3452D-06     Number of function values =   165
+    Least value of F =  1.133414822162561D-09         The corresponding X is:
+     6.687719D-02   2.887492D-01   3.666687D-01   6.333098D-01   7.112425D-01
+     9.331166D-01
+
+    New RHO = 1.0000D-06     Number of function values =   184
+    Least value of F =  7.702513632596430D-12         The corresponding X is:
+     6.687739D-02   2.887430D-01   3.666815D-01   6.333192D-01   7.112579D-01
+     9.331233D-01
+
+    At the return from NEWUOA     Number of function values =   199
+    Least value of F =  3.945578132201740D-14         The corresponding X is:
+     6.687665D-02   2.887407D-01   3.666824D-01   6.333177D-01   7.112595D-01
+     9.331234D-01
+
+
+    Results with N = 8 and NPT = 17
+
+    New RHO = 2.2222D-03     Number of function values =    21
+    Least value of F =  1.717393681624708D-02         The corresponding X is:
+     9.398239D-02   2.276855D-01   3.322088D-01   4.429489D-01   5.570511D-01
+     6.677912D-01   7.723145D-01   9.065755D-01
+
+    New RHO = 2.2222D-04     Number of function values =   229
+    Least value of F =  3.572228586722338D-03         The corresponding X is:
+     4.268018D-02   1.925483D-01   2.645871D-01   5.022304D-01   4.946195D-01
+     7.310340D-01   8.068423D-01   9.556583D-01
+
+    New RHO = 1.4907D-05     Number of function values =   270
+    Least value of F =  3.517006886506014D-03         The corresponding X is:
+     4.318346D-02   1.931357D-01   2.663246D-01   4.999997D-01   5.000231D-01
+     7.335707D-01   8.071030D-01   9.569352D-01
+
+    New RHO = 1.0000D-06     Number of function values =   318
+    Least value of F =  3.516873771404277D-03         The corresponding X is:
+     4.315372D-02   1.930908D-01   2.663289D-01   4.999986D-01   5.000009D-01
+     7.336718D-01   8.069070D-01   9.568453D-01
+
+    At the return from NEWUOA     Number of function values =   339
+    Least value of F =  3.516873725746756D-03         The corresponding X is:
+     4.315283D-02   1.930909D-01   2.663287D-01   4.999999D-01   5.000001D-01
+     7.336713D-01   8.069092D-01   9.568473D-01
+ 
+ ====================
+  uobyqa_test
+ ====================
+ 
+
+
+     ******************
+     Results with N = 2
+     ******************
+
+    New RHO = 6.6667D-03     Number of function values =     9
+    Least value of F =  2.627489963528159D-03         The corresponding X is:
+     2.083513D-01   7.656407D-01
+
+    New RHO = 6.6667D-04     Number of function values =    16
+    Least value of F =  1.137753607650710D-05         The corresponding X is:
+     2.102629D-01   7.868501D-01
+
+    New RHO = 6.6667D-05     Number of function values =    18
+    Least value of F =  1.251328746096981D-07         The corresponding X is:
+     2.115131D-01   7.888341D-01
+
+    New RHO = 6.6667D-06     Number of function values =    20
+    Least value of F =  4.854193461059926D-10         The corresponding X is:
+     2.113339D-01   7.886756D-01
+
+    New RHO = 6.6667D-07     Number of function values =    22
+    Least value of F =  3.205143092086003D-11         The corresponding X is:
+     2.113263D-01   7.886781D-01
+
+    New RHO = 8.1650D-08     Number of function values =    23
+    Least value of F =  5.393089175572744D-18         The corresponding X is:
+     2.113249D-01   7.886751D-01
+
+    New RHO = 1.0000D-08     Number of function values =    23
+    Least value of F =  5.393089175572744D-18         The corresponding X is:
+     2.113249D-01   7.886751D-01
+
+    At the return from UOBYQA     Number of function values =    25
+    Least value of F =  4.101186270170302D-18         The corresponding X is:
+     2.113249D-01   7.886751D-01
+
+
+     ******************
+     Results with N = 4
+     ******************
+
+    New RHO = 4.0000D-03     Number of function values =    34
+    Least value of F =  3.340515350035493D-03         The corresponding X is:
+     1.038837D-01   3.824455D-01   5.940921D-01   8.867976D-01
+
+    New RHO = 4.0000D-04     Number of function values =    54
+    Least value of F =  6.474047494996536D-06         The corresponding X is:
+     1.026380D-01   4.057797D-01   5.937945D-01   8.980253D-01
+
+    New RHO = 4.0000D-05     Number of function values =    57
+    Least value of F =  6.825177339316550D-08         The corresponding X is:
+     1.027415D-01   4.062001D-01   5.938739D-01   8.973257D-01
+
+    New RHO = 4.0000D-06     Number of function values =    62
+    Least value of F =  7.859650867155102D-11         The corresponding X is:
+     1.026715D-01   4.062038D-01   5.937904D-01   8.973247D-01
+
+    New RHO = 4.0000D-07     Number of function values =    66
+    Least value of F =  7.180250968973935D-12         The corresponding X is:
+     1.026729D-01   4.062045D-01   5.937962D-01   8.973266D-01
+
+    New RHO = 6.3246D-08     Number of function values =    69
+    Least value of F =  2.957551534434571D-16         The corresponding X is:
+     1.026728D-01   4.062038D-01   5.937962D-01   8.973272D-01
+
+    New RHO = 1.0000D-08     Number of function values =    71
+    Least value of F =  2.957551534434571D-16         The corresponding X is:
+     1.026728D-01   4.062038D-01   5.937962D-01   8.973272D-01
+
+    At the return from UOBYQA     Number of function values =    73
+    Least value of F =  7.789134876445051D-20         The corresponding X is:
+     1.026728D-01   4.062038D-01   5.937962D-01   8.973272D-01
+
+
+     ******************
+     Results with N = 6
+     ******************
+
+    New RHO = 2.8571D-03     Number of function values =    63
+    Least value of F =  1.928710351699899D-03         The corresponding X is:
+     7.537816D-02   2.799988D-01   3.678985D-01   6.244399D-01   7.260429D-01
+     9.377106D-01
+
+    New RHO = 2.8571D-04     Number of function values =   101
+    Least value of F =  1.730673791709993D-06         The corresponding X is:
+     6.692247D-02   2.885147D-01   3.659676D-01   6.329996D-01   7.104306D-01
+     9.329739D-01
+
+    New RHO = 2.8571D-05     Number of function values =   109
+    Least value of F =  5.336299197003580D-09         The corresponding X is:
+     6.688982D-02   2.887769D-01   3.666795D-01   6.333617D-01   7.112131D-01
+     9.331092D-01
+
+    New RHO = 2.8571D-06     Number of function values =   119
+    Least value of F =  9.565312564868880D-11         The corresponding X is:
+     6.687378D-02   2.887348D-01   3.666771D-01   6.333115D-01   7.112554D-01
+     9.331206D-01
+
+    New RHO = 2.8571D-07     Number of function values =   125
+    Least value of F =  5.582384464430508D-13         The corresponding X is:
+     6.687643D-02   2.887403D-01   3.666827D-01   6.333175D-01   7.112599D-01
+     9.331235D-01
+
+    New RHO = 5.3452D-08     Number of function values =   130
+    Least value of F =  4.409717213041229D-16         The corresponding X is:
+     6.687659D-02   2.887407D-01   3.666823D-01   6.333177D-01   7.112593D-01
+     9.331234D-01
+
+    New RHO = 1.0000D-08     Number of function values =   131
+    Least value of F =  4.409717213041229D-16         The corresponding X is:
+     6.687659D-02   2.887407D-01   3.666823D-01   6.333177D-01   7.112593D-01
+     9.331234D-01
+
+    At the return from UOBYQA     Number of function values =   135
+    Least value of F =  3.104366392117188D-17         The corresponding X is:
+     6.687659D-02   2.887407D-01   3.666823D-01   6.333177D-01   7.112593D-01
+     9.331234D-01
+
+
+     ******************
+     Results with N = 8
+     ******************
+
+    New RHO = 2.2222D-03     Number of function values =   129
+    Least value of F =  4.373356342725789D-03         The corresponding X is:
+     4.808297D-02   1.997487D-01   2.614878D-01   4.866556D-01   5.022007D-01
+     7.267718D-01   8.011400D-01   9.488097D-01
+
+    New RHO = 2.2222D-04     Number of function values =   202
+    Least value of F =  3.517615841125924D-03         The corresponding X is:
+     4.321301D-02   1.932626D-01   2.661681D-01   4.995649D-01   5.000841D-01
+     7.333412D-01   8.071645D-01   9.569102D-01
+
+    New RHO = 2.2222D-05     Number of function values =   205
+    Least value of F =  3.516930263688865D-03         The corresponding X is:
+     4.314483D-02   1.930447D-01   2.663269D-01   4.998325D-01   5.001018D-01
+     7.336374D-01   8.068364D-01   9.567933D-01
+
+    New RHO = 2.2222D-06     Number of function values =   223
+    Least value of F =  3.516874060108338D-03         The corresponding X is:
+     4.315241D-02   1.930920D-01   2.663300D-01   5.000006D-01   4.999968D-01
+     7.336711D-01   8.069102D-01   9.568443D-01
+
+    New RHO = 1.4907D-07     Number of function values =   234
+    Least value of F =  3.516873727771715D-03         The corresponding X is:
+     4.315274D-02   1.930905D-01   2.663290D-01   4.999997D-01   5.000003D-01
+     7.336714D-01   8.069085D-01   9.568469D-01
+
+    New RHO = 1.0000D-08     Number of function values =   244
+    Least value of F =  3.516873725679973D-03         The corresponding X is:
+     4.315277D-02   1.930908D-01   2.663287D-01   5.000000D-01   5.000000D-01
+     7.336713D-01   8.069092D-01   9.568472D-01
+
+    At the return from UOBYQA     Number of function values =   252
+    Least value of F =  3.516873725677931D-03         The corresponding X is:
+     4.315276D-02   1.930908D-01   2.663287D-01   5.000000D-01   5.000000D-01
+     7.336713D-01   8.069092D-01   9.568472D-01
