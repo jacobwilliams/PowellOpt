@@ -1,7 +1,6 @@
     module cobyla_module
 
-	use iso_fortran_env, only: wp => real32  ! original code was single precision
-    !use kind_module, only: wp
+    use kind_module, only: wp
 	
     implicit real(wp) (a-h, o-z)
 
