@@ -8,7 +8,7 @@ module cobyla_module
     private
  
     abstract interface
-    subroutine func (n, m, x, f, con)!! calcfc interface
+    subroutine func (n, m, x, f, con)  !! calcfc interface
         import :: wp
         implicit none
         integer :: n
@@ -25,6 +25,7 @@ module cobyla_module
 contains
  
     subroutine cobyla (n, m, x, rhobeg, rhoend, iprint, maxfun, w, iact, calcfc)
+    
         dimension x (*), w (*), iact (*)
         procedure (func) :: calcfc
 !
@@ -79,6 +80,7 @@ contains
 !     the objective and constraint functions at X in F and CON(1),CON(2),
 !     ...,CON(M). Note that we are trying to adjust X so that F(X) is as
 !     small as possible subject to the constraint functions being nonnegative.
+
 !
 !     Partition the working space array W to provide the storage that is needed
 !     for the main calculation.
@@ -96,15 +98,16 @@ contains
         iwork = idx + n
  
         call cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, w(icon), w(isim), &
-       & w(isimi), w(idatm), w(ia), w(ivsig), w(iveta), w(isigb), w(idx), w(iwork), iact, &
-       & calcfc)
+         w(isimi), w(idatm), w(ia), w(ivsig), w(iveta), w(isigb), w(idx), w(iwork), iact, &
+         calcfc)
  
     end subroutine cobyla
  
     subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, sim, simi, &
-   & datmat, a, vsig, veta, sigbar, dx, w, iact, calcfc)
-        dimension x (*), con (*), sim (n,*), simi (n,*), datmat (mpp,*), a (n,*), vsig &
-       & (*), veta (*), sigbar (*), dx (*), w (*), iact (*)
+     datmat, a, vsig, veta, sigbar, dx, w, iact, calcfc)
+     
+        dimension x (*), con (*), sim (n,*), simi (n,*), datmat (mpp,*), a (n,*), vsig(*),&
+         veta (*), sigbar (*), dx (*), w (*), iact (*)
         procedure (func) :: calcfc
 !
 !     Set the initial values of some parameters. The last column of SIM holds
@@ -128,13 +131,15 @@ contains
         'and PARMU is set to zero.')
         nfvals = 0
         temp = 1.0_wp / rho
-        do 30 i = 1, n
+        do i = 1, n
             sim (i, np) = x (i)
-            do 20 j = 1, n
+            do j = 1, n
                 sim (i, j) = 0.0_wp
-20          simi (i, j) = 0.0_wp
+                simi (i, j) = 0.0_wp
+            end do
             sim (i, i) = rho
-30      simi (i, i) = temp
+            simi (i, i) = temp
+        end do
         jdrop = np
         ibrnch = 0
 !
@@ -152,8 +157,9 @@ contains
         call calcfc (n, m, x, f, con)
         resmax = 0.0_wp
         if (m > 0) then
-            do 60 k = 1, m
-60          resmax = max (resmax,-con(k))
+            do k = 1, m
+                resmax = max (resmax,-con(k))
+            end do
         end if
         if (nfvals == iprint-1 .or. iprint == 3) then
             print 70, nfvals, f, resmax, (x(i), i=1, iptem)
@@ -172,8 +178,9 @@ contains
 !     followed by the objective function and the greatest constraint violation
 !     at the vertex.
 !
-        do 90 k = 1, mpp
-90      datmat (k, jdrop) = con (k)
+        do k = 1, mpp
+            datmat (k, jdrop) = con (k)
+        end do
         if (nfvals > np) go to 130
 !
 !     Exchange the new vertex of the initial simplex with the optimal vertex if
@@ -185,15 +192,18 @@ contains
                 x (jdrop) = sim (jdrop, np)
             else
                 sim (jdrop, np) = x (jdrop)
-                do 100 k = 1, mpp
+                do k = 1, mpp
                     datmat (k, jdrop) = datmat (k, np)
-100             datmat (k, np) = con (k)
-                do 120 k = 1, jdrop
+                    datmat (k, np) = con (k)
+                end do
+                do k = 1, jdrop
                     sim (jdrop, k) = - rho
                     temp = 0.0_wp
-                    do 110 i = k, jdrop
-110                 temp = temp - simi (i, k)
-120             simi (jdrop, k) = temp
+                    do i = k, jdrop
+                        temp = temp - simi (i, k)
+                    end do
+                    simi (jdrop, k) = temp
+                end do
             end if
         end if
         if (nfvals <= n) then
@@ -207,7 +217,7 @@ contains
 !
 140     phimin = datmat (mp, np) + parmu * datmat (mpp, np)
         nbest = np
-        do 150 j = 1, n
+        do j = 1, n
             temp = datmat (mp, j) + parmu * datmat (mpp, j)
             if (temp < phimin) then
                 nbest = j
@@ -215,38 +225,44 @@ contains
             else if (temp == phimin .and. parmu == 0.0_wp) then
                 if (datmat(mpp, j) < datmat(mpp, nbest)) nbest = j
             end if
-150     continue
+        end do
 !
 !     Switch the best vertex into pole position if it is not there already,
 !     and also update SIM, SIMI and DATMAT.
 !
         if (nbest <= n) then
-            do 160 i = 1, mpp
+            do i = 1, mpp
                 temp = datmat (i, np)
                 datmat (i, np) = datmat (i, nbest)
-160         datmat (i, nbest) = temp
-            do 180 i = 1, n
+                datmat (i, nbest) = temp
+            end do
+            do i = 1, n
                 temp = sim (i, nbest)
                 sim (i, nbest) = 0.0_wp
                 sim (i, np) = sim (i, np) + temp
                 tempa = 0.0_wp
-                do 170 k = 1, n
+                do k = 1, n
                     sim (i, k) = sim (i, k) - temp
-170             tempa = tempa - simi (k, i)
-180         simi (nbest, i) = tempa
+                    tempa = tempa - simi (k, i)
+                end do
+                simi (nbest, i) = tempa
+            end do
         end if
 !
 !     Make an error return if SIGI is a poor approximation to the inverse of
 !     the leading N by N submatrix of SIG.
 !
         error = 0.0_wp
-        do 200 i = 1, n
-            do 200 j = 1, n
+        do i = 1, n
+            do j = 1, n
                 temp = 0.0_wp
                 if (i == j) temp = temp - 1.0_wp
-                do 190 k = 1, n
-190             temp = temp + simi (i, k) * sim (k, j)
-200     error = max (error, abs(temp))
+                do k = 1, n
+                    temp = temp + simi (i, k) * sim (k, j)
+                end do
+                error = max (error, abs(temp))
+            end do
+        end do
         if (error > 0.1_wp) then
             if (iprint >= 1) print 210
 210         format (/ 3 x, 'Return from subroutine COBYLA because ',&
@@ -259,16 +275,20 @@ contains
 !     after the constraint gradients in the array A. The vector W is used for
 !     working space.
 !
-        do 240 k = 1, mp
+        do k = 1, mp
             con (k) = - datmat (k, np)
-            do 220 j = 1, n
-220         w (j) = datmat (k, j) + con (k)
-            do 240 i = 1, n
+            do j = 1, n
+                w (j) = datmat (k, j) + con (k)
+            end do
+            do i = 1, n
                 temp = 0.0_wp
-                do 230 j = 1, n
-230             temp = temp + w (j) * simi (j, i)
+                do j = 1, n
+                    temp = temp + w (j) * simi (j, i)
+                end do
                 if (k == mp) temp = - temp
-240     a (i, k) = temp
+                a (i, k) = temp
+            end do
+        end do
 !
 !     Calculate the values of sigma and eta, and set IFLAG=0 if the current
 !     simplex is not acceptable.
@@ -276,16 +296,17 @@ contains
         iflag = 1
         parsig = alpha * rho
         pareta = beta * rho
-        do 260 j = 1, n
+        do j = 1, n
             wsig = 0.0_wp
             weta = 0.0_wp
-            do 250 i = 1, n
+            do i = 1, n
                 wsig = wsig + simi (j, i) ** 2
-250         weta = weta + sim (i, j) ** 2
+                weta = weta + sim (i, j) ** 2
+            end do
             vsig (j) = 1.0_wp / sqrt (wsig)
             veta (j) = sqrt (weta)
             if (vsig(j) < parsig .or. veta(j) > pareta) iflag = 0
-260     continue
+        end do
 !
 !     If a new vertex is needed to improve acceptability, then decide which
 !     vertex to drop from the simplex.
@@ -293,59 +314,66 @@ contains
         if (ibrnch == 1 .or. iflag == 1) go to 370
         jdrop = 0
         temp = pareta
-        do 270 j = 1, n
+        do j = 1, n
             if (veta(j) > temp) then
                 jdrop = j
                 temp = veta (j)
             end if
-270     continue
+        end do
         if (jdrop == 0) then
-            do 280 j = 1, n
+            do j = 1, n
                 if (vsig(j) < temp) then
                     jdrop = j
                     temp = vsig (j)
                 end if
-280         continue
+            end do
         end if
 !
 !     Calculate the step to the new vertex and its sign.
 !
         temp = gamma * rho * vsig (jdrop)
-        do 290 i = 1, n
-290     dx (i) = temp * simi (jdrop, i)
+        do i = 1, n
+            dx (i) = temp * simi (jdrop, i)
+        end do
         cvmaxp = 0.0_wp
         cvmaxm = 0.0_wp
-        do 310 k = 1, mp
+        do k = 1, mp
             sum = 0.0_wp
-            do 300 i = 1, n
-300         sum = sum + a (i, k) * dx (i)
+            do i = 1, n
+                sum = sum + a (i, k) * dx (i)
+            end do
             if (k < mp) then
                 temp = datmat (k, np)
                 cvmaxp = max (cvmaxp,-sum-temp)
                 cvmaxm = max (cvmaxm, sum-temp)
             end if
-310     continue
+        end do
         dxsign = 1.0_wp
         if (parmu*(cvmaxp-cvmaxm) > sum+sum) dxsign = - 1.0_wp
 !
 !     Update the elements of SIM and SIMI, and set the next X.
 !
         temp = 0.0_wp
-        do 320 i = 1, n
+        do i = 1, n
             dx (i) = dxsign * dx (i)
             sim (i, jdrop) = dx (i)
-320     temp = temp + simi (jdrop, i) * dx (i)
-        do 330 i = 1, n
-330     simi (jdrop, i) = simi (jdrop, i) / temp
-        do 360 j = 1, n
+            temp = temp + simi (jdrop, i) * dx (i)
+        end do
+        do i = 1, n
+            simi (jdrop, i) = simi (jdrop, i) / temp
+        end do
+        do j = 1, n
             if (j /= jdrop) then
                 temp = 0.0_wp
-                do 340 i = 1, n
-340             temp = temp + simi (j, i) * dx (i)
-                do 350 i = 1, n
-350             simi (j, i) = simi (j, i) - temp * simi (jdrop, i)
+                do i = 1, n
+                    temp = temp + simi (j, i) * dx (i)
+                end do
+                do i = 1, n
+                    simi (j, i) = simi (j, i) - temp * simi (jdrop, i)
+                end do
             end if
-360     x (j) = sim (j, np) + dx (j)
+            x (j) = sim (j, np) + dx (j)
+        end do
         go to 40
 !
 !     Calculate DX=x(*)-x(0). Branch if the length of DX is less than 0.5*RHO.
@@ -360,8 +388,9 @@ contains
        & w(isdirn), w(idxnew), w(ivmd))
         if (ifull == 0) then
             temp = 0.0_wp
-            do 380 i = 1, n
-380         temp = temp + dx (i) ** 2
+            do i = 1, n
+                temp = temp + dx (i) ** 2
+            end do
             if (temp < 0.25_wp*rho*rho) then
                 ibrnch = 1
                 go to 550
@@ -373,12 +402,13 @@ contains
 !
         resnew = 0.0_wp
         con (mp) = 0.0_wp
-        do 400 k = 1, mp
+        do k = 1, mp
             sum = con (k)
-            do 390 i = 1, n
-390         sum = sum - a (i, k) * dx (i)
+            do i = 1, n
+                sum = sum - a (i, k) * dx (i)
+            end do
             if (k < mp) resnew = max (resnew, sum)
-400     continue
+        end do
 !
 !     Increase PARMU if necessary and branch back if this change alters the
 !     optimal vertex. Otherwise PREREM and PREREC will be set to the predicted
@@ -393,21 +423,22 @@ contains
             if (iprint >= 2) print 410, parmu
 410         format (/ 3 x, 'Increase in PARMU to', 1 pe13.6)
             phi = datmat (mp, np) + parmu * datmat (mpp, np)
-            do 420 j = 1, n
+            do j = 1, n
                 temp = datmat (mp, j) + parmu * datmat (mpp, j)
                 if (temp < phi) go to 140
                 if (temp == phi .and. parmu == 0.0_wp) then
                     if (datmat(mpp, j) < datmat(mpp, np)) go to 140
                 end if
-420         continue
+            end do
         end if
         prerem = parmu * prerec - sum
 !
 !     Calculate the constraint and objective functions at x(*). Then find the
 !     actual reduction in the merit function.
 !
-        do 430 i = 1, n
-430     x (i) = sim (i, np) + dx (i)
+        do i = 1, n
+            x (i) = sim (i, np) + dx (i)
+        end do
         ibrnch = 1
         go to 40
 440     vmold = datmat (mp, np) + parmu * datmat (mpp, np)
@@ -426,28 +457,31 @@ contains
         ratio = 0.0_wp
         if (trured <= 0.0_wp) ratio = 1.0_wp
         jdrop = 0
-        do 460 j = 1, n
+        do j = 1, n
             temp = 0.0_wp
-            do 450 i = 1, n
-450         temp = temp + simi (j, i) * dx (i)
+            do i = 1, n
+                temp = temp + simi (j, i) * dx (i)
+            end do
             temp = abs (temp)
             if (temp > ratio) then
                 jdrop = j
                 ratio = temp
             end if
-460     sigbar (j) = temp * vsig (j)
+            sigbar (j) = temp * vsig (j)
+        end do
 !
 !     Calculate the value of ell.
 !
         edgmax = delta * rho
         l = 0
-        do 480 j = 1, n
+        do j = 1, n
             if (sigbar(j) >= parsig .or. sigbar(j) >= vsig(j)) then
                 temp = veta (j)
                 if (trured > 0.0_wp) then
                     temp = 0.0_wp
-                    do 470 i = 1, n
-470                 temp = temp + (dx(i)-sim(i, j)) ** 2
+                    do i = 1, n
+                        temp = temp + (dx(i)-sim(i, j)) ** 2
+                    end do
                     temp = sqrt (temp)
                 end if
                 if (temp > edgmax) then
@@ -455,29 +489,34 @@ contains
                     edgmax = temp
                 end if
             end if
-480     continue
+        end do
         if (l > 0) jdrop = l
         if (jdrop == 0) go to 550
 !
 !     Revise the simplex by updating the elements of SIM, SIMI and DATMAT.
 !
         temp = 0.0_wp
-        do 490 i = 1, n
+        do i = 1, n
             sim (i, jdrop) = dx (i)
-490     temp = temp + simi (jdrop, i) * dx (i)
-        do 500 i = 1, n
-500     simi (jdrop, i) = simi (jdrop, i) / temp
-        do 530 j = 1, n
+            temp = temp + simi (jdrop, i) * dx (i)
+        end do
+        do i = 1, n
+            simi (jdrop, i) = simi (jdrop, i) / temp
+        end do
+        do j = 1, n
             if (j /= jdrop) then
                 temp = 0.0_wp
-                do 510 i = 1, n
-510             temp = temp + simi (j, i) * dx (i)
-                do 520 i = 1, n
-520             simi (j, i) = simi (j, i) - temp * simi (jdrop, i)
+                do i = 1, n
+                    temp = temp + simi (j, i) * dx (i)
+                end do
+                do i = 1, n
+                    simi (j, i) = simi (j, i) - temp * simi (jdrop, i)
+                end do
             end if
-530     continue
-        do 540 k = 1, mpp
-540     datmat (k, jdrop) = con (k)
+        end do
+        do k = 1, mpp
+            datmat (k, jdrop) = con (k)
+        end do
 !
 !     Branch back for further iterations with the current RHO.
 !
@@ -494,12 +533,13 @@ contains
             if (rho <= 1.5_wp*rhoend) rho = rhoend
             if (parmu > 0.0_wp) then
                 denom = 0.0_wp
-                do 570 k = 1, mp
+                do k = 1, mp
                     cmin = datmat (k, np)
                     cmax = cmin
-                    do 560 i = 1, n
+                    do i = 1, n
                         cmin = min (cmin, datmat(k, i))
-560                 cmax = max (cmax, datmat(k, i))
+                        cmax = max (cmax, datmat(k, i))
+                    end do
                     if (k <= m .and. cmin < 0.5_wp*cmax) then
                         temp = max (cmax, 0.0_wp) - cmin
                         if (denom <= 0.0_wp) then
@@ -508,7 +548,7 @@ contains
                             denom = min (denom, temp)
                         end if
                     end if
-570             continue
+                end do
                 if (denom == 0.0_wp) then
                     parmu = 0.0_wp
                 else if (cmax-cmin < parmu*denom) then
@@ -530,8 +570,9 @@ contains
         if (iprint >= 1) print 590
 590     format (/ 3 x, 'Normal return from subroutine COBYLA')
         if (ifull == 1) go to 620
-600     do 610 i = 1, n
-610     x (i) = sim (i, np)
+600     do i = 1, n
+            x (i) = sim (i, np)
+        end do
         f = datmat (mp, np)
         resmax = datmat (mpp, np)
 620     if (iprint >= 1) then
@@ -543,7 +584,8 @@ contains
     end subroutine cobylb
  
     subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, sdirn, dxnew, &
-   & vmultd)
+     vmultd)
+   
         dimension a (n,*), b (*), dx (*), iact (*), z (n,*), zdota (*), vmultc (*), sdirn &
        & (*), dxnew (*), vmultd (*)
 !
@@ -588,21 +630,24 @@ contains
         mcon = m
         nact = 0
         resmax = 0.0_wp
-        do 20 i = 1, n
-            do 10 j = 1, n
-10          z (i, j) = 0.0_wp
+        do i = 1, n
+            do j = 1, n
+                z (i, j) = 0.0_wp
+            end do
             z (i, i) = 1.0_wp
-20      dx (i) = 0.0_wp
+            dx (i) = 0.0_wp
+        end do
         if (m >= 1) then
-            do 30 k = 1, m
+            do k = 1, m
                 if (b(k) > resmax) then
                     resmax = b (k)
                     icon = k
                 end if
-30          continue
-            do 40 k = 1, m
+            end do
+            do k = 1, m
                 iact (k) = k
-40          vmultc (k) = resmax - b (k)
+                vmultc (k) = resmax - b (k)
+            end do
         end if
         if (resmax == 0.0_wp) go to 480
         do 50 i = 1, n
@@ -620,8 +665,9 @@ contains
             optnew = resmax
         else
             optnew = 0.0_wp
-            do 80 i = 1, n
-80          optnew = optnew - dx (i) * a (i, mcon)
+            do i = 1, n
+                optnew = optnew - dx (i) * a (i, mcon)
+            end do
         end if
         if (icount == 0 .or. optnew < optold) then
             optold = optnew
@@ -643,17 +689,19 @@ contains
 !
         if (icon <= nact) go to 260
         kk = iact (icon)
-        do 90 i = 1, n
-90      dxnew (i) = a (i, kk)
+        do i = 1, n
+            dxnew (i) = a (i, kk)
+        end do
         tot = 0.0_wp
         k = n
 100     if (k > nact) then
             sp = 0.0_wp
             spabs = 0.0_wp
-            do 110 i = 1, n
+            do i = 1, n
                 temp = z (i, k) * dxnew (i)
                 sp = sp + temp
-110         spabs = spabs + abs (temp)
+                spabs = spabs + abs (temp)
+            end do
             acca = spabs + 0.1_wp * abs (sp)
             accb = spabs + 0.2_wp * abs (sp)
             if (spabs >= acca .or. acca >= accb) sp = 0.0_wp
@@ -665,10 +713,11 @@ contains
                 alpha = sp / temp
                 beta = tot / temp
                 tot = temp
-                do 120 i = 1, n
+                do i = 1, n
                     temp = alpha * z (i, k) + beta * z (i, kp)
                     z (i, kp) = alpha * z (i, kp) - beta * z (i, k)
-120             z (i, k) = temp
+                    z (i, k) = temp
+                end do
             end if
             k = k - 1
             go to 100
@@ -696,10 +745,11 @@ contains
         k = nact
 130     zdotv = 0.0_wp
         zdvabs = 0.0_wp
-        do 140 i = 1, n
+        do i = 1, n
             temp = z (i, k) * dxnew (i)
             zdotv = zdotv + temp
-140     zdvabs = zdvabs + abs (temp)
+            zdvabs = zdvabs + abs (temp)
+        end do
         acca = zdvabs + 0.1_wp * abs (zdotv)
         accb = zdvabs + 0.2_wp * abs (zdotv)
         if (zdvabs < acca .and. acca < accb) then
@@ -713,8 +763,9 @@ contains
             end if
             if (k >= 2) then
                 kw = iact (k)
-                do 150 i = 1, n
-150             dxnew (i) = dxnew (i) - temp * a (i, kw)
+                do i = 1, n
+                    dxnew (i) = dxnew (i) - temp * a (i, kw)
+                end do
             end if
             vmultd (k) = temp
         else
@@ -728,8 +779,9 @@ contains
 !     that the one to be replaced is at the end of the list. Also calculate the
 !     new value of ZDOTA(NACT) and branch if it is not acceptable.
 !
-        do 160 k = 1, nact
-160     vmultc (k) = max (0.0_wp, vmultc(k)-ratio*vmultd(k))
+        do k = 1, nact
+            vmultc (k) = max (0.0_wp, vmultc(k)-ratio*vmultd(k))
+        end do
         if (icon < nact) then
             isave = iact (icon)
             vsave = vmultc (icon)
@@ -737,17 +789,19 @@ contains
 170         kp = k + 1
             kw = iact (kp)
             sp = 0.0_wp
-            do 180 i = 1, n
-180         sp = sp + z (i, k) * a (i, kw)
+            do i = 1, n
+                sp = sp + z (i, k) * a (i, kw)
+            end do
             temp = sqrt (sp*sp+zdota(kp)**2)
             alpha = zdota (kp) / temp
             beta = sp / temp
             zdota (kp) = alpha * zdota (k)
             zdota (k) = temp
-            do 190 i = 1, n
+            do i = 1, n
                 temp = alpha * z (i, kp) + beta * z (i, k)
                 z (i, kp) = alpha * z (i, k) - beta * z (i, kp)
-190         z (i, k) = temp
+                z (i, k) = temp
+            end do
             iact (k) = kw
             vmultc (k) = vmultc (kp)
             k = kp
@@ -756,8 +810,9 @@ contains
             vmultc (k) = vsave
         end if
         temp = 0.0_wp
-        do 200 i = 1, n
-200     temp = temp + z (i, nact) * a (i, kk)
+        do i = 1, n
+            temp = temp + z (i, nact) * a (i, kk)
+        end do
         if (temp == 0.0_wp) go to 490
         zdota (nact) = temp
         vmultc (icon) = 0.0_wp
@@ -771,17 +826,19 @@ contains
         if (mcon > m .and. kk /= mcon) then
             k = nact - 1
             sp = 0.0_wp
-            do 220 i = 1, n
-220         sp = sp + z (i, k) * a (i, kk)
+            do i = 1, n
+                sp = sp + z (i, k) * a (i, kk)
+            end do
             temp = sqrt (sp*sp+zdota(nact)**2)
             alpha = zdota (nact) / temp
             beta = sp / temp
             zdota (nact) = alpha * zdota (k)
             zdota (k) = temp
-            do 230 i = 1, n
+            do i = 1, n
                 temp = alpha * z (i, nact) + beta * z (i, k)
                 z (i, nact) = alpha * z (i, k) - beta * z (i, nact)
-230         z (i, k) = temp
+                z (i, k) = temp
+            end do
             iact (nact) = iact (k)
             iact (k) = kk
             temp = vmultc (k)
@@ -795,12 +852,14 @@ contains
         if (mcon > m) go to 320
         kk = iact (nact)
         temp = 0.0_wp
-        do 240 i = 1, n
-240     temp = temp + sdirn (i) * a (i, kk)
+        do i = 1, n
+            temp = temp + sdirn (i) * a (i, kk)
+        end do
         temp = temp - 1.0_wp
         temp = temp / zdota (nact)
-        do 250 i = 1, n
-250     sdirn (i) = sdirn (i) - temp * z (i, nact)
+        do i = 1, n
+            sdirn (i) = sdirn (i) - temp * z (i, nact)
+        end do
         go to 340
 !
 !     Delete the constraint that has the index IACT(ICON) from the active set.
@@ -812,17 +871,19 @@ contains
 270         kp = k + 1
             kk = iact (kp)
             sp = 0.0_wp
-            do 280 i = 1, n
-280         sp = sp + z (i, k) * a (i, kk)
+            do i = 1, n
+                sp = sp + z (i, k) * a (i, kk)
+            end do
             temp = sqrt (sp*sp+zdota(kp)**2)
             alpha = zdota (kp) / temp
             beta = sp / temp
             zdota (kp) = alpha * zdota (k)
             zdota (k) = temp
-            do 290 i = 1, n
+            do i = 1, n
                 temp = alpha * z (i, kp) + beta * z (i, k)
                 z (i, kp) = alpha * z (i, k) - beta * z (i, kp)
-290         z (i, k) = temp
+                z (i, k) = temp
+            end do
             iact (k) = kk
             vmultc (k) = vmultc (kp)
             k = kp
@@ -837,17 +898,20 @@ contains
 !
         if (mcon > m) go to 320
         temp = 0.0_wp
-        do 300 i = 1, n
-300     temp = temp + sdirn (i) * z (i, nact+1)
-        do 310 i = 1, n
-310     sdirn (i) = sdirn (i) - temp * z (i, nact+1)
+        do i = 1, n
+            temp = temp + sdirn (i) * z (i, nact+1)
+        end do
+        do i = 1, n
+            sdirn (i) = sdirn (i) - temp * z (i, nact+1)
+        end do
         go to 340
 !
 !     Pick the next search direction of stage two.
 !
 320     temp = 1.0_wp / zdota (nact)
-        do 330 i = 1, n
-330     sdirn (i) = temp * z (i, nact)
+        do i = 1, n
+            sdirn (i) = temp * z (i, nact)
+        end do
 !
 !     Calculate the step to the boundary of the trust region or take the step
 !     that reduces RESMAX to zero. The two statements below that include the
@@ -858,10 +922,11 @@ contains
 340     dd = rho * rho
         sd = 0.0_wp
         ss = 0.0_wp
-        do 350 i = 1, n
+        do i = 1, n
             if (abs(dx(i)) >= 1.0e-6_wp*rho) dd = dd - dx (i) ** 2
             sd = sd + dx (i) * sdirn (i)
-350     ss = ss + sdirn (i) ** 2
+            ss = ss + sdirn (i) ** 2
+        end do
         if (dd <= 0.0_wp) go to 490
         temp = sqrt (ss*dd)
         if (abs(sd) >= 1.0e-6_wp*temp) temp = sqrt (ss*dd+sd*sd)
@@ -879,18 +944,20 @@ contains
 !     Because DXNEW will be changed during the calculation of some Lagrange
 !     multipliers, it will be restored to the following value later.
 !
-        do 360 i = 1, n
-360     dxnew (i) = dx (i) + step * sdirn (i)
+        do i = 1, n
+            dxnew (i) = dx (i) + step * sdirn (i)
+        end do
         if (mcon == m) then
             resold = resmax
             resmax = 0.0_wp
-            do 380 k = 1, nact
+            do k = 1, nact
                 kk = iact (k)
                 temp = b (kk)
-                do 370 i = 1, n
-370             temp = temp - a (i, kk) * dxnew (i)
+                do i = 1, n
+                    temp = temp - a (i, kk) * dxnew (i)
+                end do
                 resmax = max (resmax, temp)
-380         continue
+            end do
         end if
 !
 !     Set VMULTD to the VMULTC vector that would occur if DX became DXNEW. A
@@ -901,18 +968,20 @@ contains
         k = nact
 390     zdotw = 0.0_wp
         zdwabs = 0.0_wp
-        do 400 i = 1, n
+        do i = 1, n
             temp = z (i, k) * dxnew (i)
             zdotw = zdotw + temp
-400     zdwabs = zdwabs + abs (temp)
+            zdwabs = zdwabs + abs (temp)
+        end do
         acca = zdwabs + 0.1_wp * abs (zdotw)
         accb = zdwabs + 0.2_wp * abs (zdotw)
         if (zdwabs >= acca .or. acca >= accb) zdotw = 0.0_wp
         vmultd (k) = zdotw / zdota (k)
         if (k >= 2) then
             kk = iact (k)
-            do 410 i = 1, n
-410         dxnew (i) = dxnew (i) - vmultd (k) * a (i, kk)
+            do i = 1, n
+                dxnew (i) = dxnew (i) - vmultd (k) * a (i, kk)
+            end do
             k = k - 1
             go to 390
         end if
@@ -920,29 +989,32 @@ contains
 !
 !     Complete VMULTC by finding the new constraint residuals.
 !
-        do 420 i = 1, n
-420     dxnew (i) = dx (i) + step * sdirn (i)
+        do i = 1, n
+            dxnew (i) = dx (i) + step * sdirn (i)
+        end do
         if (mcon > nact) then
             kl = nact + 1
-            do 440 k = kl, mcon
+            do k = kl, mcon
                 kk = iact (k)
                 sum = resmax - b (kk)
                 sumabs = resmax + abs (b(kk))
-                do 430 i = 1, n
+                do i = 1, n
                     temp = a (i, kk) * dxnew (i)
                     sum = sum + temp
-430             sumabs = sumabs + abs (temp)
+                    sumabs = sumabs + abs (temp)
+                end do
                 acca = sumabs + 0.1_wp * abs (sum)
                 accb = sumabs + 0.2_wp * abs (sum)
                 if (sumabs >= acca .or. acca >= accb) sum = 0.0_wp
-440         vmultd (k) = sum
+                vmultd (k) = sum
+            end do
         end if
 !
 !     Calculate the fraction of the step from DX to DXNEW that will be taken.
 !
         ratio = 1.0_wp
         icon = 0
-        do 450 k = 1, mcon
+        do k = 1, mcon
             if (vmultd(k) < 0.0_wp) then
                 temp = vmultc (k) / (vmultc(k)-vmultd(k))
                 if (temp < ratio) then
@@ -950,22 +1022,24 @@ contains
                     icon = k
                 end if
             end if
-450     continue
+        end do
 !
 !     Update DX, VMULTC and RESMAX.
 !
         temp = 1.0_wp - ratio
-        do 460 i = 1, n
-460     dx (i) = temp * dx (i) + ratio * dxnew (i)
-        do 470 k = 1, mcon
-470     vmultc (k) = max (0.0_wp, temp*vmultc(k)+ratio*vmultd(k))
+        do i = 1, n
+            dx (i) = temp * dx (i) + ratio * dxnew (i)
+        end do
+        do k = 1, mcon
+            vmultc (k) = max (0.0_wp, temp*vmultc(k)+ratio*vmultd(k))
+        end do
         if (mcon == m) resmax = resold + ratio * (resmax-resold)
 !
 !     If the full step is not acceptable then begin another iteration.
 !     Otherwise switch to stage two or end the calculation.
 !
         if (icon > 0) go to 70
-        if (step == stpful) go to 500
+        if (step == stpful) return
 480     mcon = m + 1
         icon = mcon
         iact (mcon) = mcon
@@ -977,16 +1051,18 @@ contains
 !
 490     if (mcon == m) go to 480
         ifull = 0
-500     return
+
     end subroutine trstlp
  
     subroutine cobyla_test ()
 !------------------------------------------------------------------------------
 !     Main program of test problems in Report DAMTP 1992/NA5.
 !------------------------------------------------------------------------------
-    !Common nprob
+    
         dimension x (10), xopt (10), w (3000), iact (51)
-        do 180 nprob = 1, 10
+        
+        do nprob = 1, 10
+        
             if (nprob == 1) then
     !
     !     minimization of a simple quadratic function of two variables.
@@ -997,6 +1073,7 @@ contains
                 m = 0
                 xopt (1) = - 1.0_wp
                 xopt (2) = 0.0_wp
+                
             else if (nprob == 2) then
     !
     !     Easy two dimensional minimization in unit circle.
@@ -1008,6 +1085,7 @@ contains
                 m = 1
                 xopt (1) = sqrt (0.5_wp)
                 xopt (2) = - xopt (1)
+                
             else if (nprob == 3) then
     !
     !     Easy three dimensional minimization in ellipsoid.
@@ -1020,6 +1098,7 @@ contains
                 xopt (1) = 1.0_wp / sqrt (3.0_wp)
                 xopt (2) = 1.0_wp / sqrt (6.0_wp)
                 xopt (3) = - 1.0_wp / 3.0_wp
+                
             else if (nprob == 4) then
     !
     !     Weak version of Rosenbrock's problem.
@@ -1030,6 +1109,7 @@ contains
                 m = 0
                 xopt (1) = - 1.0_wp
                 xopt (2) = 1.0_wp
+                
             else if (nprob == 5) then
     !
     !     Intermediate version of Rosenbrock's problem.
@@ -1040,6 +1120,7 @@ contains
                 m = 0
                 xopt (1) = - 1.0_wp
                 xopt (2) = 1.0_wp
+                
             else if (nprob == 6) then
     !
     !     This problem is taken from Fletcher's book Practical Methods of
@@ -1052,6 +1133,7 @@ contains
                 m = 2
                 xopt (1) = sqrt (0.5_wp)
                 xopt (2) = xopt (1)
+                
             else if (nprob == 7) then
     !
     !     This problem is taken from Fletcher's book Practical Methods of
@@ -1065,6 +1147,7 @@ contains
                 xopt (1) = 0.0_wp
                 xopt (2) = - 3.0_wp
                 xopt (3) = - 3.0_wp
+                
             else if (nprob == 8) then
     !
     !     This problem is taken from page 66 of Hock and Schittkowski's book Test
@@ -1079,6 +1162,7 @@ contains
                 xopt (2) = 1.0_wp
                 xopt (3) = 2.0_wp
                 xopt (4) = - 1.0_wp
+                
             else if (nprob == 9) then
     !
     !     This problem is taken from page 111 of Hock and Schittkowski's
@@ -1097,6 +1181,7 @@ contains
                 xopt (5) = - 0.624487_wp
                 xopt (6) = 1.038131_wp
                 xopt (7) = 1.594227_wp
+                
             else if (nprob == 10) then
     !
     !     This problem is taken from page 415 of Luenberger's book Applied
@@ -1108,9 +1193,10 @@ contains
                 n = 9
                 m = 14
             end if
-            do 160 icase = 1, 2
-                do 120 i = 1, n
-120             x (i) = 1.0_wp
+            do icase = 1, 2
+                do i = 1, n
+                    x (i) = 1.0_wp
+                end do
                 rhobeg = 0.5_wp
                 rhoend = 0.001_wp
                 if (icase == 2) rhoend = 0.0001_wp
@@ -1126,52 +1212,61 @@ contains
                     xopt (2) = tempd * tempb - tempc * tempa
                     xopt (3) = tempd * tempa - tempc * tempb
                     xopt (4) = tempd * tempb + tempc * tempa
-                    do 130 i = 1, 4
-130                 xopt (i+4) = xopt (i)
+                    do i = 1, 4
+                        xopt (i+4) = xopt (i)
+                    end do
                 end if
                 temp = 0.0_wp
-                do 140 i = 1, n
-140             temp = temp + (x(i)-xopt(i)) ** 2
+                do i = 1, n
+                    temp = temp + (x(i)-xopt(i)) ** 2
+                end do
                 print 150, sqrt (temp)
 150             format (/ 5 x, 'Least squares error in variables =', 1 pe16.6)
-160         continue
+            end do
             print 170
 170         format (2 x, '----------------------------------------------',&
             '--------------------')
-180     continue
+            
+        end do
  
     contains
  
         subroutine calcfc (n, m, x, f, con)
-          !Common nprob
+
             dimension x (*), con (*)
+            
             if (nprob == 1) then
     !
     !     Test problem 1 (Simple quadratic)
     !
                 f = 10.0_wp * (x(1)+1.0_wp) ** 2 + x (2) ** 2
+                
             else if (nprob == 2) then
     !
     !    Test problem 2 (2D unit circle calculation)
     !
                 f = x (1) * x (2)
                 con (1) = 1.0_wp - x (1) ** 2 - x (2) ** 2
+                
             else if (nprob == 3) then
     !
     !     Test problem 3 (3D ellipsoid calculation)
     !
                 f = x (1) * x (2) * x (3)
                 con (1) = 1.0_wp - x (1) ** 2 - 2.0_wp * x (2) ** 2 - 3.0_wp * x (3) ** 2
+                
             else if (nprob == 4) then
     !
     !     Test problem 4 (Weak Rosenbrock)
     !
                 f = (x(1)**2-x(2)) ** 2 + (1.0_wp+x(1)) ** 2
+                
             else if (nprob == 5) then
     !
     !     Test problem 5 (Intermediate Rosenbrock)
     !
                 f = 10.0_wp * (x(1)**2-x(2)) ** 2 + (1.0_wp+x(1)) ** 2
+                
             else if (nprob == 6) then
     !
     !     Test problem 6 (Equation (9.1.15) in Fletcher's book)
@@ -1179,6 +1274,7 @@ contains
                 f = - x (1) - x (2)
                 con (1) = x (2) - x (1) ** 2
                 con (2) = 1.0_wp - x (1) ** 2 - x (2) ** 2
+                
             else if (nprob == 7) then
     !
     !     Test problem 7 (Equation (14.4.2) in Fletcher's book)
@@ -1187,6 +1283,7 @@ contains
                 con (1) = 5.0_wp * x (1) - x (2) + x (3)
                 con (2) = x (3) - x (1) ** 2 - x (2) ** 2 - 4.0_wp * x (2)
                 con (3) = x (3) - 5.0_wp * x (1) - x (2)
+                
             else if (nprob == 8) then
     !
     !     Test problem 8 (Rosen-Suzuki)
@@ -1199,6 +1296,7 @@ contains
                & 2.0_wp * x (4) ** 2 + x (1) + x (4)
                 con (3) = 5.0_wp - 2.0_wp * x (1) ** 2 - x (2) ** 2 - x (3) ** 2 - 2.0_wp &
                & * x (1) + x (2) + x (4)
+               
             else if (nprob == 9) then
     !
     !     Test problem 9 (Hock and Schittkowski 100)
@@ -1215,12 +1313,13 @@ contains
                & 8.0_wp * x (7)
                 con (4) = - 4.0_wp * x (1) ** 2 - x (2) ** 2 + 3.0_wp * x (1) * x (2) - &
                & 2.0_wp * x (3) ** 2 - 5.0_wp * x (6) + 11.0_wp * x (7)
+               
             else if (nprob == 10) then
     !
     !     Test problem 10 (Hexagon area)
     !
                 f = - 0.5_wp * &
-               & (x(1)*x(4)-x(2)*x(3)+x(3)*x(9)-x(5)*x(9)+x(5)*x(8)-x(6)*x(7))
+                   (x(1)*x(4)-x(2)*x(3)+x(3)*x(9)-x(5)*x(9)+x(5)*x(8)-x(6)*x(7))
                 con (1) = 1.0_wp - x (3) ** 2 - x (4) ** 2
                 con (2) = 1.0_wp - x (9) ** 2
                 con (3) = 1.0_wp - x (5) ** 2 - x (6) ** 2
@@ -1235,7 +1334,9 @@ contains
                 con (12) = - x (5) * x (9)
                 con (13) = x (5) * x (8) - x (6) * x (7)
                 con (14) = x (9)
+                
             end if
+            
         end subroutine calcfc
  
     end subroutine cobyla_test
