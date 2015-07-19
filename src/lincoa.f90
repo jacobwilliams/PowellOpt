@@ -459,7 +459,7 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
          Go To 600
       End If
       If (ksave <= 0) ifeas = 1
-      f = dfloat (ifeas)
+      f = real (ifeas,wp)
       Call calfun (n, x, f)
       If (iprint == 3) Then
          Print 260, nf, f, (x(i), i=1, n)
@@ -732,7 +732,7 @@ Subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, &
          Print 590, f, (x(i), i=1, n)
       End If
       w (1) = f
-      w (2) = dfloat (nf) + half
+      w (2) = real (nf,wp) + half
       Return
 End Subroutine lincob
 
@@ -1985,16 +1985,16 @@ subroutine lincoa_test()
     sumy = zero
     sumz = zero
     Do 10 j = 1, np
-       theta = dfloat (j-1) * pi / dfloat (np-1)
+       theta = real (j-1,wp) * pi / real (np-1,wp)
        xp (j) = cos (theta) * cos (two*theta)
        sumx = sumx + xp (j)
        yp (j) = sin (theta) * cos (two*theta)
        sumy = sumy + yp (j)
        zp (j) = sin (two*theta)
 10  sumz = sumz + zp (j)
-    sumx = sumx / dfloat (np)
-    sumy = sumy / dfloat (np)
-    sumz = sumz / dfloat (np)
+    sumx = sumx / real (np,wp)
+    sumy = sumy / real (np,wp)
+    sumz = sumz / real (np,wp)
     Do 20 j = 1, np
        xp (j) = xp (j) - sumx
        yp (j) = yp (j) - sumy

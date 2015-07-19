@@ -1312,7 +1312,7 @@ Subroutine rescue (n, npt, xl, xu, iprint, maxfun, xbase, xpt, fval, &
    one = 1.0_wp
    zero = 0.0_wp
    np = n + 1
-   sfrac = half / dfloat (np)
+   sfrac = half / real (np,wp)
    nptm = npt - np
 !
 !     Shift the interpolation points so that XOPT becomes the origin, and set
@@ -1377,9 +1377,9 @@ Subroutine rescue (n, npt, xl, xu, iprint, maxfun, xbase, xpt, fval, &
    Do 60 j = 1, n
       jp = j + 1
       jpn = jp + n
-      ptsid (jp) = dfloat (j) + sfrac
+      ptsid (jp) = real (j,wp) + sfrac
       If (jpn <= npt) Then
-         ptsid (jpn) = dfloat (j) / dfloat (np) + sfrac
+         ptsid (jpn) = real (j,wp) / real (np,wp) + sfrac
          temp = one / (ptsaux(1, j)-ptsaux(2, j))
          bmat (jp, j) = - temp + one / ptsaux (1, j)
          bmat (jpn, j) = temp + one / ptsaux (2, j)
@@ -1398,11 +1398,11 @@ Subroutine rescue (n, npt, xl, xu, iprint, maxfun, xbase, xpt, fval, &
 !
    If (npt >= n+np) Then
       Do 70 k = 2 * np, npt
-         iw = (dfloat(k-np)-half) / dfloat (n)
+         iw = (real(k-np,wp)-half) / real (n,wp)
          ip = k - np - iw * n
          iq = ip + iw
          If (iq > n) iq = iq - n
-         ptsid (k) = dfloat (ip) + dfloat (iq) / dfloat (np) + sfrac
+         ptsid (k) = real (ip,wp) + real (iq,wp) / real (np,wp) + sfrac
          temp = one / (ptsaux(1, ip)*ptsaux(1, iq))
          zmat (1, k-np) = temp
          zmat (ip+1, k-np) = - temp
@@ -1473,7 +1473,7 @@ Subroutine rescue (n, npt, xl, xu, iprint, maxfun, xbase, xpt, fval, &
       Else
          ip = ptsid (k)
          If (ip > 0) sum = w (npt+ip) * ptsaux (1, ip)
-         iq = dfloat (np) * ptsid (k) - dfloat (ip*np)
+         iq = real (np,wp) * ptsid (k) - real (ip*np,wp)
          If (iq > 0) Then
             iw = 1
             If (ip == 0) iw = 2
@@ -1563,7 +1563,7 @@ Subroutine rescue (n, npt, xl, xu, iprint, maxfun, xbase, xpt, fval, &
 270   hq (ih) = hq (ih) + temp * w (i)
       pq (kpt) = zero
       ip = ptsid (kpt)
-      iq = dfloat (np) * ptsid (kpt) - dfloat (ip*np)
+      iq = real (np,wp) * ptsid (kpt) - real (ip*np,wp)
       If (ip > 0) Then
          xp = ptsaux (1, ip)
          xpt (kpt, ip) = xp
@@ -1629,7 +1629,7 @@ Subroutine rescue (n, npt, xl, xu, iprint, maxfun, xbase, xpt, fval, &
             pq (k) = pq (k) + temp
          Else
             ip = ptsid (k)
-            iq = dfloat (np) * ptsid (k) - dfloat (ip*np)
+            iq = real (np,wp) * ptsid (k) - real (ip*np,wp)
             ihq = (iq*iq+iq) / 2
             If (ip == 0) Then
                hq (ihq) = hq (ihq) + temp * ptsaux (2, iq) ** 2
@@ -1941,7 +1941,7 @@ Subroutine trsbox (n, npt, xpt, xopt, gopt, hq, pq, sl, su, delta, &
    redsav = zero
    iu = 17.0_wp * angbd + 3.1_wp
    Do 170 i = 1, iu
-      angt = angbd * dfloat (i) / dfloat (iu)
+      angt = angbd * real (i,wp) / real (iu,wp)
       sth = (angt+angt) / (one+angt*angt)
       temp = shs + angt * (angt*dhd-dhs-dhs)
       rednew = sth * (angt*dredg-sredg-half*sth*temp)
@@ -1960,7 +1960,7 @@ Subroutine trsbox (n, npt, xpt, xopt, gopt, hq, pq, sl, su, delta, &
    If (isav == 0) Go To 190
    If (isav < iu) Then
       temp = (rdnext-rdprev) / (redmax+redmax-rdprev-rdnext)
-      angt = angbd * (dfloat(isav)+half*temp) / dfloat (iu)
+      angt = angbd * (real(isav,wp)+half*temp) / real (iu,wp)
    End If
    cth = (one-angt*angt) / (one+angt*angt)
    sth = (angt+angt) / (one+angt*angt)
@@ -2141,7 +2141,7 @@ subroutine bobyqa_test()
     30 Format (/ / 5 x, '2D output with M =', i4, ',  N =', i4,&
        '  and  NPT =', i4)
        Do 40 j = 1, m
-          temp = dfloat (j) * twopi / dfloat (m)
+          temp = real (j,wp) * twopi / real (m,wp)
           x (2*j-1) = cos (temp)
     40 x (2*j) = sin (temp)
        Call bobyqa (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, w, calfun)

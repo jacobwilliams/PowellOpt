@@ -245,10 +245,10 @@ Subroutine bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
       denmax = sum
       isave = 0
       iu = 49
-      temp = twopi / dfloat (iu+1)
+      temp = twopi / real (iu+1,wp)
       par (1) = one
       Do 250 i = 1, iu
-         angle = dfloat (i) * temp
+         angle = real (i,wp) * temp
          par (2) = cos (angle)
          par (3) = sin (angle)
          Do 230 j = 4, 8, 2
@@ -274,7 +274,7 @@ Subroutine bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
          tempb = tempb - denmax
          step = half * (tempa-tempb) / (tempa+tempb)
       End If
-      angle = temp * (dfloat(isave)+step)
+      angle = temp * (real(isave,wp)+step)
 !
 !     Calculate the new parameters of the denominator, the new VLAG vector
 !     and the new D. Then test for convergence.
@@ -476,9 +476,9 @@ Subroutine biglag (n, npt, xopt, xpt, bmat, zmat, idz, ndim, knew, &
       tauold = taubeg
       isave = 0
       iu = 49
-      temp = twopi / dfloat (iu+1)
+      temp = twopi / real (iu+1,wp)
       Do 140 i = 1, iu
-         angle = dfloat (i) * temp
+         angle = real (i,wp) * temp
          cth = cos (angle)
          sth = sin (angle)
          tau = cf1 + (cf2+cf4*cth) * cth + (cf3+cf5*cth) * sth
@@ -498,7 +498,7 @@ Subroutine biglag (n, npt, xopt, xpt, bmat, zmat, idz, ndim, knew, &
          tempb = tempb - taumax
          step = half * (tempa-tempb) / (tempa+tempb)
       End If
-      angle = temp * (dfloat(isave)+step)
+      angle = temp * (real(isave,wp)+step)
 !
 !     Calculate the new D and GD. Then test for convergence.
 !
@@ -1288,9 +1288,9 @@ Subroutine trsapp (n, npt, xopt, xpt, gq, hq, pq, delta, step, d, g, &
    qmin = qbeg
    isave = 0
    iu = 49
-   temp = twopi / dfloat (iu+1)
+   temp = twopi / real (iu+1,wp)
    Do 140 i = 1, iu
-      angle = dfloat (i) * temp
+      angle = real (i,wp) * temp
       cth = cos (angle)
       sth = sin (angle)
       qnew = (sg+cf*cth) * cth + (dg+dhs*cth) * sth
@@ -1310,7 +1310,7 @@ Subroutine trsapp (n, npt, xopt, xpt, gq, hq, pq, delta, step, d, g, &
       tempb = tempb - qmin
       angle = half * (tempa-tempb) / (tempa+tempb)
    End If
-   angle = temp * (dfloat(isave)+angle)
+   angle = temp * (real(isave,wp)+angle)
 !
 !     Calculate the new STEP and HS. Then test for convergence.
 !
@@ -1475,7 +1475,7 @@ subroutine newuoa_test()
     Do 30 n = 2, 8, 2
        npt = 2 * n + 1
        Do 10 i = 1, n
-    10 x (i) = dfloat (i) / dfloat (n+1)
+    10 x (i) = real (i,wp) / real (n+1,wp)
        rhobeg = 0.2_wp * x (1)
        Print 20, n, npt
     20 Format (/ / 4 x, 'Results with N =', i2, ' and NPT =', i3)
@@ -1500,8 +1500,8 @@ contains
              sum = 0.0_wp
              Do 30 j = 1, n
     30       sum = sum + y (i, j)
-             sum = sum / dfloat (n)
-             If (iw > 0) sum = sum + 1.0_wp / dfloat (i*i-2*i)
+             sum = sum / real (n,wp)
+             If (iw > 0) sum = sum + 1.0_wp / real (i*i-2*i,wp)
              iw = - iw
     40    f = f + sum * sum
     End Subroutine calfun
