@@ -5,7 +5,7 @@
     private
     
     abstract interface
-        subroutine func(n,x,f)  !! CALFUN interface
+        subroutine func(n,x,f)  !! calfun interface
         import :: wp
         implicit none
         integer :: n
@@ -18,501 +18,6 @@
     public :: newuoa_test
     
     contains
-
-Subroutine bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
-  knew, d, w, vlag, beta, s, wvec, prod)
-      Implicit real(wp) (a-h, o-z)
-      Dimension xopt (*), xpt (npt,*), bmat (ndim,*), zmat (npt,*), d &
-       (*), w (*), vlag (*), s (*), wvec (ndim,*), prod (ndim,*)
-      Dimension den (9), denex (9), par (9)
-!
-!     N is the number of variables.
-!     NPT is the number of interpolation equations.
-!     XOPT is the best interpolation point so far.
-!     XPT contains the coordinates of the current interpolation points.
-!     BMAT provides the last N columns of H.
-!     ZMAT and IDZ give a factorization of the first NPT by NPT submatrix of H.
-!     NDIM is the first dimension of BMAT and has the value NPT+N.
-!     KOPT is the index of the optimal interpolation point.
-!     KNEW is the index of the interpolation point that is going to be moved.
-!     D will be set to the step from XOPT to the new point, and on entry it
-!       should be the D that was calculated by the last call of BIGLAG. The
-!       length of the initial D provides a trust region bound on the final D.
-!     W will be set to Wcheck for the final choice of D.
-!     VLAG will be set to Theta*Wcheck+e_b for the final choice of D.
-!     BETA will be set to the value that will occur in the updating formula
-!       when the KNEW-th interpolation point is moved to its new position.
-!     S, WVEC, PROD and the private arrays DEN, DENEX and PAR will be used
-!       for working space.
-!
-!     D is calculated in a way that should provide a denominator with a large
-!     modulus in the updating formula when the KNEW-th interpolation point is
-!     shifted to the new position XOPT+D.
-!
-!     Set some constants.
-!
-      half = 0.5_wp
-      one = 1.0_wp
-      quart = 0.25_wp
-      two = 2.0_wp
-      zero = 0.0_wp
-      twopi = 8.0_wp * atan (one)
-      nptm = npt - n - 1
-!
-!     Store the first NPT elements of the KNEW-th column of H in W(N+1)
-!     to W(N+NPT).
-!
-      Do 10 k = 1, npt
-10    w (n+k) = zero
-      Do 20 j = 1, nptm
-         temp = zmat (knew, j)
-         If (j < idz) temp = - temp
-         Do 20 k = 1, npt
-20    w (n+k) = w (n+k) + temp * zmat (k, j)
-      alpha = w (n+knew)
-!
-!     The initial search direction D is taken from the last call of BIGLAG,
-!     and the initial S is set below, usually to the direction from X_OPT
-!     to X_KNEW, but a different direction to an interpolation point may
-!     be chosen, in order to prevent S from being nearly parallel to D.
-!
-      dd = zero
-      ds = zero
-      ss = zero
-      xoptsq = zero
-      Do 30 i = 1, n
-         dd = dd + d (i) ** 2
-         s (i) = xpt (knew, i) - xopt (i)
-         ds = ds + d (i) * s (i)
-         ss = ss + s (i) ** 2
-30    xoptsq = xoptsq + xopt (i) ** 2
-      If (ds*ds > 0.99_wp*dd*ss) Then
-         ksav = knew
-         dtest = ds * ds / ss
-         Do 50 k = 1, npt
-            If (k /= kopt) Then
-               dstemp = zero
-               sstemp = zero
-               Do 40 i = 1, n
-                  diff = xpt (k, i) - xopt (i)
-                  dstemp = dstemp + d (i) * diff
-40             sstemp = sstemp + diff * diff
-               If (dstemp*dstemp/sstemp < dtest) Then
-                  ksav = k
-                  dtest = dstemp * dstemp / sstemp
-                  ds = dstemp
-                  ss = sstemp
-               End If
-            End If
-50       Continue
-         Do 60 i = 1, n
-60       s (i) = xpt (ksav, i) - xopt (i)
-      End If
-      ssden = dd * ss - ds * ds
-      iterc = 0
-      densav = zero
-!
-!     Begin the iteration by overwriting S with a vector that has the
-!     required length and direction.
-!
-70    iterc = iterc + 1
-      temp = one / sqrt (ssden)
-      xoptd = zero
-      xopts = zero
-      Do 80 i = 1, n
-         s (i) = temp * (dd*s(i)-ds*d(i))
-         xoptd = xoptd + xopt (i) * d (i)
-80    xopts = xopts + xopt (i) * s (i)
-!
-!     Set the coefficients of the first two terms of BETA.
-!
-      tempa = half * xoptd * xoptd
-      tempb = half * xopts * xopts
-      den (1) = dd * (xoptsq+half*dd) + tempa + tempb
-      den (2) = two * xoptd * dd
-      den (3) = two * xopts * dd
-      den (4) = tempa - tempb
-      den (5) = xoptd * xopts
-      Do 90 i = 6, 9
-90    den (i) = zero
-!
-!     Put the coefficients of Wcheck in WVEC.
-!
-      Do 110 k = 1, npt
-         tempa = zero
-         tempb = zero
-         tempc = zero
-         Do 100 i = 1, n
-            tempa = tempa + xpt (k, i) * d (i)
-            tempb = tempb + xpt (k, i) * s (i)
-100      tempc = tempc + xpt (k, i) * xopt (i)
-         wvec (k, 1) = quart * (tempa*tempa+tempb*tempb)
-         wvec (k, 2) = tempa * tempc
-         wvec (k, 3) = tempb * tempc
-         wvec (k, 4) = quart * (tempa*tempa-tempb*tempb)
-110   wvec (k, 5) = half * tempa * tempb
-      Do 120 i = 1, n
-         ip = i + npt
-         wvec (ip, 1) = zero
-         wvec (ip, 2) = d (i)
-         wvec (ip, 3) = s (i)
-         wvec (ip, 4) = zero
-120   wvec (ip, 5) = zero
-!
-!     Put the coefficents of THETA*Wcheck in PROD.
-!
-      Do 190 jc = 1, 5
-         nw = npt
-         If (jc == 2 .Or. jc == 3) nw = ndim
-         Do 130 k = 1, npt
-130      prod (k, jc) = zero
-         Do 150 j = 1, nptm
-            sum = zero
-            Do 140 k = 1, npt
-140         sum = sum + zmat (k, j) * wvec (k, jc)
-            If (j < idz) sum = - sum
-            Do 150 k = 1, npt
-150      prod (k, jc) = prod (k, jc) + sum * zmat (k, j)
-         If (nw == ndim) Then
-            Do 170 k = 1, npt
-               sum = zero
-               Do 160 j = 1, n
-160            sum = sum + bmat (k, j) * wvec (npt+j, jc)
-170         prod (k, jc) = prod (k, jc) + sum
-         End If
-         Do 190 j = 1, n
-            sum = zero
-            Do 180 i = 1, nw
-180         sum = sum + bmat (i, j) * wvec (i, jc)
-190   prod (npt+j, jc) = sum
-!
-!     Include in DEN the part of BETA that depends on THETA.
-!
-      Do 210 k = 1, ndim
-         sum = zero
-         Do 200 i = 1, 5
-            par (i) = half * prod (k, i) * wvec (k, i)
-200      sum = sum + par (i)
-         den (1) = den (1) - par (1) - sum
-         tempa = prod (k, 1) * wvec (k, 2) + prod (k, 2) * wvec (k, 1)
-         tempb = prod (k, 2) * wvec (k, 4) + prod (k, 4) * wvec (k, 2)
-         tempc = prod (k, 3) * wvec (k, 5) + prod (k, 5) * wvec (k, 3)
-         den (2) = den (2) - tempa - half * (tempb+tempc)
-         den (6) = den (6) - half * (tempb-tempc)
-         tempa = prod (k, 1) * wvec (k, 3) + prod (k, 3) * wvec (k, 1)
-         tempb = prod (k, 2) * wvec (k, 5) + prod (k, 5) * wvec (k, 2)
-         tempc = prod (k, 3) * wvec (k, 4) + prod (k, 4) * wvec (k, 3)
-         den (3) = den (3) - tempa - half * (tempb-tempc)
-         den (7) = den (7) - half * (tempb+tempc)
-         tempa = prod (k, 1) * wvec (k, 4) + prod (k, 4) * wvec (k, 1)
-         den (4) = den (4) - tempa - par (2) + par (3)
-         tempa = prod (k, 1) * wvec (k, 5) + prod (k, 5) * wvec (k, 1)
-         tempb = prod (k, 2) * wvec (k, 3) + prod (k, 3) * wvec (k, 2)
-         den (5) = den (5) - tempa - half * tempb
-         den (8) = den (8) - par (4) + par (5)
-         tempa = prod (k, 4) * wvec (k, 5) + prod (k, 5) * wvec (k, 4)
-210   den (9) = den (9) - half * tempa
-!
-!     Extend DEN so that it holds all the coefficients of DENOM.
-!
-      sum = zero
-      Do 220 i = 1, 5
-         par (i) = half * prod (knew, i) ** 2
-220   sum = sum + par (i)
-      denex (1) = alpha * den (1) + par (1) + sum
-      tempa = two * prod (knew, 1) * prod (knew, 2)
-      tempb = prod (knew, 2) * prod (knew, 4)
-      tempc = prod (knew, 3) * prod (knew, 5)
-      denex (2) = alpha * den (2) + tempa + tempb + tempc
-      denex (6) = alpha * den (6) + tempb - tempc
-      tempa = two * prod (knew, 1) * prod (knew, 3)
-      tempb = prod (knew, 2) * prod (knew, 5)
-      tempc = prod (knew, 3) * prod (knew, 4)
-      denex (3) = alpha * den (3) + tempa + tempb - tempc
-      denex (7) = alpha * den (7) + tempb + tempc
-      tempa = two * prod (knew, 1) * prod (knew, 4)
-      denex (4) = alpha * den (4) + tempa + par (2) - par (3)
-      tempa = two * prod (knew, 1) * prod (knew, 5)
-      denex (5) = alpha * den (5) + tempa + prod (knew, 2) * prod &
-       (knew, 3)
-      denex (8) = alpha * den (8) + par (4) - par (5)
-      denex (9) = alpha * den (9) + prod (knew, 4) * prod (knew, 5)
-!
-!     Seek the value of the angle that maximizes the modulus of DENOM.
-!
-      sum = denex (1) + denex (2) + denex (4) + denex (6) + denex (8)
-      denold = sum
-      denmax = sum
-      isave = 0
-      iu = 49
-      temp = twopi / real (iu+1,wp)
-      par (1) = one
-      Do 250 i = 1, iu
-         angle = real (i,wp) * temp
-         par (2) = cos (angle)
-         par (3) = sin (angle)
-         Do 230 j = 4, 8, 2
-            par (j) = par (2) * par (j-2) - par (3) * par (j-1)
-230      par (j+1) = par (2) * par (j-1) + par (3) * par (j-2)
-         sumold = sum
-         sum = zero
-         Do 240 j = 1, 9
-240      sum = sum + denex (j) * par (j)
-         If (abs(sum) > abs(denmax)) Then
-            denmax = sum
-            isave = i
-            tempa = sumold
-         Else If (i == isave+1) Then
-            tempb = sum
-         End If
-250   Continue
-      If (isave == 0) tempa = sum
-      If (isave == iu) tempb = denold
-      step = zero
-      If (tempa /= tempb) Then
-         tempa = tempa - denmax
-         tempb = tempb - denmax
-         step = half * (tempa-tempb) / (tempa+tempb)
-      End If
-      angle = temp * (real(isave,wp)+step)
-!
-!     Calculate the new parameters of the denominator, the new VLAG vector
-!     and the new D. Then test for convergence.
-!
-      par (2) = cos (angle)
-      par (3) = sin (angle)
-      Do 260 j = 4, 8, 2
-         par (j) = par (2) * par (j-2) - par (3) * par (j-1)
-260   par (j+1) = par (2) * par (j-1) + par (3) * par (j-2)
-      beta = zero
-      denmax = zero
-      Do 270 j = 1, 9
-         beta = beta + den (j) * par (j)
-270   denmax = denmax + denex (j) * par (j)
-      Do 280 k = 1, ndim
-         vlag (k) = zero
-         Do 280 j = 1, 5
-280   vlag (k) = vlag (k) + prod (k, j) * par (j)
-      tau = vlag (knew)
-      dd = zero
-      tempa = zero
-      tempb = zero
-      Do 290 i = 1, n
-         d (i) = par (2) * d (i) + par (3) * s (i)
-         w (i) = xopt (i) + d (i)
-         dd = dd + d (i) ** 2
-         tempa = tempa + d (i) * w (i)
-290   tempb = tempb + w (i) * w (i)
-      If (iterc >= n) Go To 340
-      If (iterc > 1) densav = max (densav, denold)
-      If (abs(denmax) <= 1.1_wp*abs(densav)) Go To 340
-      densav = denmax
-!
-!     Set S to half the gradient of the denominator with respect to D.
-!     Then branch for the next iteration.
-!
-      Do 300 i = 1, n
-         temp = tempa * xopt (i) + tempb * d (i) - vlag (npt+i)
-300   s (i) = tau * bmat (knew, i) + alpha * temp
-      Do 320 k = 1, npt
-         sum = zero
-         Do 310 j = 1, n
-310      sum = sum + xpt (k, j) * w (j)
-         temp = (tau*w(n+k)-alpha*vlag(k)) * sum
-         Do 320 i = 1, n
-320   s (i) = s (i) + temp * xpt (k, i)
-      ss = zero
-      ds = zero
-      Do 330 i = 1, n
-         ss = ss + s (i) ** 2
-330   ds = ds + d (i) * s (i)
-      ssden = dd * ss - ds * ds
-      If (ssden >= 1.0e-8_wp*dd*ss) Go To 70
-!
-!     Set the vector W before the RETURN from the subroutine.
-!
-340   Do 350 k = 1, ndim
-         w (k) = zero
-         Do 350 j = 1, 5
-350   w (k) = w (k) + wvec (k, j) * par (j)
-      vlag (kopt) = vlag (kopt) + one
-      Return
-End Subroutine bigden
-
-Subroutine biglag (n, npt, xopt, xpt, bmat, zmat, idz, ndim, knew, &
-  delta, d, alpha, hcol, gc, gd, s, w)
-      Implicit real(wp) (a-h, o-z)
-      Dimension xopt (*), xpt (npt,*), bmat (ndim,*), zmat (npt,*), d(*),&
-      hcol (*), gc (*), gd (*), s (*), w (*)
-!
-!     N is the number of variables.
-!     NPT is the number of interpolation equations.
-!     XOPT is the best interpolation point so far.
-!     XPT contains the coordinates of the current interpolation points.
-!     BMAT provides the last N columns of H.
-!     ZMAT and IDZ give a factorization of the first NPT by NPT submatrix of H.
-!     NDIM is the first dimension of BMAT and has the value NPT+N.
-!     KNEW is the index of the interpolation point that is going to be moved.
-!     DELTA is the current trust region bound.
-!     D will be set to the step from XOPT to the new point.
-!     ALPHA will be set to the KNEW-th diagonal element of the H matrix.
-!     HCOL, GC, GD, S and W will be used for working space.
-!
-!     The step D is calculated in a way that attempts to maximize the modulus
-!     of LFUNC(XOPT+D), subject to the bound ||D|| .LE. DELTA, where LFUNC is
-!     the KNEW-th Lagrange function.
-!
-!     Set some constants.
-!
-      half = 0.5_wp
-      one = 1.0_wp
-      zero = 0.0_wp
-      twopi = 8.0_wp * atan (one)
-      delsq = delta * delta
-      nptm = npt - n - 1
-!
-!     Set the first NPT components of HCOL to the leading elements of the
-!     KNEW-th column of H.
-!
-      iterc = 0
-      Do 10 k = 1, npt
-10    hcol (k) = zero
-      Do 20 j = 1, nptm
-         temp = zmat (knew, j)
-         If (j < idz) temp = - temp
-         Do 20 k = 1, npt
-20    hcol (k) = hcol (k) + temp * zmat (k, j)
-      alpha = hcol (knew)
-!
-!     Set the unscaled initial direction D. Form the gradient of LFUNC at
-!     XOPT, and multiply D by the second derivative matrix of LFUNC.
-!
-      dd = zero
-      Do 30 i = 1, n
-         d (i) = xpt (knew, i) - xopt (i)
-         gc (i) = bmat (knew, i)
-         gd (i) = zero
-30    dd = dd + d (i) ** 2
-      Do 50 k = 1, npt
-         temp = zero
-         sum = zero
-         Do 40 j = 1, n
-            temp = temp + xpt (k, j) * xopt (j)
-40       sum = sum + xpt (k, j) * d (j)
-         temp = hcol (k) * temp
-         sum = hcol (k) * sum
-         Do 50 i = 1, n
-            gc (i) = gc (i) + temp * xpt (k, i)
-50    gd (i) = gd (i) + sum * xpt (k, i)
-!
-!     Scale D and GD, with a sign change if required. Set S to another
-!     vector in the initial two dimensional subspace.
-!
-      gg = zero
-      sp = zero
-      dhd = zero
-      Do 60 i = 1, n
-         gg = gg + gc (i) ** 2
-         sp = sp + d (i) * gc (i)
-60    dhd = dhd + d (i) * gd (i)
-      scale = delta / sqrt (dd)
-      If (sp*dhd < zero) scale = - scale
-      temp = zero
-      If (sp*sp > 0.99_wp*dd*gg) temp = one
-      tau = scale * (abs(sp)+half*scale*abs(dhd))
-      If (gg*delsq < 0.01_wp*tau*tau) temp = one
-      Do 70 i = 1, n
-         d (i) = scale * d (i)
-         gd (i) = scale * gd (i)
-70    s (i) = gc (i) + temp * gd (i)
-!
-!     Begin the iteration by overwriting S with a vector that has the
-!     required length and direction, except that termination occurs if
-!     the given D and S are nearly parallel.
-!
-80    iterc = iterc + 1
-      dd = zero
-      sp = zero
-      ss = zero
-      Do 90 i = 1, n
-         dd = dd + d (i) ** 2
-         sp = sp + d (i) * s (i)
-90    ss = ss + s (i) ** 2
-      temp = dd * ss - sp * sp
-      If (temp <= 1.0e-8_wp*dd*ss) Go To 160
-      denom = sqrt (temp)
-      Do 100 i = 1, n
-         s (i) = (dd*s(i)-sp*d(i)) / denom
-100   w (i) = zero
-!
-!     Calculate the coefficients of the objective function on the circle,
-!     beginning with the multiplication of S by the second derivative matrix.
-!
-      Do 120 k = 1, npt
-         sum = zero
-         Do 110 j = 1, n
-110      sum = sum + xpt (k, j) * s (j)
-         sum = hcol (k) * sum
-         Do 120 i = 1, n
-120   w (i) = w (i) + sum * xpt (k, i)
-      cf1 = zero
-      cf2 = zero
-      cf3 = zero
-      cf4 = zero
-      cf5 = zero
-      Do 130 i = 1, n
-         cf1 = cf1 + s (i) * w (i)
-         cf2 = cf2 + d (i) * gc (i)
-         cf3 = cf3 + s (i) * gc (i)
-         cf4 = cf4 + d (i) * gd (i)
-130   cf5 = cf5 + s (i) * gd (i)
-      cf1 = half * cf1
-      cf4 = half * cf4 - cf1
-!
-!     Seek the value of the angle that maximizes the modulus of TAU.
-!
-      taubeg = cf1 + cf2 + cf4
-      taumax = taubeg
-      tauold = taubeg
-      isave = 0
-      iu = 49
-      temp = twopi / real (iu+1,wp)
-      Do 140 i = 1, iu
-         angle = real (i,wp) * temp
-         cth = cos (angle)
-         sth = sin (angle)
-         tau = cf1 + (cf2+cf4*cth) * cth + (cf3+cf5*cth) * sth
-         If (abs(tau) > abs(taumax)) Then
-            taumax = tau
-            isave = i
-            tempa = tauold
-         Else If (i == isave+1) Then
-            tempb = tau
-         End If
-140   tauold = tau
-      If (isave == 0) tempa = tau
-      If (isave == iu) tempb = taubeg
-      step = zero
-      If (tempa /= tempb) Then
-         tempa = tempa - taumax
-         tempb = tempb - taumax
-         step = half * (tempa-tempb) / (tempa+tempb)
-      End If
-      angle = temp * (real(isave,wp)+step)
-!
-!     Calculate the new D and GD. Then test for convergence.
-!
-      cth = cos (angle)
-      sth = sin (angle)
-      tau = cf1 + (cf2+cf4*cth) * cth + (cf3+cf5*cth) * sth
-      Do 150 i = 1, n
-         d (i) = cth * d (i) + sth * s (i)
-         gd (i) = cth * gd (i) + sth * w (i)
-150   s (i) = gc (i) + gd (i)
-      If (abs(tau) <= 1.1_wp*abs(taubeg)) Go To 160
-      If (iterc < n) Go To 80
-160   Return
-End Subroutine biglag
 
 Subroutine newuoa (n, npt, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
    Implicit real(wp) (a-h, o-z)
@@ -1145,6 +650,501 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
    End If
    Return
 End Subroutine newuob
+
+Subroutine bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
+  knew, d, w, vlag, beta, s, wvec, prod)
+      Implicit real(wp) (a-h, o-z)
+      Dimension xopt (*), xpt (npt,*), bmat (ndim,*), zmat (npt,*), d &
+       (*), w (*), vlag (*), s (*), wvec (ndim,*), prod (ndim,*)
+      Dimension den (9), denex (9), par (9)
+!
+!     N is the number of variables.
+!     NPT is the number of interpolation equations.
+!     XOPT is the best interpolation point so far.
+!     XPT contains the coordinates of the current interpolation points.
+!     BMAT provides the last N columns of H.
+!     ZMAT and IDZ give a factorization of the first NPT by NPT submatrix of H.
+!     NDIM is the first dimension of BMAT and has the value NPT+N.
+!     KOPT is the index of the optimal interpolation point.
+!     KNEW is the index of the interpolation point that is going to be moved.
+!     D will be set to the step from XOPT to the new point, and on entry it
+!       should be the D that was calculated by the last call of BIGLAG. The
+!       length of the initial D provides a trust region bound on the final D.
+!     W will be set to Wcheck for the final choice of D.
+!     VLAG will be set to Theta*Wcheck+e_b for the final choice of D.
+!     BETA will be set to the value that will occur in the updating formula
+!       when the KNEW-th interpolation point is moved to its new position.
+!     S, WVEC, PROD and the private arrays DEN, DENEX and PAR will be used
+!       for working space.
+!
+!     D is calculated in a way that should provide a denominator with a large
+!     modulus in the updating formula when the KNEW-th interpolation point is
+!     shifted to the new position XOPT+D.
+!
+!     Set some constants.
+!
+      half = 0.5_wp
+      one = 1.0_wp
+      quart = 0.25_wp
+      two = 2.0_wp
+      zero = 0.0_wp
+      twopi = 8.0_wp * atan (one)
+      nptm = npt - n - 1
+!
+!     Store the first NPT elements of the KNEW-th column of H in W(N+1)
+!     to W(N+NPT).
+!
+      Do 10 k = 1, npt
+10    w (n+k) = zero
+      Do 20 j = 1, nptm
+         temp = zmat (knew, j)
+         If (j < idz) temp = - temp
+         Do 20 k = 1, npt
+20    w (n+k) = w (n+k) + temp * zmat (k, j)
+      alpha = w (n+knew)
+!
+!     The initial search direction D is taken from the last call of BIGLAG,
+!     and the initial S is set below, usually to the direction from X_OPT
+!     to X_KNEW, but a different direction to an interpolation point may
+!     be chosen, in order to prevent S from being nearly parallel to D.
+!
+      dd = zero
+      ds = zero
+      ss = zero
+      xoptsq = zero
+      Do 30 i = 1, n
+         dd = dd + d (i) ** 2
+         s (i) = xpt (knew, i) - xopt (i)
+         ds = ds + d (i) * s (i)
+         ss = ss + s (i) ** 2
+30    xoptsq = xoptsq + xopt (i) ** 2
+      If (ds*ds > 0.99_wp*dd*ss) Then
+         ksav = knew
+         dtest = ds * ds / ss
+         Do 50 k = 1, npt
+            If (k /= kopt) Then
+               dstemp = zero
+               sstemp = zero
+               Do 40 i = 1, n
+                  diff = xpt (k, i) - xopt (i)
+                  dstemp = dstemp + d (i) * diff
+40             sstemp = sstemp + diff * diff
+               If (dstemp*dstemp/sstemp < dtest) Then
+                  ksav = k
+                  dtest = dstemp * dstemp / sstemp
+                  ds = dstemp
+                  ss = sstemp
+               End If
+            End If
+50       Continue
+         Do 60 i = 1, n
+60       s (i) = xpt (ksav, i) - xopt (i)
+      End If
+      ssden = dd * ss - ds * ds
+      iterc = 0
+      densav = zero
+!
+!     Begin the iteration by overwriting S with a vector that has the
+!     required length and direction.
+!
+70    iterc = iterc + 1
+      temp = one / sqrt (ssden)
+      xoptd = zero
+      xopts = zero
+      Do 80 i = 1, n
+         s (i) = temp * (dd*s(i)-ds*d(i))
+         xoptd = xoptd + xopt (i) * d (i)
+80    xopts = xopts + xopt (i) * s (i)
+!
+!     Set the coefficients of the first two terms of BETA.
+!
+      tempa = half * xoptd * xoptd
+      tempb = half * xopts * xopts
+      den (1) = dd * (xoptsq+half*dd) + tempa + tempb
+      den (2) = two * xoptd * dd
+      den (3) = two * xopts * dd
+      den (4) = tempa - tempb
+      den (5) = xoptd * xopts
+      Do 90 i = 6, 9
+90    den (i) = zero
+!
+!     Put the coefficients of Wcheck in WVEC.
+!
+      Do 110 k = 1, npt
+         tempa = zero
+         tempb = zero
+         tempc = zero
+         Do 100 i = 1, n
+            tempa = tempa + xpt (k, i) * d (i)
+            tempb = tempb + xpt (k, i) * s (i)
+100      tempc = tempc + xpt (k, i) * xopt (i)
+         wvec (k, 1) = quart * (tempa*tempa+tempb*tempb)
+         wvec (k, 2) = tempa * tempc
+         wvec (k, 3) = tempb * tempc
+         wvec (k, 4) = quart * (tempa*tempa-tempb*tempb)
+110   wvec (k, 5) = half * tempa * tempb
+      Do 120 i = 1, n
+         ip = i + npt
+         wvec (ip, 1) = zero
+         wvec (ip, 2) = d (i)
+         wvec (ip, 3) = s (i)
+         wvec (ip, 4) = zero
+120   wvec (ip, 5) = zero
+!
+!     Put the coefficents of THETA*Wcheck in PROD.
+!
+      Do 190 jc = 1, 5
+         nw = npt
+         If (jc == 2 .Or. jc == 3) nw = ndim
+         Do 130 k = 1, npt
+130      prod (k, jc) = zero
+         Do 150 j = 1, nptm
+            sum = zero
+            Do 140 k = 1, npt
+140         sum = sum + zmat (k, j) * wvec (k, jc)
+            If (j < idz) sum = - sum
+            Do 150 k = 1, npt
+150      prod (k, jc) = prod (k, jc) + sum * zmat (k, j)
+         If (nw == ndim) Then
+            Do 170 k = 1, npt
+               sum = zero
+               Do 160 j = 1, n
+160            sum = sum + bmat (k, j) * wvec (npt+j, jc)
+170         prod (k, jc) = prod (k, jc) + sum
+         End If
+         Do 190 j = 1, n
+            sum = zero
+            Do 180 i = 1, nw
+180         sum = sum + bmat (i, j) * wvec (i, jc)
+190   prod (npt+j, jc) = sum
+!
+!     Include in DEN the part of BETA that depends on THETA.
+!
+      Do 210 k = 1, ndim
+         sum = zero
+         Do 200 i = 1, 5
+            par (i) = half * prod (k, i) * wvec (k, i)
+200      sum = sum + par (i)
+         den (1) = den (1) - par (1) - sum
+         tempa = prod (k, 1) * wvec (k, 2) + prod (k, 2) * wvec (k, 1)
+         tempb = prod (k, 2) * wvec (k, 4) + prod (k, 4) * wvec (k, 2)
+         tempc = prod (k, 3) * wvec (k, 5) + prod (k, 5) * wvec (k, 3)
+         den (2) = den (2) - tempa - half * (tempb+tempc)
+         den (6) = den (6) - half * (tempb-tempc)
+         tempa = prod (k, 1) * wvec (k, 3) + prod (k, 3) * wvec (k, 1)
+         tempb = prod (k, 2) * wvec (k, 5) + prod (k, 5) * wvec (k, 2)
+         tempc = prod (k, 3) * wvec (k, 4) + prod (k, 4) * wvec (k, 3)
+         den (3) = den (3) - tempa - half * (tempb-tempc)
+         den (7) = den (7) - half * (tempb+tempc)
+         tempa = prod (k, 1) * wvec (k, 4) + prod (k, 4) * wvec (k, 1)
+         den (4) = den (4) - tempa - par (2) + par (3)
+         tempa = prod (k, 1) * wvec (k, 5) + prod (k, 5) * wvec (k, 1)
+         tempb = prod (k, 2) * wvec (k, 3) + prod (k, 3) * wvec (k, 2)
+         den (5) = den (5) - tempa - half * tempb
+         den (8) = den (8) - par (4) + par (5)
+         tempa = prod (k, 4) * wvec (k, 5) + prod (k, 5) * wvec (k, 4)
+210   den (9) = den (9) - half * tempa
+!
+!     Extend DEN so that it holds all the coefficients of DENOM.
+!
+      sum = zero
+      Do 220 i = 1, 5
+         par (i) = half * prod (knew, i) ** 2
+220   sum = sum + par (i)
+      denex (1) = alpha * den (1) + par (1) + sum
+      tempa = two * prod (knew, 1) * prod (knew, 2)
+      tempb = prod (knew, 2) * prod (knew, 4)
+      tempc = prod (knew, 3) * prod (knew, 5)
+      denex (2) = alpha * den (2) + tempa + tempb + tempc
+      denex (6) = alpha * den (6) + tempb - tempc
+      tempa = two * prod (knew, 1) * prod (knew, 3)
+      tempb = prod (knew, 2) * prod (knew, 5)
+      tempc = prod (knew, 3) * prod (knew, 4)
+      denex (3) = alpha * den (3) + tempa + tempb - tempc
+      denex (7) = alpha * den (7) + tempb + tempc
+      tempa = two * prod (knew, 1) * prod (knew, 4)
+      denex (4) = alpha * den (4) + tempa + par (2) - par (3)
+      tempa = two * prod (knew, 1) * prod (knew, 5)
+      denex (5) = alpha * den (5) + tempa + prod (knew, 2) * prod &
+       (knew, 3)
+      denex (8) = alpha * den (8) + par (4) - par (5)
+      denex (9) = alpha * den (9) + prod (knew, 4) * prod (knew, 5)
+!
+!     Seek the value of the angle that maximizes the modulus of DENOM.
+!
+      sum = denex (1) + denex (2) + denex (4) + denex (6) + denex (8)
+      denold = sum
+      denmax = sum
+      isave = 0
+      iu = 49
+      temp = twopi / real (iu+1,wp)
+      par (1) = one
+      Do 250 i = 1, iu
+         angle = real (i,wp) * temp
+         par (2) = cos (angle)
+         par (3) = sin (angle)
+         Do 230 j = 4, 8, 2
+            par (j) = par (2) * par (j-2) - par (3) * par (j-1)
+230      par (j+1) = par (2) * par (j-1) + par (3) * par (j-2)
+         sumold = sum
+         sum = zero
+         Do 240 j = 1, 9
+240      sum = sum + denex (j) * par (j)
+         If (abs(sum) > abs(denmax)) Then
+            denmax = sum
+            isave = i
+            tempa = sumold
+         Else If (i == isave+1) Then
+            tempb = sum
+         End If
+250   Continue
+      If (isave == 0) tempa = sum
+      If (isave == iu) tempb = denold
+      step = zero
+      If (tempa /= tempb) Then
+         tempa = tempa - denmax
+         tempb = tempb - denmax
+         step = half * (tempa-tempb) / (tempa+tempb)
+      End If
+      angle = temp * (real(isave,wp)+step)
+!
+!     Calculate the new parameters of the denominator, the new VLAG vector
+!     and the new D. Then test for convergence.
+!
+      par (2) = cos (angle)
+      par (3) = sin (angle)
+      Do 260 j = 4, 8, 2
+         par (j) = par (2) * par (j-2) - par (3) * par (j-1)
+260   par (j+1) = par (2) * par (j-1) + par (3) * par (j-2)
+      beta = zero
+      denmax = zero
+      Do 270 j = 1, 9
+         beta = beta + den (j) * par (j)
+270   denmax = denmax + denex (j) * par (j)
+      Do 280 k = 1, ndim
+         vlag (k) = zero
+         Do 280 j = 1, 5
+280   vlag (k) = vlag (k) + prod (k, j) * par (j)
+      tau = vlag (knew)
+      dd = zero
+      tempa = zero
+      tempb = zero
+      Do 290 i = 1, n
+         d (i) = par (2) * d (i) + par (3) * s (i)
+         w (i) = xopt (i) + d (i)
+         dd = dd + d (i) ** 2
+         tempa = tempa + d (i) * w (i)
+290   tempb = tempb + w (i) * w (i)
+      If (iterc >= n) Go To 340
+      If (iterc > 1) densav = max (densav, denold)
+      If (abs(denmax) <= 1.1_wp*abs(densav)) Go To 340
+      densav = denmax
+!
+!     Set S to half the gradient of the denominator with respect to D.
+!     Then branch for the next iteration.
+!
+      Do 300 i = 1, n
+         temp = tempa * xopt (i) + tempb * d (i) - vlag (npt+i)
+300   s (i) = tau * bmat (knew, i) + alpha * temp
+      Do 320 k = 1, npt
+         sum = zero
+         Do 310 j = 1, n
+310      sum = sum + xpt (k, j) * w (j)
+         temp = (tau*w(n+k)-alpha*vlag(k)) * sum
+         Do 320 i = 1, n
+320   s (i) = s (i) + temp * xpt (k, i)
+      ss = zero
+      ds = zero
+      Do 330 i = 1, n
+         ss = ss + s (i) ** 2
+330   ds = ds + d (i) * s (i)
+      ssden = dd * ss - ds * ds
+      If (ssden >= 1.0e-8_wp*dd*ss) Go To 70
+!
+!     Set the vector W before the RETURN from the subroutine.
+!
+340   Do 350 k = 1, ndim
+         w (k) = zero
+         Do 350 j = 1, 5
+350   w (k) = w (k) + wvec (k, j) * par (j)
+      vlag (kopt) = vlag (kopt) + one
+      Return
+End Subroutine bigden
+
+Subroutine biglag (n, npt, xopt, xpt, bmat, zmat, idz, ndim, knew, &
+  delta, d, alpha, hcol, gc, gd, s, w)
+      Implicit real(wp) (a-h, o-z)
+      Dimension xopt (*), xpt (npt,*), bmat (ndim,*), zmat (npt,*), d(*),&
+      hcol (*), gc (*), gd (*), s (*), w (*)
+!
+!     N is the number of variables.
+!     NPT is the number of interpolation equations.
+!     XOPT is the best interpolation point so far.
+!     XPT contains the coordinates of the current interpolation points.
+!     BMAT provides the last N columns of H.
+!     ZMAT and IDZ give a factorization of the first NPT by NPT submatrix of H.
+!     NDIM is the first dimension of BMAT and has the value NPT+N.
+!     KNEW is the index of the interpolation point that is going to be moved.
+!     DELTA is the current trust region bound.
+!     D will be set to the step from XOPT to the new point.
+!     ALPHA will be set to the KNEW-th diagonal element of the H matrix.
+!     HCOL, GC, GD, S and W will be used for working space.
+!
+!     The step D is calculated in a way that attempts to maximize the modulus
+!     of LFUNC(XOPT+D), subject to the bound ||D|| .LE. DELTA, where LFUNC is
+!     the KNEW-th Lagrange function.
+!
+!     Set some constants.
+!
+      half = 0.5_wp
+      one = 1.0_wp
+      zero = 0.0_wp
+      twopi = 8.0_wp * atan (one)
+      delsq = delta * delta
+      nptm = npt - n - 1
+!
+!     Set the first NPT components of HCOL to the leading elements of the
+!     KNEW-th column of H.
+!
+      iterc = 0
+      Do 10 k = 1, npt
+10    hcol (k) = zero
+      Do 20 j = 1, nptm
+         temp = zmat (knew, j)
+         If (j < idz) temp = - temp
+         Do 20 k = 1, npt
+20    hcol (k) = hcol (k) + temp * zmat (k, j)
+      alpha = hcol (knew)
+!
+!     Set the unscaled initial direction D. Form the gradient of LFUNC at
+!     XOPT, and multiply D by the second derivative matrix of LFUNC.
+!
+      dd = zero
+      Do 30 i = 1, n
+         d (i) = xpt (knew, i) - xopt (i)
+         gc (i) = bmat (knew, i)
+         gd (i) = zero
+30    dd = dd + d (i) ** 2
+      Do 50 k = 1, npt
+         temp = zero
+         sum = zero
+         Do 40 j = 1, n
+            temp = temp + xpt (k, j) * xopt (j)
+40       sum = sum + xpt (k, j) * d (j)
+         temp = hcol (k) * temp
+         sum = hcol (k) * sum
+         Do 50 i = 1, n
+            gc (i) = gc (i) + temp * xpt (k, i)
+50    gd (i) = gd (i) + sum * xpt (k, i)
+!
+!     Scale D and GD, with a sign change if required. Set S to another
+!     vector in the initial two dimensional subspace.
+!
+      gg = zero
+      sp = zero
+      dhd = zero
+      Do 60 i = 1, n
+         gg = gg + gc (i) ** 2
+         sp = sp + d (i) * gc (i)
+60    dhd = dhd + d (i) * gd (i)
+      scale = delta / sqrt (dd)
+      If (sp*dhd < zero) scale = - scale
+      temp = zero
+      If (sp*sp > 0.99_wp*dd*gg) temp = one
+      tau = scale * (abs(sp)+half*scale*abs(dhd))
+      If (gg*delsq < 0.01_wp*tau*tau) temp = one
+      Do 70 i = 1, n
+         d (i) = scale * d (i)
+         gd (i) = scale * gd (i)
+70    s (i) = gc (i) + temp * gd (i)
+!
+!     Begin the iteration by overwriting S with a vector that has the
+!     required length and direction, except that termination occurs if
+!     the given D and S are nearly parallel.
+!
+80    iterc = iterc + 1
+      dd = zero
+      sp = zero
+      ss = zero
+      Do 90 i = 1, n
+         dd = dd + d (i) ** 2
+         sp = sp + d (i) * s (i)
+90    ss = ss + s (i) ** 2
+      temp = dd * ss - sp * sp
+      If (temp <= 1.0e-8_wp*dd*ss) Go To 160
+      denom = sqrt (temp)
+      Do 100 i = 1, n
+         s (i) = (dd*s(i)-sp*d(i)) / denom
+100   w (i) = zero
+!
+!     Calculate the coefficients of the objective function on the circle,
+!     beginning with the multiplication of S by the second derivative matrix.
+!
+      Do 120 k = 1, npt
+         sum = zero
+         Do 110 j = 1, n
+110      sum = sum + xpt (k, j) * s (j)
+         sum = hcol (k) * sum
+         Do 120 i = 1, n
+120   w (i) = w (i) + sum * xpt (k, i)
+      cf1 = zero
+      cf2 = zero
+      cf3 = zero
+      cf4 = zero
+      cf5 = zero
+      Do 130 i = 1, n
+         cf1 = cf1 + s (i) * w (i)
+         cf2 = cf2 + d (i) * gc (i)
+         cf3 = cf3 + s (i) * gc (i)
+         cf4 = cf4 + d (i) * gd (i)
+130   cf5 = cf5 + s (i) * gd (i)
+      cf1 = half * cf1
+      cf4 = half * cf4 - cf1
+!
+!     Seek the value of the angle that maximizes the modulus of TAU.
+!
+      taubeg = cf1 + cf2 + cf4
+      taumax = taubeg
+      tauold = taubeg
+      isave = 0
+      iu = 49
+      temp = twopi / real (iu+1,wp)
+      Do 140 i = 1, iu
+         angle = real (i,wp) * temp
+         cth = cos (angle)
+         sth = sin (angle)
+         tau = cf1 + (cf2+cf4*cth) * cth + (cf3+cf5*cth) * sth
+         If (abs(tau) > abs(taumax)) Then
+            taumax = tau
+            isave = i
+            tempa = tauold
+         Else If (i == isave+1) Then
+            tempb = tau
+         End If
+140   tauold = tau
+      If (isave == 0) tempa = tau
+      If (isave == iu) tempb = taubeg
+      step = zero
+      If (tempa /= tempb) Then
+         tempa = tempa - taumax
+         tempb = tempb - taumax
+         step = half * (tempa-tempb) / (tempa+tempb)
+      End If
+      angle = temp * (real(isave,wp)+step)
+!
+!     Calculate the new D and GD. Then test for convergence.
+!
+      cth = cos (angle)
+      sth = sin (angle)
+      tau = cf1 + (cf2+cf4*cth) * cth + (cf3+cf5*cth) * sth
+      Do 150 i = 1, n
+         d (i) = cth * d (i) + sth * s (i)
+         gd (i) = cth * gd (i) + sth * w (i)
+150   s (i) = gc (i) + gd (i)
+      If (abs(tau) <= 1.1_wp*abs(taubeg)) Go To 160
+      If (iterc < n) Go To 80
+160   Return
+End Subroutine biglag
 
 Subroutine trsapp (n, npt, xopt, xpt, gq, hq, pq, delta, step, d, g, &
   hd, hs, crvmin)

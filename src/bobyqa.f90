@@ -5,7 +5,7 @@
     private
 
     abstract interface
-        subroutine func (N,X,F)  !! calfun interface
+        subroutine func(n,x,f)  !! calfun interface
         import :: wp
         implicit none
         integer :: n
@@ -106,7 +106,7 @@ Subroutine bobyqa (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, w, calfun)
 !     components of X that become within distance RHOBEG from their bounds.
 !
       zero = 0.0_wp
-      Do 30 j = 1, n
+      Do j = 1, n
          temp = xu (j) - xl (j)
          If (temp < rhobeg+rhobeg) Then
             Print 20
@@ -139,7 +139,7 @@ Subroutine bobyqa (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, w, calfun)
                w (jsu) = rhobeg
             End If
          End If
-30    Continue
+      end do
 !
 !     Make the call of BOBYQB.
 !
@@ -215,7 +215,7 @@ Subroutine bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, &
       xoptsq = zero
       Do 10 i = 1, n
          xopt (i) = xpt (kopt, i)
-10    xoptsq = xoptsq + xopt (i) ** 2
+10       xoptsq = xoptsq + xopt (i) ** 2
       fsave = fval (1)
       If (nf < npt) Then
          If (iprint > 0) Print 390
@@ -243,15 +243,15 @@ Subroutine bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, &
             Do 30 i = 1, j
                ih = ih + 1
                If (i < j) gopt (j) = gopt (j) + hq (ih) * xopt (i)
-30       gopt (i) = gopt (i) + hq (ih) * xopt (j)
+30             gopt (i) = gopt (i) + hq (ih) * xopt (j)
          If (nf > npt) Then
             Do 50 k = 1, npt
                temp = zero
                Do 40 j = 1, n
-40             temp = temp + xpt (k, j) * xopt (j)
+40                 temp = temp + xpt (k, j) * xopt (j)
                temp = pq (k) * temp
                Do 50 i = 1, n
-50          gopt (i) = gopt (i) + temp * xpt (k, i)
+50                 gopt (i) = gopt (i) + temp * xpt (k, i)
          End If
       End If
 !
@@ -278,21 +278,21 @@ Subroutine bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, &
 !
          errbig = max (diffa, diffb, diffc)
          frhosq = 0.125_wp * rho * rho
-         If (crvmin > zero .and. errbig > frhosq*crvmin) Go To &
-          650
+         If (crvmin > zero .and. errbig > frhosq*crvmin) Go To 650
          bdtol = errbig / rho
-         Do 80 j = 1, n
+         Do j = 1, n
             bdtest = bdtol
             If (xnew(j) == sl(j)) bdtest = w (j)
             If (xnew(j) == su(j)) bdtest = - w (j)
             If (bdtest < bdtol) Then
                curv = hq ((j+j*j)/2)
-               Do 70 k = 1, npt
-70             curv = curv + pq (k) * xpt (k, j) ** 2
+               Do k = 1, npt
+                   curv = curv + pq (k) * xpt (k, j) ** 2
+               end do
                bdtest = bdtest + half * curv * rho
                If (bdtest < bdtol) Go To 650
             End If
-80       Continue
+         end do
          Go To 680
       End If
       ntrits = ntrits + 1
@@ -310,7 +310,7 @@ Subroutine bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, &
             sumpq = sumpq + pq (k)
             sum = - half * xoptsq
             Do 100 i = 1, n
-100         sum = sum + xpt (k, i) * xopt (i)
+100             sum = sum + xpt (k, i) * xopt (i)
             w (npt+k) = sum
             temp = fracsq - half * sum
             Do 110 i = 1, n
@@ -318,7 +318,7 @@ Subroutine bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, &
                vlag (i) = sum * xpt (k, i) + temp * xopt (i)
                ip = npt + i
                Do 110 j = 1, i
-110      bmat(ip, j) = bmat(ip, j) + w(i) * vlag(j) + vlag(i) * w(j)
+110                bmat(ip, j) = bmat(ip, j) + w(i) * vlag(j) + vlag(i) * w(j)
 !
 !     Then the revisions of BMAT that depend on ZMAT are calculated.
 !
@@ -328,19 +328,19 @@ Subroutine bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, &
             Do 120 k = 1, npt
                sumz = sumz + zmat (k, jj)
                vlag (k) = w (npt+k) * zmat (k, jj)
-120         sumw = sumw + vlag (k)
+120            sumw = sumw + vlag (k)
             Do 140 j = 1, n
                sum = (fracsq*sumz-half*sumw) * xopt (j)
                Do 130 k = 1, npt
-130            sum = sum + vlag (k) * xpt (k, j)
+130               sum = sum + vlag (k) * xpt (k, j)
                w (j) = sum
                Do 140 k = 1, npt
-140         bmat (k, j) = bmat (k, j) + sum * zmat (k, jj)
+140               bmat (k, j) = bmat (k, j) + sum * zmat (k, jj)
             Do 150 i = 1, n
                ip = i + npt
                temp = w (i)
                Do 150 j = 1, i
-150      bmat (ip, j) = bmat (ip, j) + temp * w (j)
+150               bmat (ip, j) = bmat (ip, j) + temp * w (j)
 !
 !     The following instructions complete the shift, including the changes
 !     to the second derivative parameters of the quadratic model.

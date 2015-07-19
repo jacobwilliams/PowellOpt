@@ -7,7 +7,7 @@
     private
 
     abstract interface
-        subroutine func (N,M,X,F,CON)  !! CALCFC interface
+        subroutine func (n,m,x,f,con)  !! calcfc interface
         import :: wp
         implicit none
         integer :: n

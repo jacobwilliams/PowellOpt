@@ -5,7 +5,7 @@
     private
     
     abstract interface
-        subroutine func(n,x,f)  !! CALFUN interface
+        subroutine func(n,x,f)  !! calfun interface
         import :: wp
         implicit none
         integer :: n
