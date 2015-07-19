@@ -1,13 +1,16 @@
     module newuoa_module
     
+    use kind_module, only: wp
+
     private
     
     abstract interface
         subroutine func(n,x,f)  !! CALFUN interface
+        import :: wp
         implicit none
         integer :: n
-        real * 8 :: x(*)
-        real * 8 :: f
+        real(wp) :: x(*)
+        real(wp) :: f
         end subroutine func
     end interface
     
@@ -18,7 +21,7 @@
 
 Subroutine bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
   knew, d, w, vlag, beta, s, wvec, prod)
-      Implicit real * 8 (a-h, o-z)
+      Implicit real(wp) (a-h, o-z)
       Dimension xopt (*), xpt (npt,*), bmat (ndim,*), zmat (npt,*), d &
        (*), w (*), vlag (*), s (*), wvec (ndim,*), prod (ndim,*)
       Dimension den (9), denex (9), par (9)
@@ -48,12 +51,12 @@ Subroutine bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
 !
 !     Set some constants.
 !
-      half = 0.5d0
-      one = 1.0d0
-      quart = 0.25d0
-      two = 2.0d0
-      zero = 0.0d0
-      twopi = 8.0d0 * datan (one)
+      half = 0.5_wp
+      one = 1.0_wp
+      quart = 0.25_wp
+      two = 2.0_wp
+      zero = 0.0_wp
+      twopi = 8.0_wp * atan (one)
       nptm = npt - n - 1
 !
 !     Store the first NPT elements of the KNEW-th column of H in W(N+1)
@@ -83,7 +86,7 @@ Subroutine bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
          ds = ds + d (i) * s (i)
          ss = ss + s (i) ** 2
 30    xoptsq = xoptsq + xopt (i) ** 2
-      If (ds*ds > 0.99d0*dd*ss) Then
+      If (ds*ds > 0.99_wp*dd*ss) Then
          ksav = knew
          dtest = ds * ds / ss
          Do 50 k = 1, npt
@@ -113,7 +116,7 @@ Subroutine bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
 !     required length and direction.
 !
 70    iterc = iterc + 1
-      temp = one / dsqrt (ssden)
+      temp = one / sqrt (ssden)
       xoptd = zero
       xopts = zero
       Do 80 i = 1, n
@@ -246,8 +249,8 @@ Subroutine bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
       par (1) = one
       Do 250 i = 1, iu
          angle = dfloat (i) * temp
-         par (2) = dcos (angle)
-         par (3) = dsin (angle)
+         par (2) = cos (angle)
+         par (3) = sin (angle)
          Do 230 j = 4, 8, 2
             par (j) = par (2) * par (j-2) - par (3) * par (j-1)
 230      par (j+1) = par (2) * par (j-1) + par (3) * par (j-2)
@@ -255,7 +258,7 @@ Subroutine bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
          sum = zero
          Do 240 j = 1, 9
 240      sum = sum + denex (j) * par (j)
-         If (dabs(sum) > dabs(denmax)) Then
+         If (abs(sum) > abs(denmax)) Then
             denmax = sum
             isave = i
             tempa = sumold
@@ -276,8 +279,8 @@ Subroutine bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
 !     Calculate the new parameters of the denominator, the new VLAG vector
 !     and the new D. Then test for convergence.
 !
-      par (2) = dcos (angle)
-      par (3) = dsin (angle)
+      par (2) = cos (angle)
+      par (3) = sin (angle)
       Do 260 j = 4, 8, 2
          par (j) = par (2) * par (j-2) - par (3) * par (j-1)
 260   par (j+1) = par (2) * par (j-1) + par (3) * par (j-2)
@@ -301,8 +304,8 @@ Subroutine bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
          tempa = tempa + d (i) * w (i)
 290   tempb = tempb + w (i) * w (i)
       If (iterc >= n) Go To 340
-      If (iterc > 1) densav = dmax1 (densav, denold)
-      If (dabs(denmax) <= 1.1d0*dabs(densav)) Go To 340
+      If (iterc > 1) densav = max (densav, denold)
+      If (abs(denmax) <= 1.1_wp*abs(densav)) Go To 340
       densav = denmax
 !
 !     Set S to half the gradient of the denominator with respect to D.
@@ -324,7 +327,7 @@ Subroutine bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
          ss = ss + s (i) ** 2
 330   ds = ds + d (i) * s (i)
       ssden = dd * ss - ds * ds
-      If (ssden >= 1.0d-8*dd*ss) Go To 70
+      If (ssden >= 1.0e-8_wp*dd*ss) Go To 70
 !
 !     Set the vector W before the RETURN from the subroutine.
 !
@@ -338,7 +341,7 @@ End Subroutine bigden
 
 Subroutine biglag (n, npt, xopt, xpt, bmat, zmat, idz, ndim, knew, &
   delta, d, alpha, hcol, gc, gd, s, w)
-      Implicit real * 8 (a-h, o-z)
+      Implicit real(wp) (a-h, o-z)
       Dimension xopt (*), xpt (npt,*), bmat (ndim,*), zmat (npt,*), d(*),&
       hcol (*), gc (*), gd (*), s (*), w (*)
 !
@@ -361,10 +364,10 @@ Subroutine biglag (n, npt, xopt, xpt, bmat, zmat, idz, ndim, knew, &
 !
 !     Set some constants.
 !
-      half = 0.5d0
-      one = 1.0d0
-      zero = 0.0d0
-      twopi = 8.0d0 * datan (one)
+      half = 0.5_wp
+      one = 1.0_wp
+      zero = 0.0_wp
+      twopi = 8.0_wp * atan (one)
       delsq = delta * delta
       nptm = npt - n - 1
 !
@@ -412,12 +415,12 @@ Subroutine biglag (n, npt, xopt, xpt, bmat, zmat, idz, ndim, knew, &
          gg = gg + gc (i) ** 2
          sp = sp + d (i) * gc (i)
 60    dhd = dhd + d (i) * gd (i)
-      scale = delta / dsqrt (dd)
+      scale = delta / sqrt (dd)
       If (sp*dhd < zero) scale = - scale
       temp = zero
-      If (sp*sp > 0.99d0*dd*gg) temp = one
-      tau = scale * (dabs(sp)+half*scale*dabs(dhd))
-      If (gg*delsq < 0.01d0*tau*tau) temp = one
+      If (sp*sp > 0.99_wp*dd*gg) temp = one
+      tau = scale * (abs(sp)+half*scale*abs(dhd))
+      If (gg*delsq < 0.01_wp*tau*tau) temp = one
       Do 70 i = 1, n
          d (i) = scale * d (i)
          gd (i) = scale * gd (i)
@@ -436,8 +439,8 @@ Subroutine biglag (n, npt, xopt, xpt, bmat, zmat, idz, ndim, knew, &
          sp = sp + d (i) * s (i)
 90    ss = ss + s (i) ** 2
       temp = dd * ss - sp * sp
-      If (temp <= 1.0d-8*dd*ss) Go To 160
-      denom = dsqrt (temp)
+      If (temp <= 1.0e-8_wp*dd*ss) Go To 160
+      denom = sqrt (temp)
       Do 100 i = 1, n
          s (i) = (dd*s(i)-sp*d(i)) / denom
 100   w (i) = zero
@@ -476,10 +479,10 @@ Subroutine biglag (n, npt, xopt, xpt, bmat, zmat, idz, ndim, knew, &
       temp = twopi / dfloat (iu+1)
       Do 140 i = 1, iu
          angle = dfloat (i) * temp
-         cth = dcos (angle)
-         sth = dsin (angle)
+         cth = cos (angle)
+         sth = sin (angle)
          tau = cf1 + (cf2+cf4*cth) * cth + (cf3+cf5*cth) * sth
-         If (dabs(tau) > dabs(taumax)) Then
+         If (abs(tau) > abs(taumax)) Then
             taumax = tau
             isave = i
             tempa = tauold
@@ -499,20 +502,20 @@ Subroutine biglag (n, npt, xopt, xpt, bmat, zmat, idz, ndim, knew, &
 !
 !     Calculate the new D and GD. Then test for convergence.
 !
-      cth = dcos (angle)
-      sth = dsin (angle)
+      cth = cos (angle)
+      sth = sin (angle)
       tau = cf1 + (cf2+cf4*cth) * cth + (cf3+cf5*cth) * sth
       Do 150 i = 1, n
          d (i) = cth * d (i) + sth * s (i)
          gd (i) = cth * gd (i) + sth * w (i)
 150   s (i) = gc (i) + gd (i)
-      If (dabs(tau) <= 1.1d0*dabs(taubeg)) Go To 160
+      If (abs(tau) <= 1.1_wp*abs(taubeg)) Go To 160
       If (iterc < n) Go To 80
 160   Return
 End Subroutine biglag
 
 Subroutine newuoa (n, npt, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
-   Implicit real * 8 (a-h, o-z)
+   Implicit real(wp) (a-h, o-z)
    Dimension x (*), w (*)
    procedure(func) :: calfun
 !
@@ -584,7 +587,7 @@ End Subroutine newuoa
 
 Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
   xopt, xnew, xpt, fval, gq, hq, pq, bmat, zmat, ndim, d, vlag, w, calfun)
-   Implicit real * 8 (a-h, o-z)
+   Implicit real(wp) (a-h, o-z)
    Dimension x (*), xbase (*), xopt (*), xnew (*), xpt (npt,*), fval &
     (*), gq (*), hq (*), pq (*), bmat (ndim,*), zmat (npt,*), d (*), &
     vlag (*), w (*)
@@ -617,10 +620,10 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
 !
 !     Set some constants.
 !
-   half = 0.5d0
-   one = 1.0d0
-   tenth = 0.1d0
-   zero = 0.0d0
+   half = 0.5_wp
+   one = 1.0_wp
+   tenth = 0.1_wp
+   zero = 0.0_wp
    np = n + 1
    nh = (n*np) / 2
    nptm = npt - np
@@ -647,7 +650,7 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
 !
    rhosq = rhobeg * rhobeg
    recip = one / rhosq
-   reciq = dsqrt (half) / rhosq
+   reciq = sqrt (half) / rhosq
    nf = 0
 50 nfm = nf
    nfmm = nf - n
@@ -753,23 +756,23 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
    dsq = zero
    Do 110 i = 1, n
 110 dsq = dsq + d (i) ** 2
-   dnorm = dmin1 (delta, dsqrt(dsq))
+   dnorm = min (delta, sqrt(dsq))
    If (dnorm < half*rho) Then
       knew = - 1
       delta = tenth * delta
-      ratio = - 1.0d0
-      If (delta <= 1.5d0*rho) delta = rho
+      ratio = - 1.0_wp
+      If (delta <= 1.5_wp*rho) delta = rho
       If (nf <= nfsav+2) Go To 460
-      temp = 0.125d0 * crvmin * rho * rho
-      If (temp <= dmax1(diffa, diffb, diffc)) Go To 460
+      temp = 0.125_wp * crvmin * rho * rho
+      If (temp <= max(diffa, diffb, diffc)) Go To 460
       Go To 490
    End If
 !
 !     Shift XBASE if XOPT may be too far from XBASE. First make the changes
 !     to BMAT that do not depend on ZMAT.
 !
-120 If (dsq <= 1.0d-3*xoptsq) Then
-      tempq = 0.25d0 * xoptsq
+120 If (dsq <= 1.0e-3_wp*xoptsq) Then
+      tempq = 0.25_wp * xoptsq
       Do 140 k = 1, npt
          sum = zero
          Do 130 i = 1, n
@@ -886,7 +889,7 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
 !
    If (knew > 0) Then
       temp = one + alpha * beta / vlag (knew) ** 2
-      If (dabs(temp) <= 0.8d0) Then
+      If (abs(temp) <= 0.8_wp) Then
          Call bigden (n, npt, xopt, xpt, bmat, zmat, idz, ndim, kopt, &
           knew, d, w, vlag, beta, xnew, w(ndim+1), w(6*ndim+1))
       End If
@@ -931,7 +934,7 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
    diff = f - fopt - vquad
    diffc = diffb
    diffb = diffa
-   diffa = dabs (diff)
+   diffa = abs (diff)
    If (dnorm > rho) nfsav = nf
 !
 !     Update FOPT and XOPT if the new F is the least value of the objective
@@ -960,16 +963,16 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
    ratio = (f-fsave) / vquad
    If (ratio <= tenth) Then
       delta = half * dnorm
-   Else If (ratio <= 0.7d0) Then
-      delta = dmax1 (half*delta, dnorm)
+   Else If (ratio <= 0.7_wp) Then
+      delta = max (half*delta, dnorm)
    Else
-      delta = dmax1 (half*delta, dnorm+dnorm)
+      delta = max (half*delta, dnorm+dnorm)
    End If
-   If (delta <= 1.5d0*rho) delta = rho
+   If (delta <= 1.5_wp*rho) delta = rho
 !
 !     Set KNEW to the index of the next interpolation point to be deleted.
 !
-   rhosq = dmax1 (tenth*delta, rho) ** 2
+   rhosq = max (tenth*delta, rho) ** 2
    ktemp = 0
    detrat = zero
    If (f >= fsave) Then
@@ -982,7 +985,7 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
          temp = one
          If (j < idz) temp = - one
 380   hdiag = hdiag + temp * zmat (k, j) ** 2
-      temp = dabs (beta*hdiag+vlag(k)**2)
+      temp = abs (beta*hdiag+vlag(k)**2)
       distsq = zero
       Do 390 j = 1, n
 390   distsq = distsq + (xpt(k, j)-xopt(j)) ** 2
@@ -1027,7 +1030,7 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
 !     XBASE, and store it in W, using VLAG for a vector of right hand sides.
 !
    If (ksave == 0 .And. delta == rho) Then
-      If (dabs(ratio) > 1.0d-2) Then
+      If (abs(ratio) > 1.0e-2_wp) Then
          itest = 0
       Else
          Do 700 k = 1, npt
@@ -1044,7 +1047,7 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
 !     norm interpolant, making the replacement if the test is satisfied.
 !
          itest = itest + 1
-         If (gqsq < 1.0d2*gisq) itest = 0
+         If (gqsq < 100.0_wp*gisq) itest = 0
          If (itest >= 3) Then
             Do 730 i = 1, n
 730         gq (i) = w (i)
@@ -1076,7 +1079,7 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
 !     to the best point so far.
 !
    knew = 0
-460 distsq = 4.0d0 * delta * delta
+460 distsq = 4.0_wp * delta * delta
    Do 480 k = 1, npt
       sum = zero
       Do 470 j = 1, n
@@ -1091,12 +1094,12 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
 !     iteration, which will generate a "model step".
 !
    If (knew > 0) Then
-      dstep = dmax1 (dmin1(tenth*dsqrt(distsq), half*delta), rho)
+      dstep = max (min(tenth*sqrt(distsq), half*delta), rho)
       dsq = dstep * dstep
       Go To 120
    End If
    If (ratio > zero) Go To 100
-   If (dmax1(delta, dnorm) > rho) Go To 100
+   If (max(delta, dnorm) > rho) Go To 100
 !
 !     The calculations with the current value of RHO are complete. Pick the
 !     next values of RHO and DELTA.
@@ -1104,14 +1107,14 @@ Subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, &
 490 If (rho > rhoend) Then
       delta = half * rho
       ratio = rho / rhoend
-      If (ratio <= 16.0d0) Then
+      If (ratio <= 16.0_wp) Then
          rho = rhoend
-      Else If (ratio <= 250.0d0) Then
-         rho = dsqrt (ratio) * rhoend
+      Else If (ratio <= 250.0_wp) Then
+         rho = sqrt (ratio) * rhoend
       Else
          rho = tenth * rho
       End If
-      delta = dmax1 (delta, rho)
+      delta = max (delta, rho)
       If (iprint >= 2) Then
          If (iprint >= 3) Print 500
 500      Format (5 x)
@@ -1145,7 +1148,7 @@ End Subroutine newuob
 
 Subroutine trsapp (n, npt, xopt, xpt, gq, hq, pq, delta, step, d, g, &
   hd, hs, crvmin)
-   Implicit real * 8 (a-h, o-z)
+   Implicit real(wp) (a-h, o-z)
    Dimension xopt (*), xpt (npt,*), gq (*), hq (*), pq (*), step (*), d &
     (*), g (*), hd (*), hs (*)
 !
@@ -1167,9 +1170,9 @@ Subroutine trsapp (n, npt, xopt, xpt, gq, hq, pq, delta, step, d, g, &
 !
 !     Initialization, which includes setting HD to H times XOPT.
 !
-   half = 0.5d0
-   zero = 0.0d0
-   twopi = 8.0d0 * datan (1.0d0)
+   half = 0.5_wp
+   zero = 0.0_wp
+   twopi = 8.0_wp * atan (1.0_wp)
    delsq = delta * delta
    iterc = 0
    itermax = n
@@ -1199,7 +1202,7 @@ Subroutine trsapp (n, npt, xopt, xpt, gq, hq, pq, delta, step, d, g, &
 !
 40 iterc = iterc + 1
    temp = delsq - ss
-   bstep = temp / (ds+dsqrt(ds*ds+dd*temp))
+   bstep = temp / (ds+sqrt(ds*ds+dd*temp))
    Go To 170
 50 dhd = zero
    Do 60 j = 1, n
@@ -1211,8 +1214,8 @@ Subroutine trsapp (n, npt, xopt, xpt, gq, hq, pq, delta, step, d, g, &
    If (dhd > zero) Then
       temp = dhd / dd
       If (iterc == 1) crvmin = temp
-      crvmin = dmin1 (crvmin, temp)
-      alpha = dmin1 (alpha, gg/dhd)
+      crvmin = min (crvmin, temp)
+      alpha = min (alpha, gg/dhd)
    End If
    qadd = alpha * (gg-half*alpha*dhd)
    qred = qred + qadd
@@ -1229,8 +1232,8 @@ Subroutine trsapp (n, npt, xopt, xpt, gq, hq, pq, delta, step, d, g, &
 !     Begin another conjugate direction iteration if required.
 !
    If (alpha < bstep) Then
-      If (qadd <= 0.01d0*qred) Go To 160
-      If (gg <= 1.0d-4*ggbeg) Go To 160
+      If (qadd <= 0.01_wp*qred) Go To 160
+      If (gg <= 1.0e-4_wp*ggbeg) Go To 160
       If (iterc == itermax) Go To 160
       temp = gg / ggsav
       dd = zero
@@ -1249,21 +1252,21 @@ Subroutine trsapp (n, npt, xopt, xpt, gq, hq, pq, delta, step, d, g, &
 !
 !     Test whether an alternative iteration is required.
 !
-90 If (gg <= 1.0d-4*ggbeg) Go To 160
+90 If (gg <= 1.0e-4_wp*ggbeg) Go To 160
    sg = zero
    shs = zero
    Do 100 i = 1, n
       sg = sg + step (i) * g (i)
 100 shs = shs + step (i) * hs (i)
    sgk = sg + shs
-   angtest = sgk / dsqrt (gg*delsq)
-   If (angtest <=-0.99d0) Go To 160
+   angtest = sgk / sqrt (gg*delsq)
+   If (angtest <=-0.99_wp) Go To 160
 !
 !     Begin the alternative iteration by calculating D and HD and some
 !     scalar products.
 !
    iterc = iterc + 1
-   temp = dsqrt (delsq*gg-sgk*sgk)
+   temp = sqrt (delsq*gg-sgk*sgk)
    tempa = delsq / temp
    tempb = sgk / temp
    Do 110 i = 1, n
@@ -1288,8 +1291,8 @@ Subroutine trsapp (n, npt, xopt, xpt, gq, hq, pq, delta, step, d, g, &
    temp = twopi / dfloat (iu+1)
    Do 140 i = 1, iu
       angle = dfloat (i) * temp
-      cth = dcos (angle)
-      sth = dsin (angle)
+      cth = cos (angle)
+      sth = sin (angle)
       qnew = (sg+cf*cth) * cth + (dg+dhs*cth) * sth
       If (qnew < qmin) Then
          qmin = qnew
@@ -1311,8 +1314,8 @@ Subroutine trsapp (n, npt, xopt, xpt, gq, hq, pq, delta, step, d, g, &
 !
 !     Calculate the new STEP and HS. Then test for convergence.
 !
-   cth = dcos (angle)
-   sth = dsin (angle)
+   cth = cos (angle)
+   sth = sin (angle)
    reduc = qbeg - (sg+cf*cth) * cth - (dg+dhs*cth) * sth
    gg = zero
    Do 150 i = 1, n
@@ -1321,7 +1324,7 @@ Subroutine trsapp (n, npt, xopt, xpt, gq, hq, pq, delta, step, d, g, &
 150 gg = gg + (g(i)+hs(i)) ** 2
    qred = qred + reduc
    ratio = reduc / qred
-   If (iterc < itermax .And. ratio > 0.01d0) Go To 90
+   If (iterc < itermax .And. ratio > 0.01_wp) Go To 90
 160 Return
 !
 !     The following instructions act as a subroutine for setting the vector
@@ -1350,7 +1353,7 @@ Subroutine trsapp (n, npt, xopt, xpt, gq, hq, pq, delta, step, d, g, &
 End Subroutine trsapp
 
 Subroutine update (n, npt, bmat, zmat, idz, ndim, vlag, beta, knew, w)
-   Implicit real * 8 (a-h, o-z)
+   Implicit real(wp) (a-h, o-z)
    Dimension bmat (ndim,*), zmat (npt,*), vlag (*), w (*)
 !
 !     The arrays BMAT and ZMAT with IDZ are updated, in order to shift the
@@ -1361,8 +1364,8 @@ Subroutine update (n, npt, bmat, zmat, idz, ndim, vlag, beta, knew, w)
 !
 !     Set some constants.
 !
-   one = 1.0d0
-   zero = 0.0d0
+   one = 1.0_wp
+   zero = 0.0_wp
    nptm = npt - n - 1
 !
 !     Apply the rotations that put zeros in the KNEW-th row of ZMAT.
@@ -1372,7 +1375,7 @@ Subroutine update (n, npt, bmat, zmat, idz, ndim, vlag, beta, knew, w)
       If (j == idz) Then
          jl = idz
       Else If (zmat(knew, j) /= zero) Then
-         temp = dsqrt (zmat(knew, jl)**2+zmat(knew, j)**2)
+         temp = sqrt (zmat(knew, jl)**2+zmat(knew, j)**2)
          tempa = zmat (knew, jl) / temp
          tempb = zmat (knew, j) / temp
          Do 10 i = 1, npt
@@ -1405,7 +1408,7 @@ Subroutine update (n, npt, bmat, zmat, idz, ndim, vlag, beta, knew, w)
 !
    iflag = 0
    If (jl == 1) Then
-      temp = dsqrt (dabs(denom))
+      temp = sqrt (abs(denom))
       tempb = tempa / temp
       tempa = tau / temp
       Do 40 i = 1, npt
@@ -1423,8 +1426,8 @@ Subroutine update (n, npt, bmat, zmat, idz, ndim, vlag, beta, knew, w)
       tempa = temp * beta
       tempb = temp * tau
       temp = zmat (knew, ja)
-      scala = one / dsqrt (dabs(beta)*temp*temp+tausq)
-      scalb = scala * dsqrt (dabs(denom))
+      scala = one / sqrt (abs(beta)*temp*temp+tausq)
+      scalb = scala * sqrt (abs(denom))
       Do 50 i = 1, npt
          zmat (i, ja) = scala * (tau*zmat(i, ja)-temp*vlag(i))
 50    zmat (i, jb) = scalb * (zmat(i, jb)-tempa*w(i)-tempb*vlag(i))
@@ -1464,16 +1467,16 @@ subroutine newuoa_test()
 !     The Chebyquad test problem (Fletcher, 1965) for N = 2,4,6 and 8,
 !     with NPT = 2N+1.
 !
-    Implicit real * 8 (a-h, o-z)
+    Implicit real(wp) (a-h, o-z)
     Dimension x (10), w (10000)
     iprint = 2
     maxfun = 5000
-    rhoend = 1.0d-6
+    rhoend = 1.0e-6_wp
     Do 30 n = 2, 8, 2
        npt = 2 * n + 1
        Do 10 i = 1, n
     10 x (i) = dfloat (i) / dfloat (n+1)
-       rhobeg = 0.2d0 * x (1)
+       rhobeg = 0.2_wp * x (1)
        Print 20, n, npt
     20 Format (/ / 4 x, 'Results with N =', i2, ' and NPT =', i3)
        Call newuoa (n, npt, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
@@ -1482,23 +1485,23 @@ subroutine newuoa_test()
 contains
 
     Subroutine calfun (n, x, f)
-          Implicit real * 8 (a-h, o-z)
+          Implicit real(wp) (a-h, o-z)
           Dimension x (*), y (10, 10)
           Do 10 j = 1, n
-             y (1, j) = 1.0d0
-    10    y (2, j) = 2.0d0 * x (j) - 1.0d0
+             y (1, j) = 1.0_wp
+    10    y (2, j) = 2.0_wp * x (j) - 1.0_wp
           Do 20 i = 2, n
              Do 20 j = 1, n
-    20    y (i+1, j) = 2.0d0 * y (2, j) * y (i, j) - y (i-1, j)
-          f = 0.0d0
+    20    y (i+1, j) = 2.0_wp * y (2, j) * y (i, j) - y (i-1, j)
+          f = 0.0_wp
           np = n + 1
           iw = 1
           Do 40 i = 1, np
-             sum = 0.0d0
+             sum = 0.0_wp
              Do 30 j = 1, n
     30       sum = sum + y (i, j)
              sum = sum / dfloat (n)
-             If (iw > 0) sum = sum + 1.0d0 / dfloat (i*i-2*i)
+             If (iw > 0) sum = sum + 1.0_wp / dfloat (i*i-2*i)
              iw = - iw
     40    f = f + sum * sum
     End Subroutine calfun

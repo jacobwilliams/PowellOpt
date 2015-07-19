@@ -1,13 +1,16 @@
     module uobyqa_module
     
+    use kind_module, only: wp
+
     private
     
     abstract interface
         subroutine func(n,x,f)  !! CALFUN interface
+        import :: wp
         implicit none
         integer :: n
-        real * 8 :: x(*)
-        real * 8 :: f
+        real(wp) :: x(*)
+        real(wp) :: f
         end subroutine func
     end interface
 
@@ -17,7 +20,7 @@
     contains
 
 Subroutine uobyqa (n, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
-   Implicit real * 8 (a-h, o-z)
+   Implicit real(wp) (a-h, o-z)
    Dimension x (*), w (*)
    procedure(func) :: calfun
 !
@@ -71,7 +74,7 @@ End Subroutine uobyqa
 
 Subroutine uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, xbase, &
   xopt, xnew, xpt, pq, pl, h, g, d, vlag, w, calfun)
-   Implicit real * 8 (a-h, o-z)
+   Implicit real(wp) (a-h, o-z)
    Dimension x (*), xbase (*), xopt (*), xnew (*), xpt (npt,*), pq (*), &
     pl (npt,*), h (n,*), g (*), d (*), vlag (*), w (*)
    procedure(func) :: calfun
@@ -98,11 +101,11 @@ Subroutine uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, xbase, &
 !
 !     Set some constants.
 !
-   one = 1.0d0
-   two = 2.0d0
-   zero = 0.0d0
-   half = 0.5d0
-   tol = 0.01d0
+   one = 1.0_wp
+   two = 2.0_wp
+   zero = 0.0_wp
+   half = 0.5_wp
+   tol = 0.01_wp
    nnp = n + n + 1
    nptm = npt - 1
    nftest = max0 (maxfun, 1)
@@ -157,9 +160,9 @@ Subroutine uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, xbase, &
                pl (nf-1, j) = half / rho
                pl (nf-1, ih) = one / rhosq
             Else
-               pq (j) = (4.0d0*fsave-3.0d0*fbase-f) / (two*rho)
+               pq (j) = (4.0_wp*fsave-3.0_wp*fbase-f) / (two*rho)
                d (j) = (fbase+f-two*fsave) / rhosq
-               pl (1, j) = - 1.5d0 / rho
+               pl (1, j) = - 1.5_wp / rho
                pl (1, ih) = one / rhosq
                pl (nf-1, j) = two / rho
                pl (nf-1, ih) = - two / rhosq
@@ -253,7 +256,7 @@ Subroutine uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, xbase, &
    temp = zero
    Do 90 i = 1, n
 90 temp = temp + d (i) ** 2
-   dnorm = dmin1 (delta, dsqrt(temp))
+   dnorm = min (delta, sqrt(temp))
    errtol = - one
    If (dnorm < half*rho) Then
       knew = - 1
@@ -312,9 +315,9 @@ Subroutine uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, xbase, &
       temp = zero
       Do 180 i = 1, n
 180   temp = temp + (xpt(k, i)-xnew(i)) ** 2
-      temp = dsqrt (temp)
-190 sum = sum + dabs (temp*temp*temp*vlag(k))
-   sixthm = dmax1 (sixthm, dabs(diff)/sum)
+      temp = sqrt (temp)
+190 sum = sum + abs (temp*temp*temp*vlag(k))
+   sixthm = max (sixthm, abs(diff)/sum)
 !
 !     Update FOPT and XOPT if the new F is the least value of the objective
 !     function so far. Then branch if D is not a trust region step.
@@ -337,14 +340,14 @@ Subroutine uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, xbase, &
       Go To 420
    End If
    ratio = (f-fsave) / vquad
-   If (ratio <= 0.1d0) Then
+   If (ratio <= 0.1_wp) Then
       delta = half * dnorm
-   Else If (ratio <= 0.7d0) Then
-      delta = dmax1 (half*delta, dnorm)
+   Else If (ratio <= 0.7_wp) Then
+      delta = max (half*delta, dnorm)
    Else
-      delta = dmax1 (delta, 1.25d0*dnorm, dnorm+rho)
+      delta = max (delta, 1.25_wp*dnorm, dnorm+rho)
    End If
-   If (delta <= 1.5d0*rho) delta = rho
+   If (delta <= 1.5_wp*rho) delta = rho
 !
 !     Set KNEW to the index of the next interpolation point to be deleted.
 !
@@ -358,8 +361,8 @@ Subroutine uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, xbase, &
       sum = zero
       Do 220 i = 1, n
 220   sum = sum + (xpt(k, i)-xopt(i)) ** 2
-      temp = dabs (vlag(k))
-      If (sum > rhosq) temp = temp * (sum/rhosq) ** 1.5d0
+      temp = abs (vlag(k))
+      If (sum > rhosq) temp = temp * (sum/rhosq) ** 1.5_wp
       If (temp > detrat .And. k /= ktemp) Then
          detrat = temp
          ddknew = sum
@@ -442,8 +445,8 @@ Subroutine uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, xbase, &
          sumg = zero
          Do 350 i = 1, n
 350      sumg = sumg + g (i) ** 2
-         estim = rho * (dsqrt(sumg)+rho*dsqrt(half*sumh))
-         wmult = sixthm * distest ** 1.5d0
+         estim = rho * (sqrt(sumg)+rho*sqrt(half*sumh))
+         wmult = sixthm * distest ** 1.5_wp
          If (wmult*estim <= errtol) Go To 310
       End If
 !
@@ -484,14 +487,14 @@ Subroutine uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, xbase, &
 !
       delta = half * rho
       ratio = rho / rhoend
-      If (ratio <= 16.0d0) Then
+      If (ratio <= 16.0_wp) Then
          rho = rhoend
-      Else If (ratio <= 250.0d0) Then
-         rho = dsqrt (ratio) * rhoend
+      Else If (ratio <= 250.0_wp) Then
+         rho = sqrt (ratio) * rhoend
       Else
-         rho = 0.1d0 * rho
+         rho = 0.1_wp * rho
       End If
-      delta = dmax1 (delta, rho)
+      delta = max (delta, rho)
       If (iprint >= 2) Then
          If (iprint >= 3) Print 390
 390      Format (5 x)
@@ -524,7 +527,7 @@ Subroutine uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, xbase, &
 End Subroutine uobyqb
 
 Subroutine lagmax (n, g, h, rho, d, v, vmax)
-      Implicit real * 8 (a-h, o-z)
+      Implicit real(wp) (a-h, o-z)
       Dimension g (*), h (n,*), d (*), v (*)
 !
 !     N is the number of variables of a quadratic objective function, Q say.
@@ -544,10 +547,10 @@ Subroutine lagmax (n, g, h, rho, d, v, vmax)
 !
 !     Preliminary calculations.
 !
-      half = 0.5d0
-      halfrt = dsqrt (half)
-      one = 1.0d0
-      zero = 0.0d0
+      half = 0.5_wp
+      halfrt = sqrt (half)
+      one = 1.0_wp
+      zero = 0.0_wp
 !
 !     Pick V such that ||HV|| / ||V|| is large.
 !
@@ -579,14 +582,14 @@ Subroutine lagmax (n, g, h, rho, d, v, vmax)
 40       d (i) = d (i) + h (i, j) * v (j)
          vhv = vhv + v (i) * d (i)
 50    dsq = dsq + d (i) ** 2
-      If (vhv*vhv <= 0.9999d0*dsq*vsq) Then
+      If (vhv*vhv <= 0.9999_wp*dsq*vsq) Then
          temp = vhv / vsq
          wsq = zero
          Do 60 i = 1, n
             d (i) = d (i) - temp * v (i)
 60       wsq = wsq + d (i) ** 2
          whw = zero
-         ratio = dsqrt (wsq/vsq)
+         ratio = sqrt (wsq/vsq)
          Do 80 i = 1, n
             temp = zero
             Do 70 j = 1, n
@@ -596,7 +599,7 @@ Subroutine lagmax (n, g, h, rho, d, v, vmax)
          vhv = ratio * ratio * vhv
          vhw = ratio * wsq
          temp = half * (whw-vhv)
-         temp = temp + dsign (dsqrt(temp**2+vhw**2), whw+vhv)
+         temp = temp + dsign (sqrt(temp**2+vhw**2), whw+vhv)
          Do 90 i = 1, n
 90       d (i) = vhw * v (i) + temp * d (i)
       End If
@@ -618,15 +621,15 @@ Subroutine lagmax (n, g, h, rho, d, v, vmax)
 110   dhd = dhd + sum * d (i)
       temp = gd / gg
       vv = zero
-      scale = dsign (rho/dsqrt(dd), gd*dhd)
+      scale = dsign (rho/sqrt(dd), gd*dhd)
       Do 120 i = 1, n
          v (i) = d (i) - temp * g (i)
          vv = vv + v (i) ** 2
 120   d (i) = scale * d (i)
-      gnorm = dsqrt (gg)
-      If (gnorm*dd <= 0.5d-2*rho*dabs(dhd) .Or. vv/dd <= 1.0d-4) &
+      gnorm = sqrt (gg)
+      If (gnorm*dd <= 0.5d-2*rho*abs(dhd) .Or. vv/dd <= 1.0d-4) &
        Then
-         vmax = dabs (scale*(gd+half*scale*dhd))
+         vmax = abs (scale*(gd+half*scale*dhd))
          Go To 170
       End If
 !
@@ -646,18 +649,18 @@ Subroutine lagmax (n, g, h, rho, d, v, vmax)
          ghg = ghg + sum * g (i)
          vhg = vhg + sumv * g (i)
 140   vhv = vhv + sumv * v (i)
-      vnorm = dsqrt (vv)
+      vnorm = sqrt (vv)
       ghg = ghg / gg
       vhg = vhg / (vnorm*gnorm)
       vhv = vhv / vv
-      If (dabs(vhg) <= 0.01d0*dmax1(dabs(ghg), dabs(vhv))) Then
+      If (abs(vhg) <= 0.01_wp*max(abs(ghg), abs(vhv))) Then
          vmu = ghg - vhv
          wcos = one
          wsin = zero
       Else
          temp = half * (ghg-vhv)
-         vmu = temp + dsign (dsqrt(temp**2+vhg**2), temp)
-         temp = dsqrt (vmu**2+vhg**2)
+         vmu = temp + dsign (sqrt(temp**2+vhg**2), temp)
+         temp = sqrt (vmu**2+vhg**2)
          wcos = vmu / temp
          wsin = vhg / temp
       End If
@@ -674,9 +677,9 @@ Subroutine lagmax (n, g, h, rho, d, v, vmax)
 !
       dlin = wcos * gnorm / rho
       vlin = - wsin * gnorm / rho
-      tempa = dabs (dlin) + half * dabs (vmu+vhv)
-      tempb = dabs (vlin) + half * dabs (ghg-vmu)
-      tempc = halfrt * (dabs(dlin)+dabs(vlin)) + 0.25d0 * dabs &
+      tempa = abs (dlin) + half * abs (vmu+vhv)
+      tempb = abs (vlin) + half * abs (ghg-vmu)
+      tempc = halfrt * (abs(dlin)+abs(vlin)) + 0.25_wp * abs &
        (ghg+vhv)
       If (tempa >= tempb .And. tempa >= tempc) Then
          tempd = dsign (rho, dlin*(vmu+vhv))
@@ -690,13 +693,13 @@ Subroutine lagmax (n, g, h, rho, d, v, vmax)
       End If
       Do 160 i = 1, n
 160   d (i) = tempd * d (i) + tempv * v (i)
-      vmax = rho * rho * dmax1 (tempa, tempb, tempc)
+      vmax = rho * rho * max (tempa, tempb, tempc)
 170   Return
 End Subroutine lagmax
 
 Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
   evalue)
-   Implicit real * 8 (a-h, o-z)
+   Implicit real(wp) (a-h, o-z)
    Dimension g (*), h (n,*), d (*), gg (*), td (*), tn (*), w (*), piv &
     (*), z (*)
 !
@@ -725,9 +728,9 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
 !
 !     Initialization.
 !
-   one = 1.0d0
-   two = 2.0d0
-   zero = 0.0d0
+   one = 1.0_wp
+   two = 2.0_wp
+   zero = 0.0_wp
    delsq = delta * delta
    evalue = zero
    nm = n - 1
@@ -755,9 +758,9 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
          h (kp, k) = zero
       Else
          temp = h (kp, k)
-         tn (k) = dsign (dsqrt(sum+temp*temp), temp)
+         tn (k) = dsign (sqrt(sum+temp*temp), temp)
          h (kp, k) = - sum / (temp+tn(k))
-         temp = dsqrt (two/(sum+h(kp, k)**2))
+         temp = sqrt (two/(sum+h(kp, k)**2))
          Do 30 i = kp, n
             w (i) = temp * h (i, k)
             h (i, k) = w (i)
@@ -788,7 +791,7 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
    Do 90 i = 1, n
       gg (i) = g (i)
 90 gsq = gsq + g (i) ** 2
-   gnorm = dsqrt (gsq)
+   gnorm = sqrt (gsq)
    Do 110 k = 1, nm
       kp = k + 1
       sum = zero
@@ -800,13 +803,13 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
 !     Begin the trust region calculation with a tridiagonal matrix by
 !     calculating the norm of H. Then treat the case when H is zero.
 !
-   hnorm = dabs (td(1)) + dabs (tn(1))
+   hnorm = abs (td(1)) + abs (tn(1))
    tdmin = td (1)
    tn (n) = zero
    Do 120 i = 2, n
-      temp = dabs (tn(i-1)) + dabs (td(i)) + dabs (tn(i))
-      hnorm = dmax1 (hnorm, temp)
-120 tdmin = dmin1 (tdmin, td(i))
+      temp = abs (tn(i-1)) + abs (td(i)) + abs (tn(i))
+      hnorm = max (hnorm, temp)
+120 tdmin = min (tdmin, td(i))
    If (hnorm == zero) Then
       If (gnorm == zero) Go To 400
       scale = delta / gnorm
@@ -817,7 +820,7 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
 !
 !     Set the initial values of PAR and its bounds.
 !
-   parl = dmax1 (zero,-tdmin, gnorm/delta-hnorm)
+   parl = max (zero,-tdmin, gnorm/delta-hnorm)
    parlest = parl
    par = parl
    paru = zero
@@ -859,14 +862,14 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
 !     matrix, and thus revise PARLEST.
 !
 160 d (k) = one
-   If (dabs(tn(k)) <= dabs(piv(k))) Then
+   If (abs(tn(k)) <= abs(piv(k))) Then
       dsq = one
       dhd = piv (k)
    Else
       temp = td (k+1) + par
-      If (temp <= dabs(piv(k))) Then
+      If (temp <= abs(piv(k))) Then
          d (k+1) = dsign (one,-tn(k))
-         dhd = piv (k) + temp - two * dabs (tn(k))
+         dhd = piv (k) + temp - two * abs (tn(k))
       Else
          d (k+1) = - tn (k) / temp
          dhd = piv (k) + tn (k) * d (k+1)
@@ -895,7 +898,7 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
       dtg = zero
       Do 200 i = 1, n
 200   dtg = dtg + d (i) * gg (i)
-      scale = - dsign (delta/dsqrt(dsq), dtg)
+      scale = - dsign (delta/sqrt(dsq), dtg)
       Do 210 i = 1, n
 210   d (i) = scale * d (i)
       Go To 370
@@ -906,10 +909,10 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
 220 If (paru == zero) Then
       par = two * parlest + gnorm / delta
    Else
-      par = 0.5d0 * (parl+paru)
-      par = dmax1 (par, parlest)
+      par = 0.5_wp * (parl+paru)
+      par = max (par, parlest)
    End If
-   If (paruest > zero) par = dmin1 (par, paruest)
+   If (paruest > zero) par = min (par, paruest)
    Go To 140
 !
 !     Calculate D for the current PAR in the positive definite case.
@@ -932,7 +935,7 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
 !
 !     Make the usual test for acceptability of a full trust region step.
 !
-   dnorm = dsqrt (dsq)
+   dnorm = sqrt (dsq)
    phi = one / dnorm - one / delta
    temp = tol * (one+par*dsq/wsq) - dsq * phi * phi
    If (temp >= zero) Then
@@ -956,7 +959,7 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
       slope = one / gnorm
       If (paru > zero) slope = (phiu-phi) / (paru-par)
       temp = par - phi / slope
-      If (paruest > zero) temp = dmin1 (temp, paruest)
+      If (paruest > zero) temp = min (temp, paruest)
       paruest = temp
       posdef = one
       parl = par
@@ -984,8 +987,8 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
 !
 !     Apply the alternative test for convergence.
 !
-      tempa = dabs (delsq-dsq)
-      tempb = dsqrt (dtz*dtz+tempa*zsq)
+      tempa = abs (delsq-dsq)
+      tempb = sqrt (dtz*dtz+tempa*zsq)
       gam = tempa / (dsign(tempb, dtz)+dtz)
       temp = tol * (wsq+par*delsq) - gam * gam * wwsq
       If (temp >= zero) Then
@@ -993,7 +996,7 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
 310      d (i) = d (i) + gam * z (i)
          Go To 370
       End If
-      parlest = dmax1 (parlest, par-wwsq/zsq)
+      parlest = max (parlest, par-wwsq/zsq)
    End If
 !
 !     Complete the iteration when PHI is positive.
@@ -1003,7 +1006,7 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
       If (phi >= phiu) Go To 370
       slope = (phiu-phi) / (paru-par)
    End If
-   parlest = dmax1 (parlest, par-phi/slope)
+   parlest = max (parlest, par-phi/slope)
    paruest = par
    If (posdef == one) Then
       slope = (phi-phil) / (par-parl)
@@ -1021,13 +1024,13 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
    shfmax = pivot
    Do 330 k = 2, n
       pivot = td (k) - tn (k-1) ** 2 / pivot
-330 shfmax = dmin1 (shfmax, pivot)
+330 shfmax = min (shfmax, pivot)
 !
 !     Find EVALUE by a bisection method, but occasionally SHFMAX may be
 !     adjusted by the rule of false position.
 !
    ksave = 0
-340 shift = 0.5d0 * (shfmin+shfmax)
+340 shift = 0.5_wp * (shfmin+shfmax)
    k = 1
    temp = td (1) - shift
 350 If (temp > zero) Then
@@ -1055,7 +1058,7 @@ Subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, &
          shfmax = shift
       End If
    End If
-   If (shfmin <= 0.99d0*shfmax) Go To 340
+   If (shfmin <= 0.99_wp*shfmax) Go To 340
 360 evalue = shfmin
 !
 !     Apply the inverse Householder transformations to D.
@@ -1078,15 +1081,15 @@ subroutine uobyqa_test()
 !
 !     The Chebyquad test problem (Fletcher, 1965) for N = 2,4,6,8.
 !
-    Implicit real * 8 (a-h, o-z)
+    Implicit real(wp) (a-h, o-z)
     Dimension x (10), w (10000)
     iprint = 2
     maxfun = 5000
     rhoend = 1.0d-8
     Do 30 n = 2, 8, 2
        Do 10 i = 1, n
-    10 x (i) = dfloat (i) / dfloat (n+1)
-       rhobeg = 0.2d0 * x (1)
+    10 x (i) = real (i,wp) / real (n+1,wp)
+       rhobeg = 0.2_wp * x (1)
        Print 20, n
     20 Format (/ / 5 x, '******************' / 5 x, 'Results with N =', i2, &
         / 5 x, '******************')
@@ -1096,23 +1099,23 @@ subroutine uobyqa_test()
 contains
 
     Subroutine calfun (n, x, f)
-          Implicit real * 8 (a-h, o-z)
+          Implicit real(wp) (a-h, o-z)
           Dimension x (*), y (10, 10)
           Do 10 j = 1, n
-             y (1, j) = 1.0d0
-    10    y (2, j) = 2.0d0 * x (j) - 1.0d0
+             y (1, j) = 1.0_wp
+    10    y (2, j) = 2.0_wp * x (j) - 1.0_wp
           Do 20 i = 2, n
              Do 20 j = 1, n
-    20    y (i+1, j) = 2.0d0 * y (2, j) * y (i, j) - y (i-1, j)
-          f = 0.0d0
+    20    y (i+1, j) = 2.0_wp * y (2, j) * y (i, j) - y (i-1, j)
+          f = 0.0_wp
           np = n + 1
           iw = 1
           Do 40 i = 1, np
-             sum = 0.0d0
+             sum = 0.0_wp
              Do 30 j = 1, n
     30       sum = sum + y (i, j)
-             sum = sum / dfloat (n)
-             If (iw > 0) sum = sum + 1.0 / dfloat (i*i-2*i)
+             sum = sum / real (n,wp)
+             If (iw > 0) sum = sum + 1.0 / real (i*i-2*i,wp)
              iw = - iw
     40    f = f + sum * sum
           Return
