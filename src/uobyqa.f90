@@ -108,7 +108,7 @@ contains
         tol = 0.01_wp
         nnp = n + n + 1
         nptm = npt - 1
-        nftest = max0 (maxfun, 1)
+        nftest = max (maxfun, 1)
 !
 !     Initialization. NF is the number of function calculations so far.
 !

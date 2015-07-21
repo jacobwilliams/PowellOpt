@@ -650,8 +650,9 @@ contains
             end do
         end if
         if (resmax == 0.0_wp) go to 480
-        do 50 i = 1, n
-50      sdirn (i) = 0.0_wp
+        do i = 1, n
+            sdirn (i) = 0.0_wp
+        end do
 !
 !     End the current stage of the calculation if 3 consecutive iterations
 !     have either failed to reduce the best calculated value of the objective

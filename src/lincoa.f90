@@ -21,7 +21,9 @@ module lincoa_module
 contains
  
     subroutine lincoa (n, npt, m, a, ia, b, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
+    
         implicit real (wp) (a-h, o-z)
+        
         dimension a (ia,*), b (*), x (*), w (*)
         procedure (func) :: calfun
 !
@@ -93,47 +95,50 @@ contains
         if (n <= 1) then
             print 10
 10          format (/ 4 x, 'Return from LINCOA because N is less than 2.')
-            go to 80
+            return
         end if
         if (npt < n+2 .or. npt > ((n+2)*np)/2) then
             print 20
 20          format (/ 4 x, 'Return from LINCOA because NPT is not in',&
             ' the required interval.')
-            go to 80
+            return
         end if
         if (maxfun <= npt) then
             print 30
 30          format (/ 4 x, 'Return from LINCOA because MAXFUN is less', ' than NPT+1.')
-            go to 80
+            return
         end if
 !
 !     Normalize the constraints, and copy the resultant constraint matrix
 !       and right hand sides into working space, after increasing the right
 !       hand sides if necessary so that the starting point is feasible.
 !
-        iamat = max0 (m+3*n, 2*m+n, 2*npt) + 1
+        iamat = max (m+3*n, 2*m+n, 2*npt) + 1
         ib = iamat + m * n
         iflag = 0
         if (m > 0) then
             iw = iamat - 1
-            do 60 j = 1, m
+            do j = 1, m
                 sum = zero
                 temp = zero
-                do 40 i = 1, n
+                do i = 1, n
                     sum = sum + a (i, j) * x (i)
-40              temp = temp + a (i, j) ** 2
+                    temp = temp + a (i, j) ** 2
+                end do
                 if (temp == zero) then
                     print 50
 50                  format (/ 4 x, 'Return from LINCOA because the gradient of',&
                     ' a constraint is zero.')
-                    go to 80
+                    return
                 end if
                 temp = sqrt (temp)
                 if (sum-b(j) > smallx*temp) iflag = 1
                 w (ib+j-1) = max (b(j), sum) / temp
-                do 60 i = 1, n
+                do i = 1, n
                     iw = iw + 1
-60          w (iw) = a (i, j) / temp
+                    w (iw) = a (i, j) / temp
+                end do
+            end do
         end if
         if (iflag == 1) then
             if (iprint > 0) print 70
@@ -167,22 +172,21 @@ contains
 !     The above settings provide a partition of W for subroutine LINCOB.
 !
         call lincob (n, npt, m, w(iamat), w(ib), x, rhobeg, rhoend, iprint, maxfun, &
-       & w(ixb), w(ixp), w(ifv), w(ixs), w(ixo), w(igo), w(ihq), w(ipq), w(ibmat), &
-       & w(izmat), ndim, w(istp), w(isp), w(ixn), iact, w(irc), w(iqf), w(irf), w(ipqw), &
-       & w, calfun)!--JW mod
-       !w(ixn), w(iac), w(irc), w(iqf), w(irf), w(ipqw), w) !--original
- 
-80      return
- 
+         w(ixb), w(ixp), w(ifv), w(ixs), w(ixo), w(igo), w(ihq), w(ipq), w(ibmat), &
+         w(izmat), ndim, w(istp), w(isp), w(ixn), iact, w(irc), w(iqf), w(irf), w(ipqw), &
+         w, calfun)
+  
     end subroutine lincoa
  
     subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, maxfun, xbase, xpt, &
-   & fval, xsav, xopt, gopt, hq, pq, bmat, zmat, ndim, step, sp, xnew, iact, rescon, &
-   & qfac, rfac, pqw, w, calfun)
+     fval, xsav, xopt, gopt, hq, pq, bmat, zmat, ndim, step, sp, xnew, iact, rescon, &
+     qfac, rfac, pqw, w, calfun)
+   
         implicit real (wp) (a-h, o-z)
+   
         dimension amat (n,*), b (*), x (*), xbase (*), xpt (npt,*), fval (*), xsav (*), &
-       & xopt (*), gopt (*), hq (*), pq (*), bmat (ndim,*), zmat (npt,*), step (*), sp &
-       & (*), xnew (*), iact (*), rescon (*), qfac (n,*), rfac (*), pqw (*), w (*)
+         xopt (*), gopt (*), hq (*), pq (*), bmat (ndim,*), zmat (npt,*), step (*), sp &
+         (*), xnew (*), iact (*), rescon (*), qfac (n,*), rfac (*), pqw (*), w (*)
         procedure (func) :: calfun
 !
 !     The arguments N, NPT, M, X, RHOBEG, RHOEND, IPRINT and MAXFUN are
@@ -256,7 +260,7 @@ contains
 !       is set so that XPT(KOPT,.) is the initial trust region centre.
 !
         call prelim (n, npt, m, amat, b, x, rhobeg, iprint, xbase, xpt, fval, xsav, xopt, &
-       & gopt, kopt, hq, pq, bmat, zmat, idz, ndim, sp, rescon, step, pqw, w, calfun)
+         gopt, kopt, hq, pq, bmat, zmat, idz, ndim, sp, rescon, step, pqw, w, calfun)
 !
 !     Begin the iterative procedure.
 !
@@ -276,74 +280,92 @@ contains
 !
 20      fsave = fopt
         xoptsq = zero
-        do 30 i = 1, n
-30      xoptsq = xoptsq + xopt (i) ** 2
+        do i = 1, n
+            xoptsq = xoptsq + xopt (i) ** 2
+        end do
         if (xoptsq >= 1.0e4_wp*delta*delta) then
             qoptsq = 0.25_wp * xoptsq
-            do 50 k = 1, npt
+            do k = 1, npt
                 sum = zero
-                do 40 i = 1, n
-40              sum = sum + xpt (k, i) * xopt (i)
+                do i = 1, n
+                    sum = sum + xpt (k, i) * xopt (i)
+                end do
                 sum = sum - half * xoptsq
                 w (npt+k) = sum
                 sp (k) = zero
-                do 50 i = 1, n
+                do i = 1, n
                     xpt (k, i) = xpt (k, i) - half * xopt (i)
                     step (i) = bmat (k, i)
                     w (i) = sum * xpt (k, i) + qoptsq * xopt (i)
                     ip = npt + i
-                    do 50 j = 1, i
-50          bmat (ip, j) = bmat (ip, j) + step (i) * w (j) + w (i) * step (j)
+                    do j = 1, i
+                        bmat (ip, j) = bmat (ip, j) + step (i) * w (j) + w (i) * step (j)
+                    end do
+                end do
+            end do
 !
 !     Then the revisions of BMAT that depend on ZMAT are calculated.
 !
-            do 90 k = 1, nptm
+            do k = 1, nptm
                 sumz = zero
-                do 60 i = 1, npt
+                do i = 1, npt
                     sumz = sumz + zmat (i, k)
-60              w (i) = w (npt+i) * zmat (i, k)
-                do 80 j = 1, n
+                    w (i) = w (npt+i) * zmat (i, k)
+                end do
+                do j = 1, n
                     sum = qoptsq * sumz * xopt (j)
-                    do 70 i = 1, npt
-70                  sum = sum + w (i) * xpt (i, j)
+                    do i = 1, npt
+                        sum = sum + w (i) * xpt (i, j)
+                    end do
                     step (j) = sum
                     if (k < idz) sum = - sum
-                    do 80 i = 1, npt
-80              bmat (i, j) = bmat (i, j) + sum * zmat (i, k)
-                do 90 i = 1, n
+                    do i = 1, npt
+                        bmat (i, j) = bmat (i, j) + sum * zmat (i, k)
+                    end do
+                end do
+                do i = 1, n
                     ip = i + npt
                     temp = step (i)
                     if (k < idz) temp = - temp
-                    do 90 j = 1, i
-90          bmat (ip, j) = bmat (ip, j) + temp * step (j)
+                    do j = 1, i
+                        bmat (ip, j) = bmat (ip, j) + temp * step (j)
+                    end do
+                end do
+            end do
 !
 !     Update the right hand sides of the constraints.
 !
             if (m > 0) then
-                do 110 j = 1, m
+                do j = 1, m
                     temp = zero
-                    do 100 i = 1, n
-100                 temp = temp + amat (i, j) * xopt (i)
-110             b (j) = b (j) - temp
+                    do i = 1, n
+                        temp = temp + amat (i, j) * xopt (i)
+                    end do
+                    b (j) = b (j) - temp
+                end do
             end if
 !
 !     The following instructions complete the shift of XBASE, including the
 !       changes to the parameters of the quadratic model.
 !
             ih = 0
-            do 130 j = 1, n
+            do j = 1, n
                 w (j) = zero
-                do 120 k = 1, npt
+                do k = 1, npt
                     w (j) = w (j) + pq (k) * xpt (k, j)
-120             xpt (k, j) = xpt (k, j) - half * xopt (j)
-                do 130 i = 1, j
+                    xpt (k, j) = xpt (k, j) - half * xopt (j)
+                end do
+                do i = 1, j
                     ih = ih + 1
                     hq (ih) = hq (ih) + w (i) * xopt (j) + xopt (i) * w (j)
-130         bmat (npt+i, j) = bmat (npt+j, i)
-            do 140 j = 1, n
+                    bmat (npt+i, j) = bmat (npt+j, i)
+                end do
+            end do
+            do j = 1, n
                 xbase (j) = xbase (j) + xopt (j)
                 xopt (j) = zero
-140         xpt (kopt, j) = zero
+                xpt (kopt, j) = zero
+            end do
         end if
 !
 !     In the case KNEW=0, generate the next trust region step by calling
@@ -356,10 +378,11 @@ contains
         ksave = knew
         if (knew == 0) then
             snorm = delta
-            do 150 i = 1, n
-150         xnew (i) = gopt (i)
+            do i = 1, n
+                xnew (i) = gopt (i)
+            end do
             call trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, qfac, rfac, &
-           & snorm, step, xnew, w, w(m+1), pqw, pqw(np), w(m+np))
+                         snorm, step, xnew, w, w(m+1), pqw, pqw(np), w(m+np))
 !
 !     A trust region step is applied whenever its length, namely SNORM, is at
 !       least HALF*DELTA. It is also applied if its length is at least 0.1999
@@ -392,17 +415,21 @@ contains
 !
         else
             del = max (tenth*delta, rho)
-            do 160 i = 1, n
-160         w (i) = bmat (knew, i)
-            do 170 k = 1, npt
-170         pqw (k) = zero
-            do 180 j = 1, nptm
+            do i = 1, n
+                w (i) = bmat (knew, i)
+            end do
+            do k = 1, npt
+                pqw (k) = zero
+            end do
+            do j = 1, nptm
                 temp = zmat (knew, j)
                 if (j < idz) temp = - temp
-                do 180 k = 1, npt
-180         pqw (k) = pqw (k) + temp * zmat (k, j)
+                do k = 1, npt
+                    pqw (k) = pqw (k) + temp * zmat (k, j)
+                end do
+            end do
             call qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, rescon, qfac, kopt, &
-           & knew, del, step, w, pqw, w(np), w(np+m), ifeas)
+                         knew, del, step, w, pqw, w(np), w(np+m), ifeas)
         end if
 !
 !     Set VQUAD to the change to the quadratic model when the move STEP is
@@ -412,19 +439,23 @@ contains
 !
         vquad = zero
         ih = 0
-        do 190 j = 1, n
+        do j = 1, n
             vquad = vquad + step (j) * gopt (j)
-            do 190 i = 1, j
+            do i = 1, j
                 ih = ih + 1
                 temp = step (i) * step (j)
                 if (i == j) temp = half * temp
-190     vquad = vquad + temp * hq (ih)
-        do 210 k = 1, npt
+                vquad = vquad + temp * hq (ih)
+            end do
+        end do
+        do k = 1, npt
             temp = zero
-            do 200 j = 1, n
+            do j = 1, n
                 temp = temp + xpt (k, j) * step (j)
-200         sp (npt+k) = temp
-210     vquad = vquad + half * pq (k) * temp * temp
+                sp (npt+k) = temp
+            end do
+            vquad = vquad + half * pq (k) * temp * temp
+        end do
         if (ksave == 0 .and. vquad >= zero) go to 530
 !
 !     Calculate the next value of the objective function. The difference
@@ -440,10 +471,11 @@ contains
             go to 600
         end if
         xdiff = zero
-        do 240 i = 1, n
+        do i = 1, n
             xnew (i) = xopt (i) + step (i)
             x (i) = xbase (i) + xnew (i)
-240     xdiff = xdiff + (x(i)-xsav(i)) ** 2
+            xdiff = xdiff + (x(i)-xsav(i)) ** 2
+        end do
         xdiff = sqrt (xdiff)
         if (ksave ==-1) xdiff = rho
         if (xdiff <= tenth*rho .or. xdiff >= delta+delta) then
@@ -468,23 +500,29 @@ contains
 !       value of F and the value predicted by the alternative model.
 !
         if (ifeas == 1 .and. itest < 3) then
-            do 270 k = 1, npt
+            do k = 1, npt
                 pqw (k) = zero
-270         w (k) = fval (k) - fval (kopt)
-            do 290 j = 1, nptm
+                w (k) = fval (k) - fval (kopt)
+            end do
+            do j = 1, nptm
                 sum = zero
-                do 280 i = 1, npt
-280             sum = sum + w (i) * zmat (i, j)
+                do i = 1, npt
+                    sum = sum + w (i) * zmat (i, j)
+                end do
                 if (j < idz) sum = - sum
-                do 290 k = 1, npt
-290         pqw (k) = pqw (k) + sum * zmat (k, j)
+                do k = 1, npt
+                    pqw (k) = pqw (k) + sum * zmat (k, j)
+                end do
+            end do
             vqalt = zero
-            do 310 k = 1, npt
+            do k = 1, npt
                 sum = zero
-                do 300 j = 1, n
-300             sum = sum + bmat (k, j) * step (j)
+                do j = 1, n
+                    sum = sum + bmat (k, j) * step (j)
+                end do
                 vqalt = vqalt + sum * w (k)
-310         vqalt = vqalt + pqw (k) * sp (npt+k) * (half*sp(npt+k)+sp(k))
+                vqalt = vqalt + pqw (k) * sp (npt+k) * (half*sp(npt+k)+sp(k))
+            end do
             dffalt = f - fopt - vqalt
         end if
         if (itest == 3) then
@@ -537,26 +575,31 @@ contains
 !       later for the gradient of the new KNEW-th Lagrange function.
 !
         if (itest < 3) then
-            do 330 k = 1, npt
-330         pqw (k) = zero
-            do 350 j = 1, nptm
+            do k = 1, npt
+                pqw (k) = zero
+            end do
+            do j = 1, nptm
                 temp = zmat (knew, j)
                 if (temp /= zero) then
                     if (j < idz) temp = - temp
-                    do 340 k = 1, npt
-340                 pqw (k) = pqw (k) + temp * zmat (k, j)
+                    do k = 1, npt
+                        pqw (k) = pqw (k) + temp * zmat (k, j)
+                    end do
                 end if
-350         continue
+            end do
             ih = 0
-            do 360 i = 1, n
+            do i = 1, n
                 w (i) = bmat (knew, i)
                 temp = pq (knew) * xpt (knew, i)
-                do 360 j = 1, i
+                do j = 1, i
                     ih = ih + 1
-360         hq (ih) = hq (ih) + temp * xpt (knew, j)
+                    hq (ih) = hq (ih) + temp * xpt (knew, j)
+                end do
+            end do
             pq (knew) = zero
-            do 370 k = 1, npt
-370         pq (k) = pq (k) + diff * pqw (k)
+            do k = 1, npt
+                pq (k) = pq (k) + diff * pqw (k)
+            end do
         end if
 !
 !     Include the new interpolation point with the corresponding updates of
@@ -566,17 +609,21 @@ contains
         fval (knew) = f
         sp (knew) = sp (kopt) + sp (npt+kopt)
         ssq = zero
-        do 380 i = 1, n
+        do i = 1, n
             xpt (knew, i) = xnew (i)
-380     ssq = ssq + step (i) ** 2
+            ssq = ssq + step (i) ** 2
+        end do
         sp (npt+knew) = sp (npt+kopt) + ssq
         if (itest < 3) then
-            do 390 k = 1, npt
+            do k = 1, npt
                 temp = pqw (k) * sp (k)
-                do 390 i = 1, n
-390         w (i) = w (i) + temp * xpt (k, i)
-            do 400 i = 1, n
-400         gopt (i) = gopt (i) + diff * w (i)
+                do i = 1, n
+                    w (i) = w (i) + temp * xpt (k, i)
+                end do
+            end do
+            do i = 1, n
+                gopt (i) = gopt (i) + diff * w (i)
+            end do
         end if
 !
 !     Update FOPT, XSAV, XOPT, KOPT, RESCON and SP if the new F is the
@@ -584,42 +631,49 @@ contains
 !
         if (f < fopt .and. ifeas == 1) then
             fopt = f
-            do 410 j = 1, n
+            do j = 1, n
                 xsav (j) = x (j)
-410         xopt (j) = xnew (j)
+                xopt (j) = xnew (j)
+            end do
             kopt = knew
             snorm = sqrt (ssq)
-            do 430 j = 1, m
+            do j = 1, m
                 if (rescon(j) >= delta+snorm) then
                     rescon (j) = snorm - rescon (j)
                 else
                     rescon (j) = rescon (j) + snorm
                     if (rescon(j)+delta > zero) then
                         temp = b (j)
-                        do 420 i = 1, n
-420                     temp = temp - xopt (i) * amat (i, j)
+                        do i = 1, n
+                            temp = temp - xopt (i) * amat (i, j)
+                        end do
                         temp = max (temp, zero)
                         if (temp >= delta) temp = - temp
                         rescon (j) = temp
                     end if
                 end if
-430         continue
-            do 440 k = 1, npt
-440         sp (k) = sp (k) + sp (npt+k)
+            end do
+            do k = 1, npt
+                sp (k) = sp (k) + sp (npt+k)
+            end do
 !
 !     Also revise GOPT when symmetric Broyden updating is applied.
 !
             if (itest < 3) then
                 ih = 0
-                do 450 j = 1, n
-                    do 450 i = 1, j
+                do j = 1, n
+                    do i = 1, j
                         ih = ih + 1
                         if (i < j) gopt (j) = gopt (j) + hq (ih) * step (i)
-450             gopt (i) = gopt (i) + hq (ih) * step (j)
-                do 460 k = 1, npt
+                        gopt (i) = gopt (i) + hq (ih) * step (j)
+                    end do
+                end do
+                do k = 1, npt
                     temp = pq (k) * sp (npt+k)
-                    do 460 i = 1, n
-460             gopt (i) = gopt (i) + temp * xpt (k, i)
+                    do i = 1, n
+                        gopt (i) = gopt (i) + temp * xpt (k, i)
+                    end do
+                end do
             end if
         end if
 !
@@ -628,26 +682,35 @@ contains
 !       of values of F at feasible points.
 !
         if (itest == 3) then
-            do 470 k = 1, npt
+            do k = 1, npt
                 pq (k) = zero
-470         w (k) = fval (k) - fval (kopt)
-            do 490 j = 1, nptm
+                w (k) = fval (k) - fval (kopt)
+            end do
+            do j = 1, nptm
                 sum = zero
-                do 480 i = 1, npt
-480             sum = sum + w (i) * zmat (i, j)
+                do i = 1, npt
+                    sum = sum + w (i) * zmat (i, j)
+                end do
                 if (j < idz) sum = - sum
-                do 490 k = 1, npt
-490         pq (k) = pq (k) + sum * zmat (k, j)
-            do 500 j = 1, n
+                do k = 1, npt
+                    pq (k) = pq (k) + sum * zmat (k, j)
+                end do
+            end do
+            do j = 1, n
                 gopt (j) = zero
-                do 500 i = 1, npt
-500         gopt (j) = gopt (j) + w (i) * bmat (i, j)
-            do 510 k = 1, npt
+                do i = 1, npt
+                    gopt (j) = gopt (j) + w (i) * bmat (i, j)
+                end do
+            end do
+            do k = 1, npt
                 temp = pq (k) * sp (k)
-                do 510 i = 1, n
-510         gopt (i) = gopt (i) + temp * xpt (k, i)
-            do 520 ih = 1, nh
-520         hq (ih) = zero
+                do i = 1, n
+                    gopt (i) = gopt (i) + temp * xpt (k, i)
+                end do
+            end do
+            do ih = 1, nh
+                hq (ih) = zero
+            end do
         end if
 !
 !     If a trust region step has provided a sufficient decrease in F, then
@@ -663,15 +726,16 @@ contains
 !       to the best point so far.
 !
 530     distsq = max (delta*delta, 4.0_wp*rho*rho)
-        do 550 k = 1, npt
+        do k = 1, npt
             sum = zero
-            do 540 j = 1, n
-540         sum = sum + (xpt(k, j)-xopt(j)) ** 2
+            do j = 1, n
+                sum = sum + (xpt(k, j)-xopt(j)) ** 2
+            end do
             if (sum > distsq) then
                 knew = k
                 distsq = sum
             end if
-550     continue
+        end do
 !
 !     If KNEW is positive, then branch back for the next iteration, which
 !       will generate a "model step". Otherwise, if the current iteration
@@ -715,8 +779,9 @@ contains
 !
         if (ksave ==-1) go to 220
 600     if (fopt <= f .or. ifeas == 0) then
-            do 610 i = 1, n
-610         x (i) = xsav (i)
+            do i = 1, n
+                x (i) = xsav (i)
+            end do
             f = fopt
         end if
         if (iprint >= 1) then
@@ -727,13 +792,14 @@ contains
         end if
         w (1) = f
         w (2) = real (nf, wp) + half
-        return
+
     end subroutine lincob
  
- 
     subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, resnew, resact, g, &
-   & dw, vlam, w)
+     dw, vlam, w)
+     
         implicit real (wp) (a-h, o-z)
+        
         dimension amat (n,*), b (*), iact (*), qfac (n,*), rfac (*), resnew (*), resact &
        & (*), g (*), dw (*), vlam (*), w (*)
 !
@@ -757,6 +823,7 @@ contains
 !     Occasionally this projected direction is zero, and then the final value
 !       of W(1) is set to zero. Otherwise, the direction itself is returned
 !       in DW, and W(1) is set to the square of the length of the direction.
+
 !
 !     Set some constants and a temporary VLAM.
 !
@@ -765,18 +832,21 @@ contains
         zero = 0.0_wp
         tdel = 0.2_wp * snorm
         ddsav = zero
-        do 10 i = 1, n
+        do i = 1, n
             ddsav = ddsav + g (i) ** 2
-10      vlam (i) = zero
+            vlam (i) = zero
+        end do
         ddsav = ddsav + ddsav
 !
 !     Set the initial QFAC to the identity matrix in the case NACT=0.
 !
         if (nact == 0) then
-            do 30 i = 1, n
-                do 20 j = 1, n
-20              qfac (i, j) = zero
-30          qfac (i, i) = one
+            do i = 1, n
+                do j = 1, n
+                    qfac (i, j) = zero
+                end do
+                qfac (i, i) = one
+            end do
             go to 100
         end if
 !
@@ -796,14 +866,16 @@ contains
 60      if (nact == 0) go to 100
         ic = nact
 70      temp = zero
-        do 80 i = 1, n
-80      temp = temp + qfac (i, ic) * g (i)
+        do i = 1, n
+            temp = temp + qfac (i, ic) * g (i)
+        end do
         idiag = (ic*ic+ic) / 2
         if (ic < nact) then
             jw = idiag + ic
-            do 90 j = ic + 1, nact
+            do j = ic + 1, nact
                 temp = temp - rfac (jw) * vlam (j)
-90          jw = jw + j
+                jw = jw + j
+            end do
         end if
         if (temp >= zero) go to 800
         vlam (ic) = temp / rfac (idiag)
@@ -816,16 +888,20 @@ contains
 !       hull of the constraint gradients.
 !
 100     if (nact == n) go to 290
-        do 110 j = nact + 1, n
+        do j = nact + 1, n
             w (j) = zero
-            do 110 i = 1, n
-110     w (j) = w (j) + qfac (i, j) * g (i)
+            do i = 1, n
+                w (j) = w (j) + qfac (i, j) * g (i)
+            end do
+        end do
         dd = zero
-        do 130 i = 1, n
+        do i = 1, n
             dw (i) = zero
-            do 120 j = nact + 1, n
-120         dw (i) = dw (i) - w (j) * qfac (i, j)
-130     dd = dd + dw (i) ** 2
+            do j = nact + 1, n
+                dw (i) = dw (i) - w (j) * qfac (i, j)
+            end do
+            dd = dd + dw (i) ** 2
+        end do
         if (dd >= ddsav) go to 290
         if (dd == zero) go to 300
         ddsav = dd
@@ -840,11 +916,12 @@ contains
         if (m > 0) then
             test = dnorm / snorm
             violmx = zero
-            do 150 j = 1, m
+            do j = 1, m
                 if (resnew(j) > zero .and. resnew(j) <= tdel) then
                     sum = zero
-                    do 140 i = 1, n
-140                 sum = sum + amat (i, j) * dw (i)
+                    do i = 1, n
+                        sum = sum + amat (i, j) * dw (i)
+                    end do
                     if (sum > test*resnew(j)) then
                         if (sum > violmx) then
                             l = j
@@ -852,17 +929,19 @@ contains
                         end if
                     end if
                 end if
-150         continue
+            end do
             ctol = zero
             temp = 0.01_wp * dnorm
             if (violmx > zero .and. violmx < temp) then
                 if (nact > 0) then
-                    do 170 k = 1, nact
+                    do k = 1, nact
                         j = iact (k)
                         sum = zero
-                        do 160 i = 1, n
-160                     sum = sum + dw (i) * amat (i, j)
-170                 ctol = max (ctol, abs(sum))
+                        do i = 1, n
+                            sum = sum + dw (i) * amat (i, j)
+                        end do
+                        ctol = max (ctol, abs(sum))
+                     end do
                 end if
             end if
         end if
@@ -878,10 +957,11 @@ contains
         nactp = nact + 1
         idiag = (nactp*nactp-nactp) / 2
         rdiag = zero
-        do 200 j = n, 1, - 1
+        do j = n, 1, - 1
             sprod = zero
-            do 180 i = 1, n
-180         sprod = sprod + qfac (i, j) * amat (i, l)
+            do i = 1, n
+                sprod = sprod + qfac (i, j) * amat (i, l)
+            end do
             if (j <= nact) then
                 rfac (idiag+j) = sprod
             else
@@ -892,16 +972,18 @@ contains
                     cosv = sprod / temp
                     sinv = rdiag / temp
                     rdiag = temp
-                    do 190 i = 1, n
+                    do i = 1, n
                         temp = cosv * qfac (i, j) + sinv * qfac (i, j+1)
                         qfac (i, j+1) = - sinv * qfac (i, j) + cosv * qfac (i, j+1)
-190                 qfac (i, j) = temp
+                        qfac (i, j) = temp
+                    end do
                 end if
             end if
-200     continue
+        end do
         if (rdiag < zero) then
-            do 210 i = 1, n
-210         qfac (i, nactp) = - qfac (i, nactp)
+            do i = 1, n
+                qfac (i, nactp) = - qfac (i, nactp)
+            end do
         end if
         rfac (idiag+nactp) = abs (rdiag)
         nact = nactp
@@ -914,14 +996,16 @@ contains
 !
 220     w (nact) = one / rfac ((nact*nact+nact)/2) ** 2
         if (nact > 1) then
-            do 240 i = nact - 1, 1, - 1
+            do i = nact - 1, 1, - 1
                 idiag = (i*i+i) / 2
                 jw = idiag + i
                 sum = zero
-                do 230 j = i + 1, nact
+                do j = i + 1, nact
                     sum = sum - rfac (jw) * w (j)
-230             jw = jw + j
-240         w (i) = sum / rfac (idiag)
+                    jw = jw + j
+                end do
+                w (i) = sum / rfac (idiag)
+             end do
         end if
 !
 !     Calculate the multiple of VMU to subtract from VLAM, and update VLAM.
@@ -937,8 +1021,9 @@ contains
             j = j + 1
             go to 250
         end if
-        do 260 j = 1, nact
-260     vlam (j) = vlam (j) - vmult * w (j)
+        do j = 1, nact
+            vlam (j) = vlam (j) - vmult * w (j)
+        end do
         if (ic > 0) vlam (ic) = zero
         violmx = max (violmx-vmult, zero)
         if (ic == 0) violmx = zero
@@ -983,14 +1068,15 @@ contains
             rfac (jw) = cval * rfac (idiag)
             rfac (idiag) = temp
             if (jcp < nact) then
-                do 820 j = jcp + 1, nact
+                do j = jcp + 1, nact
                     temp = sval * rfac (jw+jc) + cval * rfac (jw+jcp)
                     rfac (jw+jcp) = cval * rfac (jw+jc) - sval * rfac (jw+jcp)
                     rfac (jw+jc) = temp
-820             jw = jw + j
+                    jw = jw + j
+                end do
             end if
             jdiag = idiag - jc
-            do 830 i = 1, n
+            do i = 1, n
                 if (i < jc) then
                     temp = rfac (idiag+i)
                     rfac (idiag+i) = rfac (jdiag+i)
@@ -998,7 +1084,8 @@ contains
                 end if
                 temp = sval * qfac (i, jc) + cval * qfac (i, jcp)
                 qfac (i, jcp) = cval * qfac (i, jc) - sval * qfac (i, jcp)
-830         qfac (i, jc) = temp
+                qfac (i, jc) = temp
+            end do
             iact (jc) = iact (jcp)
             resact (jc) = resact (jcp)
             vlam (jc) = vlam (jcp)
@@ -1007,15 +1094,18 @@ contains
         end if
         nact = nact - 1
         go to (50, 60, 280), iflag
+        
     end subroutine getact
  
     subroutine prelim (n, npt, m, amat, b, x, rhobeg, iprint, xbase, xpt, fval, xsav, &
-   & xopt, gopt, kopt, hq, pq, bmat, zmat, idz, ndim, sp, rescon, step, pqw, w, calfun)
+     xopt, gopt, kopt, hq, pq, bmat, zmat, idz, ndim, sp, rescon, step, pqw, w, calfun)
+        
         implicit real (wp) (a-h, o-z)
-        dimension amat (n,*), b (*), x (*), xbase (*), xpt (npt,*), fval (*), xsav (*), &
-       & xopt (*), gopt (*), hq (*), pq (*), bmat (ndim,*), zmat (npt,*), sp (*), rescon &
-       & (*), step (*), pqw (*), w (*)
-        procedure (func) :: calfun
+        
+        dimension amat(n,*),b(*),x(*),xbase(*),xpt(npt,*),fval(*),xsav(*),&
+                  xopt(*),gopt(*),hq(*),pq(*),bmat(ndim,*),zmat(npt,*),sp(*),rescon(*),&
+                  step(*),pqw(*),w(*)
+        procedure(func) :: calfun
 !
 !     The arguments N, NPT, M, AMAT, B, X, RHOBEG, IPRINT, XBASE, XPT, FVAL,
 !       XSAV, XOPT, GOPT, HQ, PQ, BMAT, ZMAT, NDIM, SP and RESCON are the
@@ -1049,23 +1139,28 @@ contains
 !
 !     Set the initial elements of XPT, BMAT, SP and ZMAT to zero.
 !
-        do 20 j = 1, n
+        do j = 1, n
             xbase (j) = x (j)
-            do 10 k = 1, npt
-10          xpt (k, j) = zero
-            do 20 i = 1, ndim
-20      bmat (i, j) = zero
-        do 30 k = 1, npt
+            do k = 1, npt
+                xpt (k, j) = zero
+            end do
+            do i = 1, ndim
+                bmat (i, j) = zero
+            end do
+        end do
+        do k = 1, npt
             sp (k) = zero
-            do 30 j = 1, npt - n - 1
-30      zmat (k, j) = zero
+            do j = 1, npt - n - 1
+                zmat (k, j) = zero
+            end do
+        end do
 !
 !     Set the nonzero coordinates of XPT(K,.), K=1,2,...,min[2*N+1,NPT],
 !       but they may be altered later to make a constraint violation
 !       sufficiently large. The initial nonzero elements of BMAT and of
 !       the first min[N,NPT-N-1] columns of ZMAT are set also.
 !
-        do 40 j = 1, n
+        do j = 1, n
             xpt (j+1, j) = rhobeg
             if (j < npt-n) then
                 jp = n + j + 1
@@ -1080,13 +1175,13 @@ contains
                 bmat (j+1, j) = one / rhobeg
                 bmat (npt+j, j) = - half * rhosq
             end if
-40      continue
+        end do
 !
 !     Set the remaining initial nonzero elements of XPT and ZMAT when the
 !       number of interpolation points exceeds 2*N+1.
 !
         if (npt > 2*n+1) then
-            do 50 k = n + 1, npt - n - 1
+            do k = n + 1, npt - n - 1
                 itemp = (k-1) / n
                 ipt = k - itemp * n
                 jpt = ipt + itemp
@@ -1096,31 +1191,35 @@ contains
                 zmat (1, k) = recip
                 zmat (ipt+1, k) = - recip
                 zmat (jpt+1, k) = - recip
-50          zmat (n+k+1, k) = recip
+                zmat (n+k+1, k) = recip
+            end do
         end if
 !
 !     Update the constraint right hand sides to allow for the shift XBASE.
 !
         if (m > 0) then
-            do 70 j = 1, m
+            do j = 1, m
                 temp = zero
-                do 60 i = 1, n
-60              temp = temp + amat (i, j) * xbase (i)
-70          b (j) = b (j) - temp
+                do i = 1, n
+                    temp = temp + amat (i, j) * xbase (i)
+                end do
+                b (j) = b (j) - temp
+            end do
         end if
 !
 !     Go through the initial points, shifting every infeasible point if
 !       necessary so that its constraint violation is at least 0.2*RHOBEG.
 !
-        do 150 nf = 1, npt
+        do nf = 1, npt
             feas = one
             bigv = zero
             j = 0
 80          j = j + 1
             if (j <= m .and. nf >= 2) then
                 resid = - b (j)
-                do 90 i = 1, n
-90              resid = resid + xpt (nf, i) * amat (i, j)
+                do i = 1, n
+                    resid = resid + xpt (nf, i) * amat (i, j)
+                end do
                 if (resid <= bigv) go to 80
                 bigv = resid
                 jsav = j
@@ -1131,23 +1230,27 @@ contains
                 feas = zero
             end if
             if (feas < zero) then
-                do 100 i = 1, n
-100             step (i) = xpt (nf, i) + (test-bigv) * amat (i, jsav)
-                do 110 k = 1, npt
+                do i = 1, n
+                    step (i) = xpt (nf, i) + (test-bigv) * amat (i, jsav)
+                end do
+                do k = 1, npt
                     sp (npt+k) = zero
-                    do 110 j = 1, n
-110             sp (npt+k) = sp (npt+k) + xpt (k, j) * step (j)
-                call update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kbase, nf, &
-               & pqw, w)
-                do 120 i = 1, n
-120             xpt (nf, i) = step (i)
+                    do j = 1, n
+                        sp (npt+k) = sp (npt+k) + xpt (k, j) * step (j)
+                    end do
+                end do
+                call update (n,npt,xpt,bmat,zmat,idz,ndim,sp,step,kbase,nf,pqw,w)
+                do i = 1, n
+                    xpt (nf, i) = step (i)
+                end do
             end if
 !
 !     Calculate the objective function at the current interpolation point,
 !       and set KOPT to the index of the first trust region centre.
 !
-            do 130 j = 1, n
-130         x (j) = xbase (j) + xpt (nf, j)
+            do j = 1, n
+                x (j) = xbase (j) + xpt (nf, j)
+            end do
             f = feas
             call calfun (n, x, f)
             if (iprint == 3) then
@@ -1160,52 +1263,66 @@ contains
             else if (f < fval(kopt) .and. feas > zero) then
                 kopt = nf
             end if
-150     fval (nf) = f
+            fval (nf) = f
+        end do
 !
 !     Set PQ for the first quadratic model.
 !
-        do 160 j = 1, nptm
+        do j = 1, nptm
             w (j) = zero
-            do 160 k = 1, npt
-160     w (j) = w (j) + zmat (k, j) * fval (k)
-        do 170 k = 1, npt
+            do k = 1, npt
+                w (j) = w (j) + zmat (k, j) * fval (k)
+            end do
+        end do
+        do k = 1, npt
             pq (k) = zero
-            do 170 j = 1, nptm
-170     pq (k) = pq (k) + zmat (k, j) * w (j)
+            do j = 1, nptm
+                pq (k) = pq (k) + zmat (k, j) * w (j)
+            end do
+        end do
 !
 !     Set XOPT, SP, GOPT and HQ for the first quadratic model.
 !
-        do 180 j = 1, n
+        do j = 1, n
             xopt (j) = xpt (kopt, j)
             xsav (j) = xbase (j) + xopt (j)
-180     gopt (j) = zero
-        do 200 k = 1, npt
+            gopt (j) = zero
+        end do
+        do k = 1, npt
             sp (k) = zero
-            do 190 j = 1, n
-190         sp (k) = sp (k) + xpt (k, j) * xopt (j)
+            do j = 1, n
+                sp (k) = sp (k) + xpt (k, j) * xopt (j)
+            end do
             temp = pq (k) * sp (k)
-            do 200 j = 1, n
-200     gopt (j) = gopt (j) + fval (k) * bmat (k, j) + temp * xpt (k, j)
-        do 210 i = 1, (n*n+n) / 2
-210     hq (i) = zero
+            do j = 1, n
+                gopt (j) = gopt (j) + fval (k) * bmat (k, j) + temp * xpt (k, j)
+            end do
+        end do
+        do i = 1, (n*n+n) / 2
+            hq (i) = zero
+        end do
 !
 !     Set the initial elements of RESCON.
 !
-        do 230 j = 1, m
+        do j = 1, m
             temp = b (j)
-            do 220 i = 1, n
-220         temp = temp - xopt (i) * amat (i, j)
+            do i = 1, n
+                temp = temp - xopt (i) * amat (i, j)
+            end do
             temp = max (temp, zero)
             if (temp >= rhobeg) temp = - temp
-230     rescon (j) = temp
-        return
+            rescon (j) = temp
+        end do
+
     end subroutine prelim
  
     subroutine qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, rescon, qfac, kopt, &
-   & knew, del, step, gl, pqw, rstat, w, ifeas)
+     knew, del, step, gl, pqw, rstat, w, ifeas)
+     
         implicit real (wp) (a-h, o-z)
+     
         dimension amat (n,*), b (*), xpt (npt,*), xopt (*), iact (*), rescon (*), qfac &
-       & (n,*), step (*), gl (*), pqw (*), rstat (*), w (*)
+         (n,*), step (*), gl (*), pqw (*), rstat (*), w (*)
 !
 !     N, NPT, M, AMAT, B, XPT, XOPT, NACT, IACT, RESCON, QFAC, KOPT are the
 !       same as the terms with these names in SUBROUTINE LINCOB.
@@ -1245,19 +1362,24 @@ contains
 !     Replace GL by the gradient of LFUNC at the trust region centre, and
 !       set the elements of RSTAT.
 !
-        do 20 k = 1, npt
+        do k = 1, npt
             temp = zero
-            do 10 j = 1, n
-10          temp = temp + xpt (k, j) * xopt (j)
+            do j = 1, n
+                temp = temp + xpt (k, j) * xopt (j)
+            end do
             temp = pqw (k) * temp
-            do 20 i = 1, n
-20      gl (i) = gl (i) + temp * xpt (k, i)
+            do i = 1, n
+                gl (i) = gl (i) + temp * xpt (k, i)
+            end do
+        end do
         if (m > 0) then
-            do 30 j = 1, m
+            do j = 1, m
                 rstat (j) = one
-30          if (abs(rescon(j)) >= del) rstat (j) = - one
-            do 40 k = 1, nact
-40          rstat (iact(k)) = zero
+                if (abs(rescon(j)) >= del) rstat (j) = - one
+            end do
+            do k = 1, nact
+                rstat (iact(k)) = zero
+            end do
         end if
 !
 !     Find the greatest modulus of LFUNC on a line through XOPT and
@@ -1265,14 +1387,15 @@ contains
 !
         iflag = 0
         vbig = zero
-        do 60 k = 1, npt
-            if (k == kopt) go to 60
+        do k = 1, npt
+            if (k == kopt) cycle
             ss = zero
             sp = zero
-            do 50 i = 1, n
+            do i = 1, n
                 temp = xpt (k, i) - xopt (i)
                 ss = ss + temp * temp
-50          sp = sp + gl (i) * temp
+                sp = sp + gl (i) * temp
+            end do
             stp = - del / sqrt (ss)
             if (k == knew) then
                 if (sp*(sp-one) < zero) stp = - stp
@@ -1285,33 +1408,37 @@ contains
                 stpsav = stp
                 vbig = vlag
             end if
-60      continue
+       end do
 !
 !     Set STEP to the move that gives the greatest modulus calculated above.
 !       This move may be replaced by a steepest ascent step from XOPT.
 !
         gg = zero
-        do 70 i = 1, n
+        do i = 1, n
             gg = gg + gl (i) ** 2
-70      step (i) = stpsav * (xpt(ksav, i)-xopt(i))
+            step (i) = stpsav * (xpt(ksav, i)-xopt(i))
+        end do
         vgrad = del * sqrt (gg)
         if (vgrad <= tenth*vbig) go to 220
 !
 !     Make the replacement if it provides a larger value of VBIG.
 !
         ghg = zero
-        do 90 k = 1, npt
+        do k = 1, npt
             temp = zero
-            do 80 j = 1, n
-80          temp = temp + xpt (k, j) * gl (j)
-90      ghg = ghg + pqw (k) * temp * temp
+            do j = 1, n
+                temp = temp + xpt (k, j) * gl (j)
+            end do
+            ghg = ghg + pqw (k) * temp * temp
+        end do
         vnew = vgrad + abs (half*del*del*ghg/gg)
         if (vnew > vbig) then
             vbig = vnew
             stp = del / sqrt (gg)
             if (ghg < zero) stp = - stp
-            do 100 i = 1, n
-100         step (i) = stp * gl (i)
+            do i = 1, n
+                step (i) = stp * gl (i)
+            end do
         end if
         if (nact == 0 .or. nact == n) go to 220
 !
@@ -1320,24 +1447,30 @@ contains
 !       the trust region bound. If VNEW is sufficiently large, then STEP
 !       may be changed to a move along the projected gradient.
 !
-        do 110 k = nact + 1, n
+        do k = nact + 1, n
             w (k) = zero
-            do 110 i = 1, n
-110     w (k) = w (k) + gl (i) * qfac (i, k)
+            do i = 1, n
+                w (k) = w (k) + gl (i) * qfac (i, k)
+            end do
+        end do
         gg = zero
-        do 130 i = 1, n
+        do i = 1, n
             gl (i) = zero
-            do 120 k = nact + 1, n
-120         gl (i) = gl (i) + qfac (i, k) * w (k)
-130     gg = gg + gl (i) ** 2
+            do k = nact + 1, n
+                gl (i) = gl (i) + qfac (i, k) * w (k)
+            end do
+            gg = gg + gl (i) ** 2
+        end do
         vgrad = del * sqrt (gg)
         if (vgrad <= tenth*vbig) go to 220
         ghg = zero
-        do 150 k = 1, npt
+        do k = 1, npt
             temp = zero
-            do 140 j = 1, n
-140         temp = temp + xpt (k, j) * gl (j)
-150     ghg = ghg + pqw (k) * temp * temp
+            do j = 1, n
+                temp = temp + xpt (k, j) * gl (j)
+            end do
+            ghg = ghg + pqw (k) * temp * temp
+        end do
         vnew = vgrad + abs (half*del*del*ghg/gg)
 !
 !     Set W to the possible move along the projected gradient.
@@ -1345,9 +1478,10 @@ contains
         stp = del / sqrt (gg)
         if (ghg < zero) stp = - stp
         ww = zero
-        do 160 i = 1, n
+        do i = 1, n
             w (i) = stp * gl (i)
-160     ww = ww + w (i) ** 2
+            ww = ww + w (i) ** 2
+        end do
 !
 !     Set STEP to W if W gives a sufficiently large value of the modulus
 !       of the Lagrange function, and if W either preserves feasibility
@@ -1363,8 +1497,9 @@ contains
             if (j <= m) then
                 if (rstat(j) == one) then
                     temp = - rescon (j)
-                    do 180 i = 1, n
-180                 temp = temp + w (i) * amat (i, j)
+                    do i = 1, n
+                        temp = temp + w (i) * amat (i, j)
+                    end do
                     bigv = max (bigv, temp)
                 end if
                 if (bigv < test) go to 170
@@ -1373,17 +1508,20 @@ contains
             ctol = zero
             temp = 0.01_wp * sqrt (ww)
             if (bigv > zero .and. bigv < temp) then
-                do 200 k = 1, nact
+                do k = 1, nact
                     j = iact (k)
                     sum = zero
-                    do 190 i = 1, n
-190                 sum = sum + w (i) * amat (i, j)
-200             ctol = max (ctol, abs(sum))
+                    do i = 1, n
+                        sum = sum + w (i) * amat (i, j)
+                    end do
+                    ctol = max (ctol, abs(sum))
+                end do
             end if
             if (bigv <= 10.0_wp*ctol .or. bigv >= test) then
-                do 210 i = 1, n
-210             step (i) = w (i)
-                go to 260
+                do i = 1, n
+                    step (i) = w (i)
+                end do
+                return
             end if
         end if
 !
@@ -1398,8 +1536,9 @@ contains
         if (j <= m) then
             if (rstat(j) < zero) go to 230
             temp = - rescon (j)
-            do 240 i = 1, n
-240         temp = temp + step (i) * amat (i, j)
+            do i = 1, n
+                temp = temp + step (i) * amat (i, j)
+            end do
             resmax = max (resmax, temp)
             if (temp < test) then
                 if (temp <= bigv) go to 230
@@ -1411,22 +1550,25 @@ contains
             ifeas = 0
         end if
         if (ifeas ==-1) then
-            do 250 i = 1, n
-250         step (i) = step (i) + (test-bigv) * amat (i, jsav)
+            do i = 1, n
+                step (i) = step (i) + (test-bigv) * amat (i, jsav)
+            end do
             ifeas = 0
         end if
 !
 !     Return the calculated STEP and the value of IFEAS.
 !
-260     return
+
     end subroutine qmstep
  
     subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, qfac, rfac, &
-   & snorm, step, g, resnew, resact, d, dw, w)
+                       snorm, step, g, resnew, resact, d, dw, w)
+                       
         implicit real (wp) (a-h, o-z)
+
         dimension amat (n,*), b (*), xpt (npt,*), hq (*), pq (*), iact (*), rescon (*), &
-       & qfac (n,*), rfac (*), step (*), g (*), resnew (*), resact (*), d (*), dw (*), w &
-       & (*)
+         qfac (n,*), rfac (*), step (*), g (*), resnew (*), resact (*), d (*), dw (*), w &
+         (*)
 !
 !     N, NPT, M, AMAT, B, XPT, HQ, PQ, NACT, IACT, RESCON, QFAC and RFAC
 !       are the same as the terms with these names in LINCOB. If RESCON(J)
@@ -1466,22 +1608,24 @@ contains
 !     Set the initial elements of RESNEW, RESACT and STEP.
 !
         if (m > 0) then
-            do 10 j = 1, m
+            do j = 1, m
                 resnew (j) = rescon (j)
                 if (rescon(j) >= snorm) then
                     resnew (j) = - one
                 else if (rescon(j) >= zero) then
                     resnew (j) = max (resnew(j), tiny)
                 end if
-10          continue
+            end do
             if (nact > 0) then
-                do 20 k = 1, nact
+                do k = 1, nact
                     resact (k) = rescon (iact(k))
-20              resnew (iact(k)) = zero
+                    resnew (iact(k)) = zero
+                end do
             end if
         end if
-        do 30 i = 1, n
-30      step (i) = zero
+        do i = 1, n
+            step (i) = zero
+        end do
         ss = zero
         reduct = zero
         ncall = 0
@@ -1493,11 +1637,12 @@ contains
 !
 40      ncall = ncall + 1
         call getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, resnew, resact, g, dw, &
-       & w, w(n+1))
+                     w, w(n+1))
         if (w(n+1) == zero) go to 320
         scale = 0.2_wp * snorm / sqrt (w(n+1))
-        do 50 i = 1, n
-50      dw (i) = scale * dw (i)
+        do i = 1, n
+            dw (i) = scale * dw (i)
+        end do
 !
 !     If the modulus of the residual of an active constraint is substantial,
 !       then set D to the shortest move from STEP to the boundaries of the
@@ -1505,25 +1650,30 @@ contains
 !
         resmax = zero
         if (nact > 0) then
-            do 60 k = 1, nact
-60          resmax = max (resmax, resact(k))
+            do k = 1, nact
+                resmax = max (resmax, resact(k))
+            end do
         end if
         gamma = zero
         if (resmax > 1.0e-4_wp*snorm) then
             ir = 0
-            do 80 k = 1, nact
+            do k = 1, nact
                 temp = resact (k)
                 if (k >= 2) then
-                    do 70 i = 1, k - 1
+                    do i = 1, k - 1
                         ir = ir + 1
-70                  temp = temp - rfac (ir) * w (i)
+                        temp = temp - rfac (ir) * w (i)
+                    end do
                 end if
                 ir = ir + 1
-80          w (k) = temp / rfac (ir)
-            do 90 i = 1, n
+                w (k) = temp / rfac (ir)
+            end do
+            do i = 1, n
                 d (i) = zero
-                do 90 k = 1, nact
-90          d (i) = d (i) + w (k) * qfac (i, k)
+                do k = 1, nact
+                    d (i) = d (i) + w (k) * qfac (i, k)
+                end do
+            end do
 !
 !     The vector D that has just been calculated is also the shortest move
 !       from STEP+DW to the boundaries of the active constraints. Set GAMMA
@@ -1533,11 +1683,12 @@ contains
             rhs = snsq
             ds = zero
             dd = zero
-            do 100 i = 1, n
+            do i = 1, n
                 sum = step (i) + dw (i)
                 rhs = rhs - sum * sum
                 ds = ds + d (i) * sum
-100         dd = dd + d (i) ** 2
+                dd = dd + d (i) ** 2
+            end do
             if (rhs > zero) then
                 temp = sqrt (ds*ds+dd*rhs)
                 if (ds <= zero) then
@@ -1556,9 +1707,10 @@ contains
                 if (resnew(j) > zero) then
                     ad = zero
                     adw = zero
-                    do 120 i = 1, n
+                    do i = 1, n
                         ad = ad + amat (i, j) * d (i)
-120                 adw = adw + amat (i, j) * dw (i)
+                        adw = adw + amat (i, j) * dw (i)
+                    end do
                     if (ad > zero) then
                         temp = max ((resnew(j)-adw)/ad, zero)
                         gamma = min (gamma, temp)
@@ -1573,12 +1725,14 @@ contains
 !       subject to the trust region bound and the linear constraints.
 !
         if (gamma <= zero) then
-            do 130 i = 1, n
-130         d (i) = dw (i)
+            do i = 1, n
+                d (i) = dw (i)
+            end do
             icount = nact
         else
-            do 140 i = 1, n
-140         d (i) = dw (i) + gamma * d (i)
+            do i = 1, n
+                d (i) = dw (i) + gamma * d (i)
+            end do
             icount = nact - 1
         end if
         alpbd = one
@@ -1593,10 +1747,11 @@ contains
         dg = zero
         ds = zero
         dd = zero
-        do 160 i = 1, n
+        do i = 1, n
             dg = dg + d (i) * g (i)
             ds = ds + d (i) * step (i)
-160     dd = dd + d (i) ** 2
+            dd = dd + d (i) ** 2
+        end do
         if (dg >= zero) go to 320
         temp = sqrt (rhs*dd+ds*ds)
         if (ds <= zero) then
@@ -1609,26 +1764,32 @@ contains
 !     Set DW to the change in gradient along D.
 !
         ih = 0
-        do 170 j = 1, n
+        do j = 1, n
             dw (j) = zero
-            do 170 i = 1, j
+            do i = 1, j
                 ih = ih + 1
                 if (i < j) dw (j) = dw (j) + hq (ih) * d (i)
-170     dw (i) = dw (i) + hq (ih) * d (j)
-        do 190 k = 1, npt
+                dw (i) = dw (i) + hq (ih) * d (j)
+            end do
+        end do
+        do k = 1, npt
             temp = zero
-            do 180 j = 1, n
-180         temp = temp + xpt (k, j) * d (j)
+            do j = 1, n
+                temp = temp + xpt (k, j) * d (j)
+            end do
             temp = pq (k) * temp
-            do 190 i = 1, n
-190     dw (i) = dw (i) + temp * xpt (k, i)
+            do i = 1, n
+                dw (i) = dw (i) + temp * xpt (k, i)
+            end do
+        end do
 !
 !     Set DGD to the curvature of the model along D. Then reduce ALPHA if
 !       necessary to the value that minimizes the model.
 !
         dgd = zero
-        do 200 i = 1, n
-200     dgd = dgd + d (i) * dw (i)
+        do i = 1, n
+            dgd = dgd + d (i) * dw (i)
+        end do
         alpht = alpha
         if (dg+alpha*dgd > zero) then
             alpha = - dg / dgd
@@ -1640,17 +1801,19 @@ contains
         alphm = alpha
         jsav = 0
         if (m > 0) then
-            do 220 j = 1, m
+            do j = 1, m
                 ad = zero
                 if (resnew(j) > zero) then
-                    do 210 i = 1, n
-210                 ad = ad + amat (i, j) * d (i)
+                    do i = 1, n
+                        ad = ad + amat (i, j) * d (i)
+                    end do
                     if (alpha*ad > resnew(j)) then
                         alpha = resnew (j) / ad
                         jsav = j
                     end if
                 end if
-220         w (j) = ad
+                w (j) = ad
+            end do
         end if
         alpha = max (alpha, alpbd)
         alpha = min (alpha, alphm)
@@ -1659,20 +1822,22 @@ contains
 !     Update STEP, G, RESNEW, RESACT and REDUCT.
 !
         ss = zero
-        do 230 i = 1, n
+        do i = 1, n
             step (i) = step (i) + alpha * d (i)
             ss = ss + step (i) ** 2
-230     g (i) = g (i) + alpha * dw (i)
+            g (i) = g (i) + alpha * dw (i)
+        end do
         if (m > 0) then
-            do 240 j = 1, m
+            do j = 1, m
                 if (resnew(j) > zero) then
                     resnew (j) = max (resnew(j)-alpha*w(j), tiny)
                 end if
-240         continue
+            end do
         end if
         if (icount == nact .and. nact > 0) then
-            do 250 k = 1, nact
-250         resact (k) = (one-gamma) * resact (k)
+            do k = 1, nact
+                resact (k) = (one-gamma) * resact (k)
+            end do
         end if
         reduct = reduct - alpha * (dg+half*alpha*dgd)
 !
@@ -1693,29 +1858,36 @@ contains
 !       previous one except in the case ICOUNT=NACT.
 !
         if (nact > 0) then
-            do 260 j = nact + 1, n
+            do j = nact + 1, n
                 w (j) = zero
-                do 260 i = 1, n
-260         w (j) = w (j) + g (i) * qfac (i, j)
-            do 280 i = 1, n
+                do i = 1, n
+                    w (j) = w (j) + g (i) * qfac (i, j)
+                end do
+            end do
+            do i = 1, n
                 temp = zero
-                do 270 j = nact + 1, n
-270             temp = temp + qfac (i, j) * w (j)
-280         w (n+i) = temp
+                do j = nact + 1, n
+                    temp = temp + qfac (i, j) * w (j)
+                end do
+                w (n+i) = temp
+            end do
         else
-            do 290 i = 1, n
-290         w (n+i) = g (i)
+            do i = 1, n
+                w (n+i) = g (i)
+            end do
         end if
         if (icount == nact) then
             beta = zero
         else
             wgd = zero
-            do 300 i = 1, n
-300         wgd = wgd + w (n+i) * dw (i)
+            do i = 1, n
+                wgd = wgd + w (n+i) * dw (i)
+            end do
             beta = wgd / dgd
         end if
-        do 310 i = 1, n
-310     d (i) = - w (n+i) + beta * d (i)
+        do i = 1, n
+            d (i) = - w (n+i) + beta * d (i)
+        end do
         alpbd = zero
         go to 150
 !
@@ -1725,13 +1897,16 @@ contains
         if (reduct > zero) snorm = sqrt (ss)
         g (1) = zero
         if (ncall > 1) g (1) = one
-        return
+
     end subroutine trstep
  
     subroutine update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, knew, vlag, w)
+
         implicit real (wp) (a-h, o-z)
+
         dimension xpt (npt,*), bmat (ndim,*), zmat (npt,*), sp (*), step (*), vlag (*), w &
        & (*)
+
 !
 !     The arguments N, NPT, XPT, BMAT, ZMAT, IDZ, NDIM ,SP and STEP are
 !       identical to the corresponding arguments in SUBROUTINE LINCOB.
@@ -1762,40 +1937,48 @@ contains
 !       XPT(KOPT,.)+STEP(.). The first NPT components of W_check are held
 !       in W, where W_check is defined in a paper on the updating method.
 !
-        do 20 k = 1, npt
+        do k = 1, npt
             w (k) = sp (npt+k) * (half*sp(npt+k)+sp(k))
             sum = zero
-            do 10 j = 1, n
-10          sum = sum + bmat (k, j) * step (j)
-20      vlag (k) = sum
+            do j = 1, n
+                sum = sum + bmat (k, j) * step (j)
+            end do
+            vlag (k) = sum
+        end do
         beta = zero
-        do 40 k = 1, nptm
+        do k = 1, nptm
             sum = zero
-            do 30 i = 1, npt
-30          sum = sum + zmat (i, k) * w (i)
+            do i = 1, npt
+                sum = sum + zmat (i, k) * w (i)
+            end do
             if (k < idz) then
                 beta = beta + sum * sum
                 sum = - sum
             else
                 beta = beta - sum * sum
             end if
-            do 40 i = 1, npt
-40      vlag (i) = vlag (i) + sum * zmat (i, k)
+            do i = 1, npt
+                vlag (i) = vlag (i) + sum * zmat (i, k)
+            end do
+        end do
         bsum = zero
         dx = zero
         ssq = zero
-        do 70 j = 1, n
+        do j = 1, n
             sum = zero
-            do 50 i = 1, npt
-50          sum = sum + w (i) * bmat (i, j)
+            do i = 1, npt
+                sum = sum + w (i) * bmat (i, j)
+            end do
             bsum = bsum + sum * step (j)
             jp = npt + j
-            do 60 k = 1, n
-60          sum = sum + bmat (jp, k) * step (k)
+            do k = 1, n
+                sum = sum + bmat (jp, k) * step (k)
+            end do
             vlag (jp) = sum
             bsum = bsum + sum * step (j)
             dx = dx + step (j) * xpt (kopt, j)
-70      ssq = ssq + step (j) ** 2
+            ssq = ssq + step (j) ** 2
+        end do
         beta = dx * dx + ssq * (sp(kopt)+dx+dx+half*ssq) + beta - bsum
         vlag (kopt) = vlag (kopt) + one
 !
@@ -1803,45 +1986,47 @@ contains
 !       point to be deleted, by maximizing the absolute value of the
 !       denominator of the updating formula times a weighting factor.
 !
-!
         if (knew == 0) then
             denmax = zero
-            do 100 k = 1, npt
+            do k = 1, npt
                 hdiag = zero
-                do 80 j = 1, nptm
+                do j = 1, nptm
                     temp = one
                     if (j < idz) temp = - one
-80              hdiag = hdiag + temp * zmat (k, j) ** 2
+                    hdiag = hdiag + temp * zmat (k, j) ** 2
+                end do
                 denabs = abs (beta*hdiag+vlag(k)**2)
                 distsq = zero
-                do 90 j = 1, n
-90              distsq = distsq + (xpt(k, j)-xpt(kopt, j)) ** 2
+                do j = 1, n
+                    distsq = distsq + (xpt(k, j)-xpt(kopt, j)) ** 2
+                end do
                 temp = denabs * distsq * distsq
                 if (temp > denmax) then
                     denmax = temp
                     knew = k
                 end if
-100         continue
+            end do
         end if
 !
 !     Apply the rotations that put zeros in the KNEW-th row of ZMAT.
 !
         jl = 1
         if (nptm >= 2) then
-            do 120 j = 2, nptm
+            do j = 2, nptm
                 if (j == idz) then
                     jl = idz
                 else if (zmat(knew, j) /= zero) then
                     temp = sqrt (zmat(knew, jl)**2+zmat(knew, j)**2)
                     tempa = zmat (knew, jl) / temp
                     tempb = zmat (knew, j) / temp
-                    do 110 i = 1, npt
+                    do i = 1, npt
                         temp = tempa * zmat (i, jl) + tempb * zmat (i, j)
                         zmat (i, j) = tempa * zmat (i, j) - tempb * zmat (i, jl)
-110                 zmat (i, jl) = temp
+                        zmat (i, jl) = temp
+                    end do
                     zmat (knew, j) = zero
                 end if
-120         continue
+            end do
         end if
 !
 !     Put the first NPT components of the KNEW-th column of the Z Z^T matrix
@@ -1850,10 +2035,10 @@ contains
         tempa = zmat (knew, 1)
         if (idz >= 2) tempa = - tempa
         if (jl > 1) tempb = zmat (knew, jl)
-        do 130 i = 1, npt
+        do i = 1, npt
             w (i) = tempa * zmat (i, 1)
             if (jl > 1) w (i) = w (i) + tempb * zmat (i, jl)
-130     continue
+        end do
         alpha = w (knew)
         tau = vlag (knew)
         tausq = tau * tau
@@ -1861,7 +2046,7 @@ contains
         vlag (knew) = vlag (knew) - one
         if (denom == zero) then
             knew = 0
-            go to 180
+            return
         end if
         sqrtdn = sqrt (abs(denom))
 !
@@ -1873,8 +2058,9 @@ contains
         if (jl == 1) then
             tempa = tau / sqrtdn
             tempb = zmat (knew, 1) / sqrtdn
-            do 140 i = 1, npt
-140         zmat (i, 1) = tempa * zmat (i, 1) - tempb * vlag (i)
+            do i = 1, npt
+                zmat (i, 1) = tempa * zmat (i, 1) - tempb * vlag (i)
+            end do
             if (denom < zero) then
                 if (idz == 1) then
                     idz = 2
@@ -1895,9 +2081,10 @@ contains
             temp = zmat (knew, ja)
             scala = one / sqrt (abs(beta)*temp*temp+tausq)
             scalb = scala * sqrtdn
-            do 150 i = 1, npt
+            do i = 1, npt
                 zmat (i, ja) = scala * (tau*zmat(i, ja)-temp*vlag(i))
-150         zmat (i, jb) = scalb * (zmat(i, jb)-tempa*w(i)-tempb*vlag(i))
+                zmat (i, jb) = scalb * (zmat(i, jb)-tempa*w(i)-tempb*vlag(i))
+            end do
             if (denom <= zero) then
                 if (beta < zero) then
                     idz = idz + 1
@@ -1913,24 +2100,26 @@ contains
 !
         if (iflag == 1) then
             idz = idz - 1
-            do 160 i = 1, npt
+            do i = 1, npt
                 temp = zmat (i, 1)
                 zmat (i, 1) = zmat (i, idz)
-160         zmat (i, idz) = temp
+                zmat (i, idz) = temp
+            end do
         end if
 !
 !     Finally, update the matrix BMAT.
 !
-        do 170 j = 1, n
+        do j = 1, n
             jp = npt + j
             w (jp) = bmat (knew, j)
             tempa = (alpha*vlag(jp)-tau*w(jp)) / denom
             tempb = (-beta*w(jp)-tau*vlag(jp)) / denom
-            do 170 i = 1, jp
+            do i = 1, jp
                 bmat (i, j) = bmat (i, j) + tempa * vlag (i) + tempb * w (i)
                 if (i > npt) bmat (jp, i-npt) = bmat (i, j)
-170     continue
-180     return
+            end do
+        end do
+
     end subroutine update
  
     subroutine lincoa_test ()
@@ -1976,36 +2165,42 @@ contains
         sumx = zero
         sumy = zero
         sumz = zero
-        do 10 j = 1, np
+        do j = 1, np
             theta = real (j-1, wp) * pi / real (np-1, wp)
             xp (j) = cos (theta) * cos (two*theta)
             sumx = sumx + xp (j)
             yp (j) = sin (theta) * cos (two*theta)
             sumy = sumy + yp (j)
             zp (j) = sin (two*theta)
-10      sumz = sumz + zp (j)
+            sumz = sumz + zp (j)
+        end do
         sumx = sumx / real (np, wp)
         sumy = sumy / real (np, wp)
         sumz = sumz / real (np, wp)
-        do 20 j = 1, np
+        do j = 1, np
             xp (j) = xp (j) - sumx
             yp (j) = yp (j) - sumy
-20      zp (j) = zp (j) - sumz
+            zp (j) = zp (j) - sumz
+        end do
     !
     !     Set the linear constraints.
     !
         m = 4 * np
-        do 30 k = 1, m
+        do k = 1, m
             b (k) = one
-            do 30 i = 1, n
-30      a (i, k) = zero
-        do 40 j = 1, np
-            do 40 i = 1, 4
+            do i = 1, n
+                a (i, k) = zero
+            end do
+        end do
+        do j = 1, np
+            do i = 1, 4
                 k = 4 * j + i - 4
                 iw = 3 * i
                 a (iw-2, k) = xp (j)
                 a (iw-1, k) = yp (j)
-40      a (iw, k) = zp (j)
+                a (iw, k) = zp (j)
+            end do
+        end do
     !
     !     Set the initial vector of variables. The JCASE=1,6 loop gives six
     !       different choices of NPT when LINCOA is called.
@@ -2014,15 +2209,17 @@ contains
         ys = zero
         zs = zero
         ss = zero
-        do 50 j = 1, np
+        do j = 1, np
             xs = min (xs, xp(j))
             ys = min (ys, yp(j))
             zs = min (zs, zp(j))
-50      ss = max (ss, xp(j)+yp(j)+zp(j))
+            ss = max (ss, xp(j)+yp(j)+zp(j))
+        end do
         fmax = (ss-xs-ys-zs) ** 3 / 6.0_wp
-        do 80 jcase = 1, 6
-            do 60 i = 2, 8
-60          x (i) = zero
+        do jcase = 1, 6
+            do i = 2, 8
+                x (i) = zero
+            end do
             x (1) = one / xs
             x (5) = one / ys
             x (9) = one / zs
@@ -2041,15 +2238,13 @@ contains
             print 70, npt, rhoend
 70          format (/ / 4 x, 'Output from LINCOA with  NPT =', i4, '  and  RHOEND =', 1 &
            & pd12.4)
-            call lincoa (n, npt, m, a, ia, b, x, rhobeg, rhoend, iprint, maxfun, w, &
-           & calfun)
-80      continue
+            call lincoa(n,npt,m,a,ia,b,x,rhobeg,rhoend,iprint,maxfun,w,calfun)
+        end do
  
     contains
  
         subroutine calfun (n, x, f)
             implicit real (wp) (a-h, o-z)
-      !Common fmax
             dimension x (*)
             zero = 0.0_wp
             f = fmax

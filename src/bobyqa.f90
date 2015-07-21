@@ -785,7 +785,7 @@ contains
             itest = itest + 1
             if (gqsq < ten*gisq) itest = 0
             if (itest >= 3) then
-                do i = 1, max0 (npt, nh)
+                do i = 1, max (npt, nh)
                     if (i <= n) gopt (i) = vlag (npt+i)
                     if (i <= npt) pq (i) = w (npt+i)
                     if (i <= nh) hq (i) = zero
@@ -1703,7 +1703,7 @@ contains
                 ihq = (iq+iq*iq) / 2
                 vquad = vquad + xq * (gopt(iq)+half*xq*hq(ihq))
                 if (ip > 0) then
-                    iw = max0 (ihp, ihq) - iabs (ip-iq)
+                    iw = max (ihp, ihq) - abs (ip-iq)
                     vquad = vquad + xp * xq * hq (iw)
                 end if
             end if
@@ -1759,7 +1759,7 @@ contains
                         hq (ihp) = hq (ihp) + temp * ptsaux (1, ip) ** 2
                         if (iq > 0) then
                             hq (ihq) = hq (ihq) + temp * ptsaux (1, iq) ** 2
-                            iw = max0 (ihp, ihq) - iabs (iq-ip)
+                            iw = max (ihp, ihq) - abs (iq-ip)
                             hq (iw) = hq (iw) + temp * ptsaux (1, ip) * ptsaux (1, iq)
                         end if
                     end if
