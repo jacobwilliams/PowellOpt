@@ -533,8 +533,8 @@ contains
                 if (iprint >= 3) print 390
 390             format (5 x)
                 print 400, rho, nf
-400             format (/ 4 x, 'New RHO =', 1 pd11.4, 5 x, 'Number of', ' function values&
-               & =', i6)
+400             format (/ 4 x, 'New RHO =', 1 pd11.4, 5 x, 'Number of',&
+                        ' function values =', i6)
                 print 410, fopt, (xbase(i), i=1, n)
 410             format (4 x, 'Least value of F =', 1 pd23.15, 9 x,&
                 'The corresponding X is:'/(2 x, 5d15.6))
