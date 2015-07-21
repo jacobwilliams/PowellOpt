@@ -21,7 +21,9 @@ module uobyqa_module
 contains
  
     subroutine uobyqa (n, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
+        
         implicit real (wp) (a-h, o-z)
+        
         dimension x (*), w (*)
         procedure (func) :: calfun
 !
@@ -68,15 +70,17 @@ contains
         ivl = ih
         iw = id + n
         call uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, w(ixb), w(ixo), w(ixn), &
-       & w(ixp), w(ipq), w(ipl), w(ih), w(ig), w(id), w(ivl), w(iw), calfun)
+                     w(ixp), w(ipq), w(ipl), w(ih), w(ig), w(id), w(ivl), w(iw), calfun)
  
     end subroutine uobyqa
  
     subroutine uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, xbase, xopt, xnew, xpt, &
-   & pq, pl, h, g, d, vlag, w, calfun)
+                       pq, pl, h, g, d, vlag, w, calfun)
+                       
         implicit real (wp) (a-h, o-z)
+
         dimension x (*), xbase (*), xopt (*), xnew (*), xpt (npt,*), pq (*), pl (npt,*), &
-       & h (n,*), g (*), d (*), vlag (*), w (*)
+                  h (n,*), g (*), d (*), vlag (*), w (*)
         procedure (func) :: calfun
 !
 !     The arguments N, X, RHOBEG, RHOEND, IPRINT and MAXFUN are identical to
@@ -115,21 +119,26 @@ contains
         rho = rhobeg
         rhosq = rho * rho
         nf = 0
-        do 10 i = 1, n
+        do i = 1, n
             xbase (i) = x (i)
-            do 10 k = 1, npt
-10      xpt (k, i) = zero
-        do 20 k = 1, npt
-            do 20 j = 1, nptm
-20      pl (k, j) = zero
+            do k = 1, npt
+                xpt (k, i) = zero
+            end do
+        end do
+        do k = 1, npt
+            do j = 1, nptm
+                pl (k, j) = zero
+            end do
+        end do
 !
 !     The branch to label 120 obtains a new value of the objective function
 !     and then there is a branch back to label 50, because the new function
 !     value is needed to form the initial quadratic model. The least function
 !     value so far and its index are noted below.
 !
-30      do 40 i = 1, n
-40      x (i) = xbase (i) + xpt (nf+1, i)
+30      do i = 1, n
+            x (i) = xbase (i) + xpt (nf+1, i)
+        end do
         go to 120
 50      if (nf == 1) then
             fopt = f
@@ -238,24 +247,27 @@ contains
 !
 70      knew = 0
         ih = n
-        do 80 j = 1, n
+        do j = 1, n
             xopt (j) = xpt (kopt, j)
             g (j) = pq (j)
-            do 80 i = 1, j
+            do i = 1, j
                 ih = ih + 1
                 g (i) = g (i) + pq (ih) * xopt (j)
                 if (i < j) g (j) = g (j) + pq (ih) * xopt (i)
-80      h (i, j) = pq (ih)
+                h (i, j) = pq (ih)
+            end do
+        end do
 !
 !     Generate the next trust region step and test its length. Set KNEW
 !     to -1 if the purpose of the next F will be to improve conditioning,
 !     and also calculate a lower bound on the Hessian term of the model Q.
 !
         call trstep (n, g, h, delta, tol, d, w(1), w(n+1), w(2*n+1), w(3*n+1), w(4*n+1), &
-       & w(5*n+1), evalue)
+                     w(5*n+1), evalue)
         temp = zero
-        do 90 i = 1, n
-90      temp = temp + d (i) ** 2
+        do i = 1, n
+            temp = temp + d (i) ** 2
+        end do
         dnorm = min (delta, sqrt(temp))
         errtol = - one
         if (dnorm < half*rho) then
@@ -267,9 +279,10 @@ contains
 !
 !     Calculate the next value of the objective function.
 !
-100     do 110 i = 1, n
+100     do i = 1, n
             xnew (i) = xopt (i) + d (i)
-110     x (i) = xbase (i) + xnew (i)
+            x (i) = xbase (i) + xnew (i)
+        end do
 120     if (nf >= nftest) then
             if (iprint > 0) print 130
 130         format (/ 4 x, 'Return from UOBYQA because CALFUN has been',&
@@ -291,19 +304,23 @@ contains
 !
         vquad = zero
         ih = n
-        do 150 j = 1, n
+        do j = 1, n
             w (j) = d (j)
             vquad = vquad + w (j) * pq (j)
-            do 150 i = 1, j
+            do i = 1, j
                 ih = ih + 1
                 w (ih) = d (i) * xnew (j) + d (j) * xopt (i)
                 if (i == j) w (ih) = half * w (ih)
-150     vquad = vquad + w (ih) * pq (ih)
-        do 170 k = 1, npt
+                vquad = vquad + w (ih) * pq (ih)
+            end do
+        end do
+        do k = 1, npt
             temp = zero
-            do 160 j = 1, nptm
-160         temp = temp + w (j) * pl (k, j)
-170     vlag (k) = temp
+            do j = 1, nptm
+                temp = temp + w (j) * pl (k, j)
+            end do
+            vlag (k) = temp
+        end do
         vlag (kopt) = vlag (kopt) + one
 !
 !     Update SIXTHM, which is a lower bound on one sixth of the greatest
@@ -311,12 +328,14 @@ contains
 !
         diff = f - fopt - vquad
         sum = zero
-        do 190 k = 1, npt
+        do k = 1, npt
             temp = zero
-            do 180 i = 1, n
-180         temp = temp + (xpt(k, i)-xnew(i)) ** 2
+            do i = 1, n
+                temp = temp + (xpt(k, i)-xnew(i)) ** 2
+            end do
             temp = sqrt (temp)
-190     sum = sum + abs (temp*temp*temp*vlag(k))
+            sum = sum + abs (temp*temp*temp*vlag(k))
+        end do
         sixthm = max (sixthm, abs(diff)/sum)
 !
 !     Update FOPT and XOPT if the new F is the least value of the objective
@@ -325,8 +344,9 @@ contains
         fsave = fopt
         if (f < fopt) then
             fopt = f
-            do 200 i = 1, n
-200         xopt (i) = xnew (i)
+            do i = 1, n
+                xopt (i) = xnew (i)
+            end do
         end if
         ksave = knew
         if (knew > 0) go to 240
@@ -357,10 +377,11 @@ contains
             ktemp = kopt
             detrat = one
         end if
-        do 230 k = 1, npt
+        do k = 1, npt
             sum = zero
-            do 220 i = 1, n
-220         sum = sum + (xpt(k, i)-xopt(i)) ** 2
+            do i = 1, n
+                sum = sum + (xpt(k, i)-xopt(i)) ** 2
+            end do
             temp = abs (vlag(k))
             if (sum > rhosq) temp = temp * (sum/rhosq) ** 1.5_wp
             if (temp > detrat .and. k /= ktemp) then
@@ -368,25 +389,28 @@ contains
                 ddknew = sum
                 knew = k
             end if
-230     continue
+        end do
         if (knew == 0) go to 290
 !
 !     Replace the interpolation point that has index KNEW by the point XNEW,
 !     and also update the Lagrange functions and the quadratic model.
 !
-240     do 250 i = 1, n
-250     xpt (knew, i) = xnew (i)
+240     do i = 1, n
+            xpt (knew, i) = xnew (i)
+        end do
         temp = one / vlag (knew)
-        do 260 j = 1, nptm
+        do j = 1, nptm
             pl (knew, j) = temp * pl (knew, j)
-260     pq (j) = pq (j) + diff * pl (knew, j)
-        do 280 k = 1, npt
+            pq (j) = pq (j) + diff * pl (knew, j)
+        end do
+        do k = 1, npt
             if (k /= knew) then
                 temp = vlag (k)
-                do 270 j = 1, nptm
-270             pl (k, j) = pl (k, j) - temp * pl (knew, j)
+                do j = 1, nptm
+                    pl (k, j) = pl (k, j) - temp * pl (knew, j)
+                end do
             end if
-280     continue
+        end do
 !
 !     Update KOPT if F is the least calculated value of the objective
 !     function. Then branch for another trust region calculation. The
@@ -403,18 +427,20 @@ contains
 !     Alternatively, find out if the interpolation points are close
 !     enough to the best point so far.
 !
-290     do 300 k = 1, npt
+290     do k = 1, npt
             w (k) = zero
-            do 300 i = 1, n
-300     w (k) = w (k) + (xpt(k, i)-xopt(i)) ** 2
+            do i = 1, n
+                w (k) = w (k) + (xpt(k, i)-xopt(i)) ** 2
+            end do
+        end do
 310     knew = - 1
         distest = tworsq
-        do 320 k = 1, npt
+        do k = 1, npt
             if (w(k) > distest) then
                 knew = k
                 distest = w (k)
             end if
-320     continue
+        end do
 !
 !     If a point is sufficiently far away, then set the gradient and Hessian
 !     of its Lagrange function at the centre of the trust region, and find
@@ -423,9 +449,9 @@ contains
         if (knew > 0) then
             ih = n
             sumh = zero
-            do 340 j = 1, n
+            do j = 1, n
                 g (j) = pl (knew, j)
-                do 330 i = 1, j
+                do i = 1, j
                     ih = ih + 1
                     temp = pl (knew, ih)
                     g (j) = g (j) + temp * xopt (i)
@@ -433,8 +459,10 @@ contains
                         g (i) = g (i) + temp * xopt (j)
                         sumh = sumh + temp * temp
                     end if
-330             h (i, j) = temp
-340         sumh = sumh + half * temp * temp
+                    h (i, j) = temp
+                end do
+                sumh = sumh + half * temp * temp
+            end do
 !
 !     If ERRTOL is positive, test whether to replace the interpolation point
 !     with index KNEW, using a bound on the maximum modulus of its Lagrange
@@ -443,8 +471,9 @@ contains
             if (errtol > zero) then
                 w (knew) = zero
                 sumg = zero
-                do 350 i = 1, n
-350             sumg = sumg + g (i) ** 2
+                do i = 1, n
+                    sumg = sumg + g (i) ** 2
+                end do
                 estim = rho * (sqrt(sumg)+rho*sqrt(half*sumh))
                 wmult = sixthm * distest ** 1.5_wp
                 if (wmult*estim <= errtol) go to 310
@@ -468,20 +497,25 @@ contains
 !
         if (rho > rhoend) then
             ih = n
-            do 380 j = 1, n
+            do j = 1, n
                 xbase (j) = xbase (j) + xopt (j)
-                do 360 k = 1, npt
-360             xpt (k, j) = xpt (k, j) - xopt (j)
-                do 380 i = 1, j
+                do k = 1, npt
+                    xpt (k, j) = xpt (k, j) - xopt (j)
+                end do
+                do i = 1, j
                     ih = ih + 1
                     pq (i) = pq (i) + pq (ih) * xopt (j)
                     if (i < j) then
                         pq (j) = pq (j) + pq (ih) * xopt (i)
-                        do 370 k = 1, npt
-370                     pl (k, j) = pl (k, j) + pl (k, ih) * xopt (i)
+                        do k = 1, npt
+                            pl (k, j) = pl (k, j) + pl (k, ih) * xopt (i)
+                        end do
                     end if
-                    do 380 k = 1, npt
-380         pl (k, i) = pl (k, i) + pl (k, ih) * xopt (j)
+                    do k = 1, npt
+                        pl (k, i) = pl (k, i) + pl (k, ih) * xopt (j)
+                    end do
+                end do
+            end do
 !
 !     Pick the next values of RHO and DELTA.
 !
@@ -513,8 +547,9 @@ contains
 !
         if (errtol >= zero) go to 100
 420     if (fopt <= f) then
-            do 430 i = 1, n
-430         x (i) = xbase (i) + xopt (i)
+            do i = 1, n
+                x (i) = xbase (i) + xopt (i)
+            end do
             f = fopt
         end if
         if (iprint >= 1) then
@@ -523,11 +558,13 @@ contains
             'Number of function values =', i6)
             print 410, f, (x(i), i=1, n)
         end if
-        return
+
     end subroutine uobyqb
  
     subroutine lagmax (n, g, h, rho, d, v, vmax)
+       
         implicit real (wp) (a-h, o-z)
+       
         dimension g (*), h (n,*), d (*), v (*)
 !
 !     N is the number of variables of a quadratic objective function, Q say.
@@ -555,18 +592,20 @@ contains
 !     Pick V such that ||HV|| / ||V|| is large.
 !
         hmax = zero
-        do 20 i = 1, n
+        do i = 1, n
             sum = zero
-            do 10 j = 1, n
+            do j = 1, n
                 h (j, i) = h (i, j)
-10          sum = sum + h (i, j) ** 2
+                sum = sum + h (i, j) ** 2
+            end do
             if (sum > hmax) then
                 hmax = sum
                 k = i
             end if
-20      continue
-        do 30 j = 1, n
-30      v (j) = h (k, j)
+        end do
+        do j = 1, n
+            v (j) = h (k, j)
+        end do
 !
 !     Set D to a vector in the subspace spanned by V and HV that maximizes
 !     |(D,HD)|/(D,D), except that we set D=HV if V and HV are nearly parallel.
@@ -575,33 +614,39 @@ contains
         vsq = zero
         vhv = zero
         dsq = zero
-        do 50 i = 1, n
+        do i = 1, n
             vsq = vsq + v (i) ** 2
             d (i) = zero
-            do 40 j = 1, n
-40          d (i) = d (i) + h (i, j) * v (j)
+            do j = 1, n
+                d (i) = d (i) + h (i, j) * v (j)
+            end do
             vhv = vhv + v (i) * d (i)
-50      dsq = dsq + d (i) ** 2
+            dsq = dsq + d (i) ** 2
+        end do
         if (vhv*vhv <= 0.9999_wp*dsq*vsq) then
             temp = vhv / vsq
             wsq = zero
-            do 60 i = 1, n
+            do i = 1, n
                 d (i) = d (i) - temp * v (i)
-60          wsq = wsq + d (i) ** 2
+                wsq = wsq + d (i) ** 2
+            end do
             whw = zero
             ratio = sqrt (wsq/vsq)
-            do 80 i = 1, n
+            do i = 1, n
                 temp = zero
-                do 70 j = 1, n
-70              temp = temp + h (i, j) * d (j)
+                do j = 1, n
+                    temp = temp + h (i, j) * d (j)
+                end do
                 whw = whw + temp * d (i)
-80          v (i) = ratio * v (i)
+                v (i) = ratio * v (i)
+            end do
             vhv = ratio * ratio * vhv
             vhw = ratio * wsq
             temp = half * (whw-vhv)
             temp = temp + sign (sqrt(temp**2+vhw**2), whw+vhv)
-            do 90 i = 1, n
-90          d (i) = vhw * v (i) + temp * d (i)
+            do i = 1, n
+                d (i) = vhw * v (i) + temp * d (i)
+            end do
         end if
 !
 !     We now turn our attention to the subspace spanned by G and D. A multiple
@@ -611,25 +656,28 @@ contains
         gd = zero
         dd = zero
         dhd = zero
-        do 110 i = 1, n
+        do i = 1, n
             gg = gg + g (i) ** 2
             gd = gd + g (i) * d (i)
             dd = dd + d (i) ** 2
             sum = zero
-            do 100 j = 1, n
-100         sum = sum + h (i, j) * d (j)
-110     dhd = dhd + sum * d (i)
+            do j = 1, n
+                sum = sum + h (i, j) * d (j)
+            end do
+            dhd = dhd + sum * d (i)
+        end do
         temp = gd / gg
         vv = zero
         scale = sign (rho/sqrt(dd), gd*dhd)
-        do 120 i = 1, n
+        do i = 1, n
             v (i) = d (i) - temp * g (i)
             vv = vv + v (i) ** 2
-120     d (i) = scale * d (i)
+            d (i) = scale * d (i)
+        end do
         gnorm = sqrt (gg)
-        if (gnorm*dd <= 0.5d-2*rho*abs(dhd) .or. vv/dd <= 1.0d-4) then
+        if (gnorm*dd <= 0.5e-2_wp*rho*abs(dhd) .or. vv/dd <= 1.0e-4_wp) then
             vmax = abs (scale*(gd+half*scale*dhd))
-            go to 170
+            return
         end if
 !
 !     G and V are now orthogonal in the subspace spanned by G and D. Hence
@@ -639,15 +687,17 @@ contains
         ghg = zero
         vhg = zero
         vhv = zero
-        do 140 i = 1, n
+        do i = 1, n
             sum = zero
             sumv = zero
-            do 130 j = 1, n
+            do j = 1, n
                 sum = sum + h (i, j) * g (j)
-130         sumv = sumv + h (i, j) * v (j)
+                sumv = sumv + h (i, j) * v (j)
+            end do
             ghg = ghg + sum * g (i)
             vhg = vhg + sumv * g (i)
-140     vhv = vhv + sumv * v (i)
+            vhv = vhv + sumv * v (i)
+        end do
         vnorm = sqrt (vv)
         ghg = ghg / gg
         vhg = vhg / (vnorm*gnorm)
@@ -667,9 +717,10 @@ contains
         tempb = wsin / vnorm
         tempc = wcos / vnorm
         tempd = wsin / gnorm
-        do 150 i = 1, n
+        do i = 1, n
             d (i) = tempa * g (i) + tempb * v (i)
-150     v (i) = tempc * v (i) - tempd * g (i)
+            v (i) = tempc * v (i) - tempd * g (i)
+        end do
 !
 !     The final D is a multiple of the current D, V, D+V or D-V. We make the
 !     choice from these possibilities that is optimal.
@@ -689,14 +740,17 @@ contains
             tempd = sign (halfrt*rho, dlin*(ghg+vhv))
             tempv = sign (halfrt*rho, vlin*(ghg+vhv))
         end if
-        do 160 i = 1, n
-160     d (i) = tempd * d (i) + tempv * v (i)
+        do i = 1, n
+            d (i) = tempd * d (i) + tempv * v (i)
+        end do
         vmax = rho * rho * max (tempa, tempb, tempc)
-170     return
+
     end subroutine lagmax
  
     subroutine trstep (n, g, h, delta, tol, d, gg, td, tn, w, piv, z, evalue)
+    
         implicit real (wp) (a-h, o-z)
+    
         dimension g (*), h (n,*), d (*), gg (*), td (*), tn (*), w (*), piv (*), z (*)
 !
 !     N is the number of variables of a quadratic objective function, Q say.
@@ -730,24 +784,27 @@ contains
         delsq = delta * delta
         evalue = zero
         nm = n - 1
-        do 10 i = 1, n
+        do i = 1, n
             d (i) = zero
             td (i) = h (i, i)
-            do 10 j = 1, i
-10      h (i, j) = h (j, i)
+            do j = 1, i
+                h (i, j) = h (j, i)
+            end do
+        end do
 !
 !     Apply Householder transformations to obtain a tridiagonal matrix that
 !     is similar to H, and put the elements of the Householder vectors in
 !     the lower triangular part of H. Further, TD and TN will contain the
 !     diagonal and other nonzero elements of the tridiagonal matrix.
 !
-        do 80 k = 1, nm
+        do k = 1, nm
             kp = k + 1
             sum = zero
             if (kp < n) then
                 kpp = kp + 1
-                do 20 i = kpp, n
-20              sum = sum + h (i, k) ** 2
+                do i = kpp, n
+                    sum = sum + h (i, k) ** 2
+                end do
             end if
             if (sum == zero) then
                 tn (k) = h (kp, k)
@@ -757,43 +814,51 @@ contains
                 tn (k) = sign (sqrt(sum+temp*temp), temp)
                 h (kp, k) = - sum / (temp+tn(k))
                 temp = sqrt (two/(sum+h(kp, k)**2))
-                do 30 i = kp, n
+                do i = kp, n
                     w (i) = temp * h (i, k)
                     h (i, k) = w (i)
-30              z (i) = td (i) * w (i)
+                    z (i) = td (i) * w (i)
+                end do
                 wz = zero
-                do 50 j = kp, nm
+                do j = kp, nm
                     jp = j + 1
-                    do 40 i = jp, n
+                    do i = jp, n
                         z (i) = z (i) + h (i, j) * w (j)
-40                  z (j) = z (j) + h (i, j) * w (i)
-50              wz = wz + w (j) * z (j)
+                        z (j) = z (j) + h (i, j) * w (i)
+                    end do
+                    wz = wz + w (j) * z (j)
+                end do
                 wz = wz + w (n) * z (n)
-                do 70 j = kp, n
+                do j = kp, n
                     td (j) = td (j) + w (j) * (wz*w(j)-two*z(j))
                     if (j < n) then
                         jp = j + 1
-                        do 60 i = jp, n
-60                      h (i, j) = h (i, j) - w (i) * z (j) - w (j) * (z(i)-wz*w(i))
+                        do i = jp, n
+                            h (i, j) = h (i, j) - w (i) * z (j) - w (j) * (z(i)-wz*w(i))
+                        end do
                     end if
-70              continue
+                end do
             end if
-80      continue
+        end do
 !
 !     Form GG by applying the similarity transformation to G.
 !
         gsq = zero
-        do 90 i = 1, n
+        do i = 1, n
             gg (i) = g (i)
-90      gsq = gsq + g (i) ** 2
+            gsq = gsq + g (i) ** 2
+        end do
         gnorm = sqrt (gsq)
-        do 110 k = 1, nm
+        do k = 1, nm
             kp = k + 1
             sum = zero
-            do 100 i = kp, n
-100         sum = sum + gg (i) * h (i, k)
-            do 110 i = kp, n
-110     gg (i) = gg (i) - sum * h (i, k)
+            do i = kp, n
+                sum = sum + gg (i) * h (i, k)
+            end do
+            do i = kp, n
+                gg (i) = gg (i) - sum * h (i, k)
+            end do
+        end do
 !
 !     Begin the trust region calculation with a tridiagonal matrix by
 !     calculating the norm of H. Then treat the case when H is zero.
@@ -801,15 +866,17 @@ contains
         hnorm = abs (td(1)) + abs (tn(1))
         tdmin = td (1)
         tn (n) = zero
-        do 120 i = 2, n
+        do i = 2, n
             temp = abs (tn(i-1)) + abs (td(i)) + abs (tn(i))
             hnorm = max (hnorm, temp)
-120     tdmin = min (tdmin, td(i))
+            tdmin = min (tdmin, td(i))
+        end do
         if (hnorm == zero) then
-            if (gnorm == zero) go to 400
+            if (gnorm == zero) return
             scale = delta / gnorm
-            do 130 i = 1, n
-130         d (i) = - scale * gg (i)
+            do i = 1, n
+                d (i) = - scale * gg (i)
+            end do
             go to 370
         end if
 !
@@ -878,8 +945,9 @@ contains
                 dsq = dsq + d (k) ** 2
                 go to 170
             end if
-            do 180 i = 1, k
-180         d (i) = zero
+            do i = 1, k
+                d (i) = zero
+            end do
         end if
         parl = par
         parlest = par - dhd / dsq
@@ -891,11 +959,13 @@ contains
         if (gsq == zero) temp = temp * (one-tol)
         if (paruest > zero .and. parlest >= temp) then
             dtg = zero
-            do 200 i = 1, n
-200         dtg = dtg + d (i) * gg (i)
+            do i = 1, n
+                dtg = dtg + d (i) * gg (i)
+            end do
             scale = - sign (delta/sqrt(dsq), dtg)
-            do 210 i = 1, n
-210         d (i) = scale * d (i)
+            do i = 1, n
+                d (i) = scale * d (i)
+            end do
             go to 370
         end if
 !
@@ -913,19 +983,22 @@ contains
 !     Calculate D for the current PAR in the positive definite case.
 !
 230     w (1) = - gg (1) / piv (1)
-        do 240 i = 2, n
-240     w (i) = (-gg(i)-tn(i-1)*w(i-1)) / piv (i)
+        do i = 2, n
+            w (i) = (-gg(i)-tn(i-1)*w(i-1)) / piv (i)
+        end do
         d (n) = w (n)
-        do 250 i = nm, 1, - 1
-250     d (i) = w (i) - tn (i) * d (i+1) / piv (i)
+        do i = nm, 1, - 1
+            d (i) = w (i) - tn (i) * d (i+1) / piv (i)
+        end do
 !
 !     Branch if a Newton-Raphson step is acceptable.
 !
         dsq = zero
         wsq = zero
-        do 260 i = 1, n
+        do i = 1, n
             dsq = dsq + d (i) ** 2
-260     wsq = wsq + piv (i) * w (i) ** 2
+            wsq = wsq + piv (i) * w (i) ** 2
+        end do
         if (par == zero .and. dsq <= delsq) go to 320
 !
 !     Make the usual test for acceptability of a full trust region step.
@@ -935,8 +1008,9 @@ contains
         temp = tol * (one+par*dsq/wsq) - dsq * phi * phi
         if (temp >= zero) then
             scale = delta / dnorm
-            do 270 i = 1, n
-270         d (i) = scale * d (i)
+            do i = 1, n
+                d (i) = scale * d (i)
+            end do
             go to 370
         end if
         if (iterc >= 2 .and. par <= parl) go to 370
@@ -966,19 +1040,22 @@ contains
 !
         if (posdef == zero) then
             w (1) = one / piv (1)
-            do 280 i = 2, n
+            do i = 2, n
                 temp = - tn (i-1) * w (i-1)
-280         w (i) = (sign(one, temp)+temp) / piv (i)
+                w (i) = (sign(one, temp)+temp) / piv (i)
+            end do
             z (n) = w (n)
-            do 290 i = nm, 1, - 1
-290         z (i) = w (i) - tn (i) * z (i+1) / piv (i)
+            do i = nm, 1, - 1
+                z (i) = w (i) - tn (i) * z (i+1) / piv (i)
+            end do
             wwsq = zero
             zsq = zero
             dtz = zero
-            do 300 i = 1, n
+            do i = 1, n
                 wwsq = wwsq + piv (i) * w (i) ** 2
                 zsq = zsq + z (i) ** 2
-300         dtz = dtz + d (i) * z (i)
+                dtz = dtz + d (i) * z (i)
+            end do
 !
 !     Apply the alternative test for convergence.
 !
@@ -987,8 +1064,9 @@ contains
             gam = tempa / (sign(tempb, dtz)+dtz)
             temp = tol * (wsq+par*delsq) - gam * gam * wwsq
             if (temp >= zero) then
-                do 310 i = 1, n
-310             d (i) = d (i) + gam * z (i)
+                do i = 1, n
+                    d (i) = d (i) + gam * z (i)
+                end do
                 go to 370
             end if
             parlest = max (parlest, par-wwsq/zsq)
@@ -1017,9 +1095,10 @@ contains
 320     shfmin = zero
         pivot = td (1)
         shfmax = pivot
-        do 330 k = 2, n
+        do k = 2, n
             pivot = td (k) - tn (k-1) ** 2 / pivot
-330     shfmax = min (shfmax, pivot)
+            shfmax = min (shfmax, pivot)
+        end do
 !
 !     Find EVALUE by a bisection method, but occasionally SHFMAX may be
 !     adjusted by the rule of false position.
@@ -1059,17 +1138,17 @@ contains
 !     Apply the inverse Householder transformations to D.
 !
 370     nm = n - 1
-        do 390 k = nm, 1, - 1
+        do k = nm, 1, - 1
             kp = k + 1
             sum = zero
-            do 380 i = kp, n
-380         sum = sum + d (i) * h (i, k)
-            do 390 i = kp, n
-390     d (i) = d (i) - sum * h (i, k)
-!
-!     Return from the subroutine.
-!
-400     return
+            do i = kp, n
+                sum = sum + d (i) * h (i, k)
+            end do
+            do i = kp, n
+                d (i) = d (i) - sum * h (i, k)
+            end do
+        end do
+
     end subroutine trstep
  
     subroutine uobyqa_test ()
@@ -1078,42 +1157,51 @@ contains
 !
         implicit real (wp) (a-h, o-z)
         dimension x (10), w (10000)
+        
         iprint = 2
         maxfun = 5000
-        rhoend = 1.0d-8
-        do 30 n = 2, 8, 2
-            do 10 i = 1, n
-10          x (i) = real (i, wp) / real (n+1, wp)
+        rhoend = 1.0e-8_wp
+        do n = 2, 8, 2
+            do i = 1, n
+                x (i) = real (i, wp) / real (n+1, wp)
+            end do
             rhobeg = 0.2_wp * x (1)
             print 20, n
 20          format (/ / 5 x, '******************' / 5 x, 'Results with N =', i2, / 5 x,&
-            '******************')
+                    '******************')
             call uobyqa (n, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
-30      continue
+        end do
  
     contains
  
         subroutine calfun (n, x, f)
+        
             implicit real (wp) (a-h, o-z)
             dimension x (*), y (10, 10)
-            do 10 j = 1, n
+        
+            do j = 1, n
                 y (1, j) = 1.0_wp
-10          y (2, j) = 2.0_wp * x (j) - 1.0_wp
-            do 20 i = 2, n
-                do 20 j = 1, n
-20          y (i+1, j) = 2.0_wp * y (2, j) * y (i, j) - y (i-1, j)
+                y (2, j) = 2.0_wp * x (j) - 1.0_wp
+            end do
+            do i = 2, n
+                do j = 1, n
+                    y (i+1, j) = 2.0_wp * y (2, j) * y (i, j) - y (i-1, j)
+                end do
+            end do
             f = 0.0_wp
             np = n + 1
             iw = 1
-            do 40 i = 1, np
+            do i = 1, np
                 sum = 0.0_wp
-                do 30 j = 1, n
-30              sum = sum + y (i, j)
+                do j = 1, n
+                    sum = sum + y (i, j)
+                end do
                 sum = sum / real (n, wp)
                 if (iw > 0) sum = sum + 1.0_wp / real (i*i-2*i, wp)
                 iw = - iw
-40          f = f + sum * sum
-            return
+                f = f + sum * sum
+            end do
+
         end subroutine calfun
  
     end subroutine uobyqa_test
