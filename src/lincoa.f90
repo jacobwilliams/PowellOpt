@@ -1,94 +1,125 @@
- 
-module lincoa_module
+!*****************************************************************************************
+!>
+!  LINCOA: **LIN**early **C**onstrained **O**ptimization **A**lgorithm
+!
+!  The purpose of LINCOA is to seek the least value of a function F of several variables 
+!  subject to general linear inequality constraints on the variables, 
+!  when derivatives of F are not available. 
+!
+!# History
+!  * M.J.D. Powell, December 6th, 2013 : There are no
+!    restrictions on or charges for the use of the software. I hope that the time
+!    and effort I have spent on developing the package will be helpful to much
+!    research and to many applications.
+!  * Jacob Williams, July 2015 : refactoring of the code into modern Fortran.
+    
+    module lincoa_module
  
     use kind_module, only: wp
  
     private
  
     abstract interface
-    subroutine func (n, x, f)!! calfun interface
-        import :: wp
-        implicit none
-        integer :: n
-        real (wp) :: x (*)
-        real (wp) :: f
-    end subroutine func
+        subroutine func (n, x, f)  !! calfun interface
+            import :: wp
+            implicit none
+            integer :: n
+            real(wp) :: x (*)
+            real(wp) :: f
+        end subroutine func
     end interface
  
     public :: lincoa
     public :: lincoa_test
  
-contains
+    contains
  
-    subroutine lincoa (n, npt, m, a, ia, b, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
+!*****************************************************************************************
+!>
+!  This subroutine seeks the least value of a function of many variables,
+!  subject to general linear inequality constraints, by a trust region
+!  method that forms quadratic models by interpolation. 
+!
+!  LINCOA solves the following optimization problem:
+!```
+!   Minimize F(X(1),X(2),...X(N)) subject to:
+!   A * X <= B
+!```
+!
+!  Usually there
+!  is much freedom in each new model after satisfying the interpolation
+!  conditions, which is taken up by minimizing the Frobenius norm of
+!  the change to the second derivative matrix of the model. One new
+!  function value is calculated on each iteration, usually at a point
+!  where the current model predicts a reduction in the least value so
+!  far of the objective function subject to the linear constraints.
+!  Alternatively, a new vector of variables may be chosen to replace
+!  an interpolation point that may be too far away for reliability, and
+!  then the new point does not have to satisfy the linear constraints.    
+
+    subroutine lincoa (n, npt, m, a, ia, b, x, rhobeg, rhoend, iprint, maxfun, calfun)
     
-        implicit real (wp) (a-h, o-z)
+        implicit none
+                
+        integer,intent(in)                  :: n       !! the number of variables. must be at least 2.
+        integer,intent(in)                  :: npt     !! the number of interpolation conditions, which is
+                                                       !! required to be in the interval [N+2,(N+1)(N+2)/2]. Typical choices
+                                                       !! of the author are NPT=N+6 and NPT=2*N+1. Larger values tend to be
+                                                       !! highly inefficent when the number of variables is substantial, due
+                                                       !! to the amount of work and extra difficulty of adjusting more points.
+        integer,intent(in)                  :: m       !! the number of linear inequality constraints.
+        real(wp),dimension(ia,*),intent(in) :: a       !! a matrix whose columns are the constraint gradients, which are
+                                                       !! required to be nonzero.
+        integer,intent(in)                  :: ia      !! the first dimension of the array A, which must be at least N.
+        real(wp),dimension(*),intent(in)    :: b       !! the vector of right hand sides of the constraints, the J-th
+                                                       !! constraint being that the scalar product of A(.,J) with X(.) is at
+                                                       !! most B(J). The initial vector X(.) is made feasible by increasing
+                                                       !! the value of B(J) if necessary.
+        real(wp),dimension(*),intent(inout) :: x       !! the vector of variables. Initial values of X(1),X(2),...,X(N)
+                                                       !! must be supplied. If they do not satisfy the constraints, then B
+                                                       !! is increased as mentioned above. X contains on return the variables
+                                                       !! that have given the least calculated F subject to the constraints.
+        real(wp),intent(in)                 :: rhobeg  !! RHOBEG and RHOEND must be set to the initial and final values of a
+                                                       !! trust region radius, so both must be positive with RHOEND<=RHOBEG.
+                                                       !! Typically, RHOBEG should be about one tenth of the greatest expected
+                                                       !! change to a variable, and RHOEND should indicate the accuracy that
+                                                       !! is required in the final values of the variables.
+        real(wp),intent(in)                 :: rhoend  !! RHOBEG and RHOEND must be set to the initial and final values of a
+                                                       !! trust region radius, so both must be positive with RHOEND<=RHOBEG.
+                                                       !! Typically, RHOBEG should be about one tenth of the greatest expected
+                                                       !! change to a variable, and RHOEND should indicate the accuracy that
+                                                       !! is required in the final values of the variables.
+        integer,intent(in)                  :: iprint  !! The value of IPRINT should be set to 0, 1, 2 or 3, which controls the
+                                                       !! amount of printing. Specifically, there is no output if IPRINT=0 and
+                                                       !! there is output only at the return if IPRINT=1. Otherwise, the best
+                                                       !! feasible vector of variables so far and the corresponding value of
+                                                       !! the objective function are printed whenever RHO is reduced, where
+                                                       !! RHO is the current lower bound on the trust region radius. Further,
+                                                       !! each new value of F with its variables are output if IPRINT=3.
+        integer,intent(in)                  :: maxfun  !! an upper bound on the number of calls of CALFUN,
+                                                       !! its value being at least NPT+1.
+        procedure (func)                    :: calfun  !! It must set
+                                                       !! F to the value of the objective function for the variables X(1),
+                                                       !! X(2),...,X(N). The value of the argument F is positive when CALFUN
+                                                       !! is called if and only if the current X satisfies the constraints
+       
+        real(wp),parameter :: zero = 0.0_wp
+
+        real(wp),dimension(:),allocatable :: w
+        integer, dimension(n) :: iact !to avoid type mismatch error - JW
+        real(wp) :: smallx,sum,temp
+        integer :: np,nptm,iamat,ib,iflag,i,iac,ibmat,ifv,igo,ihq,ipq,ipqw,&
+                   iqf,irc,isp,istp,iw,ixb,ixn,ixo,ixp,ixs,irf,izmat,j,ndim
         
-        dimension a (ia,*), b (*), x (*), w (*)
-        procedure (func) :: calfun
-!
-!     This subroutine seeks the least value of a function of many variables,
-!       subject to general linear inequality constraints, by a trust region
-!       method that forms quadratic models by interpolation. Usually there
-!       is much freedom in each new model after satisfying the interpolation
-!       conditions, which is taken up by minimizing the Frobenius norm of
-!       the change to the second derivative matrix of the model. One new
-!       function value is calculated on each iteration, usually at a point
-!       where the current model predicts a reduction in the least value so
-!       far of the objective function subject to the linear constraints.
-!       Alternatively, a new vector of variables may be chosen to replace
-!       an interpolation point that may be too far away for reliability, and
-!       then the new point does not have to satisfy the linear constraints.
-!       The arguments of the subroutine are as follows.
-!
-!     N must be set to the number of variables and must be at least two.
-!     NPT must be set to the number of interpolation conditions, which is
-!       required to be in the interval [N+2,(N+1)(N+2)/2]. Typical choices
-!       of the author are NPT=N+6 and NPT=2*N+1. Larger values tend to be
-!       highly inefficent when the number of variables is substantial, due
-!       to the amount of work and extra difficulty of adjusting more points.
-!     M must be set to the number of linear inequality constraints.
-!     A is a matrix whose columns are the constraint gradients, which are
-!       required to be nonzero.
-!     IA is the first dimension of the array A, which must be at least N.
-!     B is the vector of right hand sides of the constraints, the J-th
-!       constraint being that the scalar product of A(.,J) with X(.) is at
-!       most B(J). The initial vector X(.) is made feasible by increasing
-!       the value of B(J) if necessary.
-!     X is the vector of variables. Initial values of X(1),X(2),...,X(N)
-!       must be supplied. If they do not satisfy the constraints, then B
-!       is increased as mentioned above. X contains on return the variables
-!       that have given the least calculated F subject to the constraints.
-!     RHOBEG and RHOEND must be set to the initial and final values of a
-!       trust region radius, so both must be positive with RHOEND<=RHOBEG.
-!       Typically, RHOBEG should be about one tenth of the greatest expected
-!       change to a variable, and RHOEND should indicate the accuracy that
-!       is required in the final values of the variables.
-!     The value of IPRINT should be set to 0, 1, 2 or 3, which controls the
-!       amount of printing. Specifically, there is no output if IPRINT=0 and
-!       there is output only at the return if IPRINT=1. Otherwise, the best
-!       feasible vector of variables so far and the corresponding value of
-!       the objective function are printed whenever RHO is reduced, where
-!       RHO is the current lower bound on the trust region radius. Further,
-!       each new value of F with its variables are output if IPRINT=3.
-!     MAXFUN must be set to an upper bound on the number of calls of CALFUN,
-!       its value being at least NPT+1.
 !     W is an array used for working space. Its length must be at least
 !       M*(2+N) + NPT*(4+N+NPT) + N*(9+3*N) + MAX [ M+3*N, 2*M+N, 2*NPT ].
 !       On return, W(1) is set to the final value of F, and W(2) is set to
 !       the total number of function evaluations plus 0.5.
-!
-!     SUBROUTINE CALFUN (N,X,F) has to be provided by the user. It must set
-!       F to the value of the objective function for the variables X(1),
-!       X(2),...,X(N). The value of the argument F is positive when CALFUN
-!       is called if and only if the current X satisfies the constraints
-!       to working accuracy.
- 
-        integer, dimension (n) :: iact !to avoid type mismatch error - JW
+        allocate(w(M*(2+N) + NPT*(4+N+NPT) + N*(9+3*N) + MAX(M+3*N, 2*M+N, 2*NPT)))
+
 !
 !     Check that N, NPT and MAXFUN are acceptable.
 !
-        zero = 0.0_wp
         smallx = 1.0e-6_wp * rhoend
         np = n + 1
         nptm = npt - np
@@ -172,21 +203,25 @@ contains
 !     The above settings provide a partition of W for subroutine LINCOB.
 !
         call lincob (n, npt, m, w(iamat), w(ib), x, rhobeg, rhoend, iprint, maxfun, &
-         w(ixb), w(ixp), w(ifv), w(ixs), w(ixo), w(igo), w(ihq), w(ipq), w(ibmat), &
-         w(izmat), ndim, w(istp), w(isp), w(ixn), iact, w(irc), w(iqf), w(irf), w(ipqw), &
-         w, calfun)
+                     w(ixb), w(ixp), w(ifv), w(ixs), w(ixo), w(igo), w(ihq), w(ipq), &
+                     w(ibmat), w(izmat), ndim, w(istp), w(isp), w(ixn), iact, w(irc), &
+                     w(iqf), w(irf), w(ipqw), w, calfun)
+         
+         deallocate(w)
   
     end subroutine lincoa
+!*****************************************************************************************
  
     subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, maxfun, xbase, xpt, &
-     fval, xsav, xopt, gopt, hq, pq, bmat, zmat, ndim, step, sp, xnew, iact, rescon, &
-     qfac, rfac, pqw, w, calfun)
+                       fval, xsav, xopt, gopt, hq, pq, bmat, zmat, ndim, step, sp, xnew, &
+                       iact, rescon, qfac, rfac, pqw, w, calfun)
    
         implicit real (wp) (a-h, o-z)
    
         dimension amat (n,*), b (*), x (*), xbase (*), xpt (npt,*), fval (*), xsav (*), &
-         xopt (*), gopt (*), hq (*), pq (*), bmat (ndim,*), zmat (npt,*), step (*), sp &
-         (*), xnew (*), iact (*), rescon (*), qfac (n,*), rfac (*), pqw (*), w (*)
+                  xopt (*), gopt (*), hq (*), pq (*), bmat (ndim,*), zmat (npt,*), &
+                  step (*), sp (*), xnew (*), iact (*), rescon (*), qfac (n,*), rfac (*), &
+                  pqw (*), w (*)
         procedure (func) :: calfun
 !
 !     The arguments N, NPT, M, X, RHOBEG, RHOEND, IPRINT and MAXFUN are
@@ -243,10 +278,10 @@ contains
 !
 !     Set some constants.
 !
-        half = 0.5_wp
-        one = 1.0_wp
-        tenth = 0.1_wp
-        zero = 0.0_wp
+        real(wp),parameter :: half  = 0.5_wp
+        real(wp),parameter :: one   = 1.0_wp
+        real(wp),parameter :: tenth = 0.1_wp
+        real(wp),parameter :: zero  = 0.0_wp
  
         np = n + 1
         nh = (n*np) / 2
@@ -260,7 +295,8 @@ contains
 !       is set so that XPT(KOPT,.) is the initial trust region centre.
 !
         call prelim (n, npt, m, amat, b, x, rhobeg, iprint, xbase, xpt, fval, xsav, xopt, &
-         gopt, kopt, hq, pq, bmat, zmat, idz, ndim, sp, rescon, step, pqw, w, calfun)
+                     gopt, kopt, hq, pq, bmat, zmat, idz, ndim, sp, rescon, step, pqw, w, &
+                     calfun)
 !
 !     Begin the iterative procedure.
 !
@@ -796,12 +832,12 @@ contains
     end subroutine lincob
  
     subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, resnew, resact, g, &
-     dw, vlam, w)
+                       dw, vlam, w)
      
         implicit real (wp) (a-h, o-z)
         
-        dimension amat (n,*), b (*), iact (*), qfac (n,*), rfac (*), resnew (*), resact &
-       & (*), g (*), dw (*), vlam (*), w (*)
+        dimension amat (n,*), b (*), iact (*), qfac (n,*), rfac (*), resnew (*), &
+                  resact (*), g (*), dw (*), vlam (*), w (*)
 !
 !     N, M, AMAT, B, NACT, IACT, QFAC and RFAC are the same as the terms
 !       with these names in SUBROUTINE LINCOB. The current values must be
@@ -827,9 +863,10 @@ contains
 !
 !     Set some constants and a temporary VLAM.
 !
-        one = 1.0_wp
-        tiny = 1.0e-60_wp
-        zero = 0.0_wp
+        real(wp),parameter :: one  = 1.0_wp
+        real(wp),parameter :: tiny = 1.0e-60_wp
+        real(wp),parameter :: zero = 0.0_wp
+        
         tdel = 0.2_wp * snorm
         ddsav = zero
         do i = 1, n
@@ -1126,9 +1163,10 @@ contains
 !
 !     Set some constants.
 !
-        half = 0.5_wp
-        one = 1.0_wp
-        zero = 0.0_wp
+        real(wp),parameter :: half = 0.5_wp
+        real(wp),parameter :: one  = 1.0_wp
+        real(wp),parameter :: zero = 0.0_wp
+        
         nptm = npt - n - 1
         rhosq = rhobeg * rhobeg
         recip = one / rhosq
@@ -1317,12 +1355,12 @@ contains
     end subroutine prelim
  
     subroutine qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, rescon, qfac, kopt, &
-     knew, del, step, gl, pqw, rstat, w, ifeas)
+                       knew, del, step, gl, pqw, rstat, w, ifeas)
      
         implicit real (wp) (a-h, o-z)
      
-        dimension amat (n,*), b (*), xpt (npt,*), xopt (*), iact (*), rescon (*), qfac &
-         (n,*), step (*), gl (*), pqw (*), rstat (*), w (*)
+        dimension amat (n,*), b (*), xpt (npt,*), xopt (*), iact (*), rescon (*), &
+                  qfac (n,*), step (*), gl (*), pqw (*), rstat (*), w (*)
 !
 !     N, NPT, M, AMAT, B, XPT, XOPT, NACT, IACT, RESCON, QFAC, KOPT are the
 !       same as the terms with these names in SUBROUTINE LINCOB.
@@ -1353,10 +1391,11 @@ contains
 !
 !     Set some constants.
 !
-        half = 0.5_wp
-        one = 1.0_wp
-        tenth = 0.1_wp
-        zero = 0.0_wp
+        real(wp),parameter :: half  = 0.5_wp
+        real(wp),parameter :: one   = 1.0_wp
+        real(wp),parameter :: tenth = 0.1_wp
+        real(wp),parameter :: zero  = 0.0_wp
+        
         test = 0.2_wp * del
 !
 !     Replace GL by the gradient of LFUNC at the trust region centre, and
@@ -1598,11 +1637,12 @@ contains
 !
 !     Set some numbers for the conjugate gradient iterations.
 !
-        half = 0.5_wp
-        one = 1.0_wp
-        tiny = 1.0e-60_wp
-        zero = 0.0_wp
-        ctest = 0.01_wp
+        real(wp),parameter :: half  = 0.5_wp
+        real(wp),parameter :: one   = 1.0_wp
+        real(wp),parameter :: tiny  = 1.0e-60_wp
+        real(wp),parameter :: zero  = 0.0_wp
+        real(wp),parameter :: ctest = 0.01_wp
+        
         snsq = snorm * snorm
 !
 !     Set the initial elements of RESNEW, RESACT and STEP.
@@ -1904,8 +1944,8 @@ contains
 
         implicit real (wp) (a-h, o-z)
 
-        dimension xpt (npt,*), bmat (ndim,*), zmat (npt,*), sp (*), step (*), vlag (*), w &
-       & (*)
+        dimension xpt (npt,*), bmat (ndim,*), zmat (npt,*), sp (*), step (*), vlag (*), &
+                  w (*)
 
 !
 !     The arguments N, NPT, XPT, BMAT, ZMAT, IDZ, NDIM ,SP and STEP are
@@ -1927,9 +1967,10 @@ contains
 !
 !     Set some constants.
 !
-        half = 0.5_wp
-        one = 1.0_wp
-        zero = 0.0_wp
+        real(wp),parameter :: half = 0.5_wp
+        real(wp),parameter :: one  = 1.0_wp
+        real(wp),parameter :: zero = 0.0_wp
+        
         nptm = npt - n - 1
 !
 !     Calculate VLAG and BETA for the current choice of STEP. The first NPT
@@ -2122,40 +2163,48 @@ contains
 
     end subroutine update
  
-    subroutine lincoa_test ()
-!     Calculate the tetrahedron of least volume that encloses the points
-!       (XP(J),YP(J),ZP(J)), J=1,2,...,NP. Our method requires the origin
-!       to be strictly inside the convex hull of these points. There are
-!       twelve variables that define the four faces of each tetrahedron
-!       that is considered. Each face has the form ALPHA*X+BETA*Y+GAMMA*Z=1,
-!       the variables X(3K-2), X(3K-1) and X(3K) being the values of ALPHA,
-!       BETA and GAMMA for the K-th face, K=1,2,3,4. Let the set T contain
-!       all points in three dimensions that can be reached from the origin
-!       without crossing a face. Because the volume of T may be infinite,
-!       the objective function is the smaller of FMAX and the volume of T,
-!       where FMAX is set to an upper bound on the final volume initially.
-!       There are 4*NP linear constraints on the variables, namely that each
-!       of the given points (XP(J),YP(J),ZP(J)) shall be in T. Let XS = min
-!       XP(J), YS = min YP(J), ZS = min ZP(J) and SS = max XP(J)+YP(J)+ZP(J),
-!       where J runs from 1 to NP. The initial values of the variables are
-!       X(1)=1/XS, X(5)=1/YS, X(9)=1/ZS, X(2)=X(3)=X(4)=X(6)=X(7) =X(8)=0
-!       and X(10)=X(11)=X(12)=1/SS, which satisfy the linear constraints,
-!       and which provide the bound FMAX=(SS-XS-YS-ZS)**3/6. Other details
-!       of the test calculation are given below, including the choice of
-!       the data points (XP(J),YP(J),ZP(J)), J=1,2,...,NP. The smaller final
-!       value of the objective function in the case NPT=35 shows that the
-!       problem has local minima.
+!*****************************************************************************************
+!>
+!  Test problem for [[lincoa]].
 !
-        implicit real (wp) (a-h, o-z)
-        common fmax
-        dimension xp (50), yp (50), zp (50), a (12, 200), b (200), x (12), w (500000)
+!  Calculate the tetrahedron of least volume that encloses the points
+!  `(XP(J),YP(J),ZP(J)), J=1,2,...,NP`. Our method requires the origin
+!  to be strictly inside the convex hull of these points. There are
+!  twelve variables that define the four faces of each tetrahedron
+!  that is considered. Each face has the form `ALPHA*X+BETA*Y+GAMMA*Z=1`,
+!  the variables `X(3K-2)`, `X(3K-1)` and `X(3K)` being the values of `ALPHA`,
+!  `BETA` and `GAMMA` for the K-th face, K=1,2,3,4. Let the set T contain
+!  all points in three dimensions that can be reached from the origin
+!  without crossing a face. Because the volume of T may be infinite,
+!  the objective function is the smaller of FMAX and the volume of T,
+!  where FMAX is set to an upper bound on the final volume initially.
+!  There are 4*NP linear constraints on the variables, namely that each
+!  of the given points `(XP(J),YP(J),ZP(J))` shall be in T. Let `XS = min
+!  XP(J)`, `YS = min YP(J)`, `ZS = min ZP(J)` and `SS = max XP(J)+YP(J)+ZP(J)`,
+!  where J runs from 1 to NP. The initial values of the variables are
+!  `X(1)=1/XS`, `X(5)=1/YS`, `X(9)=1/ZS`, `X(2)=X(3)=X(4)=X(6)=X(7)=X(8)=0`
+!  and `X(10)=X(11)=X(12)=1/SS`, which satisfy the linear constraints,
+!  and which provide the bound `FMAX=(SS-XS-YS-ZS)**3/6`. Other details
+!  of the test calculation are given below, including the choice of
+!  the data points `(XP(J),YP(J),ZP(J)), J=1,2,...,NP`. The smaller final
+!  value of the objective function in the case NPT=35 shows that the
+!  problem has local minima.
+
+    subroutine lincoa_test ()
+    
+        implicit none
+
+        real(wp) :: xp (50), yp (50), zp (50), a (12, 200), b (200), x (12)
+        integer :: ia,n,np,j,iw,iprint,jcase,k,i,maxfun,npt,m
+        real(wp) :: sumx,sumy,sumz,theta,fmax,rhobeg,rhoend,ss,xs,ys,zs
     !
     !     Set some constants.
     !
-        one = 1.0_wp
-        two = 2.0_wp
-        zero = 0.0_wp
-        pi = 4.0_wp * atan (one)
+        real(wp),parameter :: one  = 1.0_wp
+        real(wp),parameter :: two  = 2.0_wp
+        real(wp),parameter :: zero = 0.0_wp
+        real(wp),parameter :: pi   = 4.0_wp * atan(one)
+        
         ia = 12
         n = 12
     !
@@ -2238,15 +2287,21 @@ contains
             print 70, npt, rhoend
 70          format (/ / 4 x, 'Output from LINCOA with  NPT =', i4, '  and  RHOEND =', 1 &
            & pd12.4)
-            call lincoa(n,npt,m,a,ia,b,x,rhobeg,rhoend,iprint,maxfun,w,calfun)
+            call lincoa(n,npt,m,a,ia,b,x,rhobeg,rhoend,iprint,maxfun,calfun)
         end do
  
     contains
  
         subroutine calfun (n, x, f)
-            implicit real (wp) (a-h, o-z)
-            dimension x (*)
-            zero = 0.0_wp
+        
+            implicit none
+            
+            integer :: n
+            real(wp) :: x (*)
+            real(wp) :: f
+            
+            real(wp) :: v12,v13,v14,v23,v24,v34,del1,del2,del3,del4,temp
+            
             f = fmax
             v12 = x (1) * x (5) - x (4) * x (2)
             v13 = x (1) * x (8) - x (7) * x (2)
@@ -2264,8 +2319,10 @@ contains
             if (del4 <= zero) return
             temp = (del1+del2+del3+del4) ** 3 / (del1*del2*del3*del4)
             f = min (temp/6.0_wp, fmax)
+            
         end subroutine calfun
  
     end subroutine lincoa_test
+!*****************************************************************************************
  
 end module lincoa_module

@@ -1,22 +1,40 @@
- 
+!*****************************************************************************************
+!>
+!  COBYLA: **C**onstrained **O**ptimization **BY** **L**inear **A**pproximations.
+!
+!  Minimize an objective function F([X1,X2,...,XN]) subject to M inequality constraints.
+!
+!# References
+!  * "[A direct search optimization method that models the objective and constraint
+!    functions by linear interpolation](http://link.springer.com/chapter/10.1007/978-94-015-8330-5_4)",
+!    *Advances in Optimization and Numerical Analysis*
+!    (eds. Susana Gomez and Jean-Pierre Hennart), Kluwer Academic Publishers (1994).
+!
+!# History
+!  * Mike Powell (May 7th, 1992) -- There are no restrictions on the use of the 
+!    software, nor do I offer any guarantees of success.
+!  * Jacob Williams, July 2015 : refactoring of the code into modern Fortran.
+! 
+!@note There is a need for a linear programming problem to be solved subject to a 
+!      Euclidean norm trust region constraint. Therefore SUBROUTINE TRSTLP is provided, 
+!      but you may have some software that you prefer to use instead.
+
 module cobyla_module
- 
+
     use kind_module, only: wp
-	
-    implicit real (wp) (a-h, o-z)
- 
+     
     private
- 
+     
     abstract interface
-    subroutine func (n, m, x, f, con)  !! calcfc interface
-        import :: wp
-        implicit none
-        integer :: n
-        integer :: m
-        real (wp) :: x (*)
-        real (wp) :: f
-        real (wp) :: con (*)
-    end subroutine func
+        subroutine func (n, m, x, f, con)  !! calcfc interface
+            import :: wp
+            implicit none
+            integer,intent(in)                :: n
+            integer,intent(in)                :: m
+            real(wp),dimension(*),intent(in)  :: x
+            real(wp),intent(out)              :: f
+            real(wp),dimension(*),intent(out) :: con
+        end subroutine func
     end interface
  
     public :: cobyla
@@ -24,67 +42,77 @@ module cobyla_module
  
 contains
  
-    subroutine cobyla (n, m, x, rhobeg, rhoend, iprint, maxfun, w, iact, calcfc)
-    
-        dimension x (*), w (*), iact (*)
-        procedure (func) :: calcfc
-!
-!     This subroutine minimizes an objective function F(X) subject to M
-!     inequality constraints on X, where X is a vector of variables that has
-!     N components. The algorithm employs linear approximations to the
-!     objective and constraint functions, the approximations being formed by
-!     linear interpolation at N+1 points in the space of the variables.
-!     We regard these interpolation points as vertices of a simplex. The
-!     parameter RHO controls the size of the simplex and it is reduced
-!     automatically from RHOBEG to RHOEND. For each RHO the subroutine tries
-!     to achieve a good vector of variables for the current size, and then
-!     RHO is reduced until the value RHOEND is reached. Therefore RHOBEG and
-!     RHOEND should be set to reasonable initial changes to and the required
-!     accuracy in the variables respectively, but this accuracy should be
-!     viewed as a subject for experimentation because it is not guaranteed.
-!     The subroutine has an advantage over many of its competitors, however,
-!     which is that it treats each constraint individually when calculating
-!     a change to the variables, instead of lumping the constraints together
-!     into a single penalty function. The name of the subroutine is derived
-!     from the phrase Constrained Optimization BY Linear Approximations.
-!
-!     The user must set the values of N, M, RHOBEG and RHOEND, and must
-!     provide an initial vector of variables in X. Further, the value of
-!     IPRINT should be set to 0, 1, 2 or 3, which controls the amount of
-!     printing during the calculation. Specifically, there is no output if
-!     IPRINT=0 and there is output only at the end of the calculation if
-!     IPRINT=1. Otherwise each new value of RHO and SIGMA is printed.
-!     Further, the vector of variables and some function information are
-!     given either when RHO is reduced or when each new value of F(X) is
-!     computed in the cases IPRINT=2 or IPRINT=3 respectively. Here SIGMA
-!     is a penalty parameter, it being assumed that a change to X is an
-!     improvement if it reduces the merit function
-!                F(X)+SIGMA*MAX(0.0,-C1(X),-C2(X),...,-CM(X)),
-!     where C1,C2,...,CM denote the constraint functions that should become
-!     nonnegative eventually, at least to the precision of RHOEND. In the
-!     printed output the displayed term that is multiplied by SIGMA is
-!     called MAXCV, which stands for 'MAXimum Constraint Violation'. The
-!     argument MAXFUN is an integer variable that must be set by the user to a
-!     limit on the number of calls of CALCFC, the purpose of this routine being
-!     given below. The value of MAXFUN will be altered to the number of calls
-!     of CALCFC that are made. The arguments W and IACT provide real and
-!     integer arrays that are used as working space. Their lengths must be at
-!     least N*(3*N+2*M+11)+4*M+6 and M+1 respectively.
-!
-!     In order to define the objective and constraint functions, we require
-!     a subroutine that has the name and arguments
-!                SUBROUTINE CALCFC (N,M,X,F,CON)
-!                DIMENSION X(*),CON(*)  .
-!     The values of N and M are fixed and have been defined already, while
-!     X is now the current vector of variables. The subroutine should return
-!     the objective and constraint functions at X in F and CON(1),CON(2),
-!     ...,CON(M). Note that we are trying to adjust X so that F(X) is as
-!     small as possible subject to the constraint functions being nonnegative.
+!*****************************************************************************************
+!>
+!  This subroutine minimizes an objective function F(X) subject to M
+!  inequality constraints on X, where X is a vector of variables that has
+!  N components. The algorithm employs linear approximations to the
+!  objective and constraint functions, the approximations being formed by
+!  linear interpolation at N+1 points in the space of the variables.
+!  We regard these interpolation points as vertices of a simplex. The
+!  parameter RHO controls the size of the simplex and it is reduced
+!  automatically from RHOBEG to RHOEND. For each RHO the subroutine tries
+!  to achieve a good vector of variables for the current size, and then
+!  RHO is reduced until the value RHOEND is reached. Therefore RHOBEG and
+!  RHOEND should be set to reasonable initial changes to and the required
+!  accuracy in the variables respectively, but this accuracy should be
+!  viewed as a subject for experimentation because it is not guaranteed.
+! 
+!  The subroutine has an advantage over many of its competitors, however,
+!  which is that it treats each constraint individually when calculating
+!  a change to the variables, instead of lumping the constraints together
+!  into a single penalty function.
 
-!
-!     Partition the working space array W to provide the storage that is needed
-!     for the main calculation.
-!
+    subroutine cobyla (n, m, x, rhobeg, rhoend, iprint, maxfun, calcfc)
+    
+        implicit none
+        
+        integer,intent(in)                  :: n      !! number of variables
+        integer,intent(in)                  :: m      !! number of inequality constraints
+        real(wp),dimension(*),intent(inout) :: x      !! Initial values of the variables must be set in X(1),X(2),...,X(N).
+                                                      !! On return they will be changed to the solution.
+        real(wp),intent(in)                 :: rhobeg !! reasonable initial change to variables (see description of RHO)
+        real(wp),intent(in)                 :: rhoend !! required accuracy (see description of RHO)
+        integer,intent(in)                  :: iprint !! IPRINT should be set to 0, 1, 2 or 3, which controls the amount of
+                                                      !! printing during the calculation. Specifically, there is no output if
+                                                      !! IPRINT=0 and there is output only at the end of the calculation if
+                                                      !! IPRINT=1. Otherwise each new value of RHO and SIGMA is printed.
+                                                      !! Further, the vector of variables and some function information are
+                                                      !! given either when RHO is reduced or when each new value of F(X) is
+                                                      !! computed in the cases IPRINT=2 or IPRINT=3 respectively. Here SIGMA
+                                                      !! is a penalty parameter, it being assumed that a change to X is an
+                                                      !! improvement if it reduces the merit function
+                                                      !!     F(X)+SIGMA*MAX(0.0,-C1(X),-C2(X),...,-CM(X)),
+                                                      !! where C1,C2,...,CM denote the constraint functions that should become
+                                                      !! nonnegative eventually, at least to the precision of RHOEND. In the
+                                                      !! printed output the displayed term that is multiplied by SIGMA is
+                                                      !! called MAXCV, which stands for 'MAXimum Constraint Violation'. 
+        integer,intent(inout)               :: maxfun !! MAXFUN is an integer variable that must be set by the user to a
+                                                      !! limit on the number of calls of CALCFC.
+                                                      !! The value of MAXFUN will be altered to the number of calls
+                                                      !! of CALCFC that are made.
+        procedure (func)                    :: calcfc !! In order to define the objective and constraint functions, we require
+                                                      !! a subroutine that has the name and arguments
+                                                      !!     SUBROUTINE CALCFC (N,M,X,F,CON)
+                                                      !!     DIMENSION X(*),CON(*)
+                                                      !! The values of N and M are fixed and have been defined already, while
+                                                      !! X is now the current vector of variables. The subroutine should return
+                                                      !! the objective and constraint functions at X in F and CON(1),CON(2),
+                                                      !! ...,CON(M). Note that we are trying to adjust X so that F(X) is as
+                                                      !! small as possible subject to the constraint functions being nonnegative.
+
+        
+        integer,dimension(:),allocatable  :: iact
+        real(wp),dimension(:),allocatable :: w
+        integer :: mpp,icon,isim,isimi,idatm,ia,ivsig,iveta,isigb,idx,iwork
+
+        !W and IACT provide real and integer arrays that are used as working space. 
+        allocate(w(N*(3*N+2*M+11)+4*M+6))
+        allocate(iact(M+1))
+
+        ! Partition the working space array W to provide the storage that is needed
+        ! for the main calculation.
+
         mpp = m + 2
         icon = 1
         isim = icon + mpp
@@ -98,14 +126,20 @@ contains
         iwork = idx + n
  
         call cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, w(icon), w(isim), &
-         w(isimi), w(idatm), w(ia), w(ivsig), w(iveta), w(isigb), w(idx), w(iwork), iact, &
-         calcfc)
+                     w(isimi), w(idatm), w(ia), w(ivsig), w(iveta), w(isigb), w(idx), &
+                     w(iwork), iact, calcfc)
+         
+        deallocate(iact)
+        deallocate(w)
  
     end subroutine cobyla
+!*****************************************************************************************
  
     subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, sim, simi, &
-     datmat, a, vsig, veta, sigbar, dx, w, iact, calcfc)
+                       datmat, a, vsig, veta, sigbar, dx, w, iact, calcfc)
      
+        implicit real (wp) (a-h, o-z)
+
         dimension x (*), con (*), sim (n,*), simi (n,*), datmat (mpp,*), a (n,*), vsig(*),&
          veta (*), sigbar (*), dx (*), w (*), iact (*)
         procedure (func) :: calcfc
@@ -584,10 +618,12 @@ contains
     end subroutine cobylb
  
     subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, sdirn, dxnew, &
-     vmultd)
-   
-        dimension a (n,*), b (*), dx (*), iact (*), z (n,*), zdota (*), vmultc (*), sdirn &
-       & (*), dxnew (*), vmultd (*)
+                       vmultd)
+     
+        implicit real (wp) (a-h, o-z)
+
+        dimension a (n,*), b (*), dx (*), iact (*), z (n,*), zdota (*), vmultc (*), &
+                  sdirn (*), dxnew (*), vmultd (*)
 !
 !     This subroutine calculates an N-component vector DX by applying the
 !     following two stages. In the first stage, DX is set to the shortest
@@ -1055,12 +1091,19 @@ contains
 
     end subroutine trstlp
  
+!*****************************************************************************************
+!>
+!  Test routine for [[cobyla]].
+!
+!  From: Report DAMTP 1992/NA5.
+
     subroutine cobyla_test ()
-!------------------------------------------------------------------------------
-!     Main program of test problems in Report DAMTP 1992/NA5.
-!------------------------------------------------------------------------------
-    
-        dimension x (10), xopt (10), w (3000), iact (51)
+        
+        implicit none
+        
+        real(wp),dimension(10) :: x,xopt
+        integer :: nprob,n,m,i,icase,iprint,maxfun
+        real(wp) :: rhobeg,rhoend,temp,tempa,tempb,tempc,tempd
         
         do nprob = 1, 10
         
@@ -1203,7 +1246,7 @@ contains
                 if (icase == 2) rhoend = 0.0001_wp
                 iprint = 1
                 maxfun = 2000
-                call cobyla (n, m, x, rhobeg, rhoend, iprint, maxfun, w, iact, calcfc)
+                call cobyla (n, m, x, rhobeg, rhoend, iprint, maxfun, calcfc)
                 if (nprob == 10) then
                     tempa = x (1) + x (3) + x (5) + x (7)
                     tempb = x (2) + x (4) + x (6) + x (8)
@@ -1234,7 +1277,13 @@ contains
  
         subroutine calcfc (n, m, x, f, con)
 
-            dimension x (*), con (*)
+            implicit none
+            
+            integer,intent(in)                :: n
+            integer,intent(in)                :: m
+            real(wp),dimension(*),intent(in)  :: x
+            real(wp),intent(out)              :: f
+            real(wp),dimension(*),intent(out) :: con
             
             if (nprob == 1) then
     !
@@ -1341,5 +1390,6 @@ contains
         end subroutine calcfc
  
     end subroutine cobyla_test
+!*****************************************************************************************
  
 end module cobyla_module

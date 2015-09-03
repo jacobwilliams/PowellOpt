@@ -1,3 +1,8 @@
+!*****************************************************************************************
+!> author: Jacob Williams
+!
+!  Kind definitions for the other modules.
+
 	module kind_module
 	
 	use iso_fortran_env
@@ -13,3 +18,4 @@
 	!integer,parameter,public :: wp = real128  !! quad precision
 	
 	end module kind_module
+!*****************************************************************************************

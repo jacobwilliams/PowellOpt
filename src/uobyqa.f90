@@ -1,12 +1,35 @@
- 
-module uobyqa_module
+!*****************************************************************************************
+!>
+!  UOBYQA: **U**nconstrained **O**ptimization **BY** **Q**uadratic **A**pproximation
+!
+!  The purpose of UOBYQA is to seek the least value of a function F of several variables,
+!  when derivatives are not available.
+!  It uses a trust region method that forms quadratic models by interpolation.
+!
+!# References
+!
+!  * "UOBYQA: unconstrained optimization by
+!    quadratic approximation" by M.J.D. Powell, Report DAMTP 2000/NA14,
+!    University of Cambridge.
+!  * "[UOBYQA: unconstrained optimization by quadratic
+!    approximation](http://link.springer.com/article/10.1007%2Fs101070100290)" by 
+!    M.J.D. Powell, Mathematical Programming Series B, Volume
+!    92, pages 555-582 (2002).
+!
+!# History
+!  * M.J.D. Powell : It is hoped that the software will
+!    be helpful to much future research and to many applications.
+!    There are no restrictions on or charges for its use. 
+!  * Jacob Williams, July 2015 : refactoring of the code into modern Fortran.
+
+    module uobyqa_module
  
     use kind_module, only: wp
  
     private
  
     abstract interface
-    subroutine func (n, x, f)!! calfun interface
+    subroutine func (n, x, f)  !! calfun interface
         import :: wp
         implicit none
         integer :: n
@@ -18,45 +41,48 @@ module uobyqa_module
     public :: uobyqa
     public :: uobyqa_test
  
-contains
- 
+    contains
+!*****************************************************************************************
+
+!*****************************************************************************************
+!>
+!  This subroutine seeks the least value of a function of many variables,
+!  by a trust region method that forms quadratic models by interpolation.
+
     subroutine uobyqa (n, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
         
-        implicit real (wp) (a-h, o-z)
+        implicit none
         
-        dimension x (*), w (*)
-        procedure (func) :: calfun
-!
-!     This subroutine seeks the least value of a function of many variables,
-!     by a trust region method that forms quadratic models by interpolation.
-!     The algorithm is described in "UOBYQA: unconstrained optimization by
-!     quadratic approximation" by M.J.D. Powell, Report DAMTP 2000/NA14,
-!     University of Cambridge. The arguments of the subroutine are as follows.
-!
-!     N must be set to the number of variables and must be at least two.
-!     Initial values of the variables must be set in X(1),X(2),...,X(N). They
-!       will be changed to the values that give the least calculated F.
-!     RHOBEG and RHOEND must be set to the initial and final values of a trust
-!       region radius, so both must be positive with RHOEND<=RHOBEG. Typically
-!       RHOBEG should be about one tenth of the greatest expected change to a
-!       variable, and RHOEND should indicate the accuracy that is required in
-!       the final values of the variables.
-!     The value of IPRINT should be set to 0, 1, 2 or 3, which controls the
-!       amount of printing. Specifically, there is no output if IPRINT=0 and
-!       there is output only at the return if IPRINT=1. Otherwise, each new
-!       value of RHO is printed, with the best vector of variables so far and
-!       the corresponding value of the objective function. Further, each new
-!       value of F with its variables are output if IPRINT=3.
-!     MAXFUN must be set to an upper bound on the number of calls of CALFUN.
-!     The array W will be used for working space. Its length must be at least
-!       ( N**4 + 8*N**3 + 23*N**2 + 42*N + max [ 2*N**2 + 4, 18*N ] ) / 4.
-!
-!     SUBROUTINE CALFUN (N,X,F) must be provided by the user. It must set F to
-!     the value of the objective function for the variables X(1),X(2),...,X(N).
-!
-!     Partition the working space array, so that different parts of it can be
-!     treated separately by the subroutine that performs the main calculation.
-!
+        integer,intent(in)    :: n               !! the number of variables and must be at least two
+        real(wp),intent(inout),dimension(*) :: x !! Initial values of the variables must be set in X(1),X(2),...,X(N). They
+                                                 !! will be changed to the values that give the least calculated F.
+        real(wp),intent(inout),dimension(*) :: w !! The array W will be used for working space. Its length must be at least
+                                                 !! `( N**4 + 8*N**3 + 23*N**2 + 42*N + max [ 2*N**2 + 4, 18*N ] ) / 4`.
+        real(wp),intent(in)   :: rhobeg          !! RHOBEG and RHOEND must be set to the initial and final values of a trust
+                                    	         !! region radius, so both must be positive with RHOEND<=RHOBEG. Typically
+                                    	         !! RHOBEG should be about one tenth of the greatest expected change to a
+                                    	         !! variable, and RHOEND should indicate the accuracy that is required in
+                                    	         !! the final values of the variables.
+        real(wp),intent(in)   :: rhoend          !! RHOBEG and RHOEND must be set to the initial and final values of a trust
+                                    	         !! region radius, so both must be positive with RHOEND<=RHOBEG. Typically
+                                    	         !! RHOBEG should be about one tenth of the greatest expected change to a
+                                    	         !! variable, and RHOEND should indicate the accuracy that is required in
+                                    	         !! the final values of the variables.
+        integer,intent(in)    :: iprint          !! The value of IPRINT should be set to 0, 1, 2 or 3, which controls the
+                                    	         !! amount of printing. Specifically, there is no output if IPRINT=0 and
+                                    	         !! there is output only at the return if IPRINT=1. Otherwise, each new
+                                    	         !! value of RHO is printed, with the best vector of variables so far and
+                                    	         !! the corresponding value of the objective function. Further, each new
+                                    	         !! value of F with its variables are output if IPRINT=3.
+        integer,intent(in)   :: maxfun           !! upper bound on the number of calls of CALFUN.
+        procedure (func)     :: calfun           !! It must set F to the value of the objective 
+                                                 !! function for the variables X(1),X(2),...,X(N).
+
+        integer :: npt,ixb,ixo,ixn,ixp,ipq,ipl,ih,ig,id,ivl,iw
+        
+        ! Partition the working space array, so that different parts of it can be
+        ! treated separately by the subroutine that performs the main calculation.
+
         npt = (n*n+3*n+2) / 2
         ixb = 1
         ixo = ixb + n
@@ -69,10 +95,12 @@ contains
         id = ig + n
         ivl = ih
         iw = id + n
+        
         call uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, w(ixb), w(ixo), w(ixn), &
                      w(ixp), w(ipq), w(ipl), w(ih), w(ig), w(id), w(ivl), w(iw), calfun)
  
     end subroutine uobyqa
+!*****************************************************************************************
  
     subroutine uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, xbase, xopt, xnew, xpt, &
                        pq, pl, h, g, d, vlag, w, calfun)
@@ -1151,12 +1179,17 @@ contains
 
     end subroutine trstep
  
+!*****************************************************************************************
+!>
+!  The Chebyquad test problem (Fletcher, 1965) for N = 2,4,6,8.
+
     subroutine uobyqa_test ()
-!
-!     The Chebyquad test problem (Fletcher, 1965) for N = 2,4,6,8.
-!
-        implicit real (wp) (a-h, o-z)
-        dimension x (10), w (10000)
+
+        implicit none
+        
+        real(wp) :: x (10), w (10000)
+        integer :: iprint,maxfun,i,n
+        real(wp) :: rhoend,rhobeg
         
         iprint = 2
         maxfun = 5000
@@ -1176,8 +1209,15 @@ contains
  
         subroutine calfun (n, x, f)
         
-            implicit real (wp) (a-h, o-z)
-            dimension x (*), y (10, 10)
+            implicit none
+            
+            integer :: n
+            real (wp) :: x (*)
+            real (wp) :: f
+            
+            real(wp) :: y (10, 10)
+            real(wp) :: sum
+            integer :: j,i,iw,np
         
             do j = 1, n
                 y (1, j) = 1.0_wp
@@ -1205,5 +1245,8 @@ contains
         end subroutine calfun
  
     end subroutine uobyqa_test
+!*****************************************************************************************
  
-end module uobyqa_module
+!*****************************************************************************************
+    end module uobyqa_module
+!*****************************************************************************************

@@ -1,4 +1,39 @@
- 
+!*****************************************************************************************
+!>
+!  NEWUOA: **NEW** **U**nconstrained **O**ptimization **A**lgorithm
+!
+!  The purpose of NEWUOA is to seek
+!  the least value of a function F of several variables, when derivatives
+!  are not available.
+!  The main new feature of the method is that quadratic
+!  models are updated using only about ```NPT=2N+1``` interpolation conditions,
+!  the remaining freedom being taken up by minimizing the Frobenius norm of
+!  the change to the second derivative matrix of the model.
+!
+!  The new software was developed from [[UOBYQA]], which also forms quadratic
+!  models from interpolation conditions. That method requires ```NPT=(N+1)(N+2)/2```
+!  conditions, however, because they have to define all the parameters of the
+!  model. The least Frobenius norm updating procedure with ```NPT=2N+1``` is usually
+!  much more efficient when ```N``` is large, because the work of each iteration is
+!  much less than before, and in some experiments the number of calculations
+!  of the objective function seems to be only of magnitude ```N```.
+!
+!# References
+!
+!  * "[The NEWUOA software for unconstrained optimization without
+!    derivatives](http://www.damtp.cam.ac.uk/user/na/NA_papers/NA2004_08.pdf)",
+!    2004/NA08
+!  * "[The NEWUOA software for unconstrained minimization
+!    without derivatives](http://link.springer.com/chapter/10.1007%2F0-387-30065-1_16)", 
+!    in Large-Scale Nonlinear Optimization, editors G. Di
+!    Pillo and M. Roma, Springer (2006), pages 255-297.
+!  
+!# History
+!  * M.J.D. Powell, December 16th, 2004 : It is hoped that the software will
+!    be helpful to much future research and to many applications. There are no
+!    restrictions on or charges for its use. 
+!  * Jacob Williams, July 2015 : refactoring of the code into modern Fortran.
+
 module newuoa_module
  
     use kind_module, only: wp
@@ -6,7 +41,7 @@ module newuoa_module
     private
  
     abstract interface
-    subroutine func (n, x, f)!! calfun interface
+    subroutine func (n, x, f)  !! calfun interface
         import :: wp
         implicit none
         integer :: n
@@ -20,52 +55,54 @@ module newuoa_module
  
 contains
  
+!*****************************************************************************************
+!>
+!  This subroutine seeks the least value of a function of many variables,
+!  by a trust region method that forms quadratic models by interpolation.
+!  There can be some freedom in the interpolation conditions, which is
+!  taken up by minimizing the Frobenius norm of the change to the second
+!  derivative of the quadratic model, beginning with a zero matrix.
+
     subroutine newuoa (n, npt, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
     
-        implicit real (wp) (a-h, o-z)
+        implicit none
         
-        dimension x (*), w (*)
-        procedure (func) :: calfun
-!
-!     This subroutine seeks the least value of a function of many variables,
-!     by a trust region method that forms quadratic models by interpolation.
-!     There can be some freedom in the interpolation conditions, which is
-!     taken up by minimizing the Frobenius norm of the change to the second
-!     derivative of the quadratic model, beginning with a zero matrix. The
-!     arguments of the subroutine are as follows.
-!
-!     N must be set to the number of variables and must be at least two.
-!     NPT is the number of interpolation conditions. Its value must be in the
-!       interval [N+2,(N+1)(N+2)/2].
-!     Initial values of the variables must be set in X(1),X(2),...,X(N). They
-!       will be changed to the values that give the least calculated F.
-!     RHOBEG and RHOEND must be set to the initial and final values of a trust
-!       region radius, so both must be positive with RHOEND<=RHOBEG. Typically
-!       RHOBEG should be about one tenth of the greatest expected change to a
-!       variable, and RHOEND should indicate the accuracy that is required in
-!       the final values of the variables.
-!     The value of IPRINT should be set to 0, 1, 2 or 3, which controls the
-!       amount of printing. Specifically, there is no output if IPRINT=0 and
-!       there is output only at the return if IPRINT=1. Otherwise, each new
-!       value of RHO is printed, with the best vector of variables so far and
-!       the corresponding value of the objective function. Further, each new
-!       value of F with its variables are output if IPRINT=3.
-!     MAXFUN must be set to an upper bound on the number of calls of CALFUN.
-!     The array W will be used for working space. Its length must be at least
-!     (NPT+13)*(NPT+N)+3*N*(N+3)/2.
-!
-!     SUBROUTINE CALFUN (N,X,F) must be provided by the user. It must set F to
-!     the value of the objective function for the variables X(1),X(2),...,X(N).
-!
-!     Partition the working space array, so that different parts of it can be
-!     treated separately by the subroutine that performs the main calculation.
-!
+        integer,intent(in)                  :: n       !! the number of variables. must be at least 2.
+        integer,intent(in)                  :: npt     !! The number of interpolation conditions.
+                                                       !! Its value must be in the interval `[N+2,(N+1)(N+2)/2]`.
+        real(wp),dimension(*),intent(inout) :: x       !! Initial values of the variables must be set in X(1),X(2),...,X(N). They
+                                                       !! will be changed to the values that give the least calculated F.
+        real(wp),intent(in)                 :: rhobeg  !! RHOBEG and RHOEND must be set to the initial and final values of a trust
+                                                       !! region radius, so both must be positive with RHOEND<=RHOBEG. Typically
+                                                       !! RHOBEG should be about one tenth of the greatest expected change to a
+                                                       !! variable, and RHOEND should indicate the accuracy that is required in
+                                                       !! the final values of the variables.
+        real(wp),intent(in)                 :: rhoend  !! RHOBEG and RHOEND must be set to the initial and final values of a trust
+                                                       !! region radius, so both must be positive with RHOEND<=RHOBEG. Typically
+                                                       !! RHOBEG should be about one tenth of the greatest expected change to a
+                                                       !! variable, and RHOEND should indicate the accuracy that is required in
+                                                       !! the final values of the variables. 
+        integer,intent(in)                  :: iprint  !! The value of IPRINT should be set to 0, 1, 2 or 3, which controls the
+                                                       !! amount of printing. Specifically, there is no output if IPRINT=0 and
+                                                       !! there is output only at the return if IPRINT=1. Otherwise, each new
+                                                       !! value of RHO is printed, with the best vector of variables so far and
+                                                       !! the corresponding value of the objective function. Further, each new
+                                                       !! value of F with its variables are output if IPRINT=3.
+        integer,intent(in)                  :: maxfun  !! an upper bound on the number of calls of CALFUN.
+        real(wp),dimension(*),intent(inout) :: w       !! The array W will be used for working space. Its length must be at least
+                                                       !! `(NPT+13)*(NPT+N)+3*N*(N+3)/2`.
+        procedure(func)                     :: calfun  !! It must set F to the value of the objective function 
+                                                       !! for the variables `X(1),X(2),...,X(N)`.
+
+        integer :: np,nptm,ndim,ixb,ixo,ixn,ixp,ifv,igq,ihq,ipq,ibmat,izmat,id,ivl,iw
+        
+        ! Partition the working space array, so that different parts of it can be
+        ! treated separately by the subroutine that performs the main calculation.
+
         np = n + 1
         nptm = npt - np
         if (npt < n+2 .or. npt > ((n+2)*np)/2) then
-            print 10
-10          format (/ 4 x, 'Return from NEWUOA because NPT is not in',&
-            ' the required interval')
+            write(*,*) 'Return from NEWUOA because NPT is not in the required interval'
             return
         end if
         ndim = npt + n
@@ -82,16 +119,17 @@ contains
         id = izmat + npt * nptm
         ivl = id + n
         iw = ivl + ndim
-!
-!     The above settings provide a partition of W for subroutine NEWUOB.
-!     The partition requires the first NPT*(NPT+N)+5*N*(N+3)/2 elements of
-!     W plus the space that is needed by the last array of NEWUOB.
-!
+
+        ! The above settings provide a partition of W for subroutine NEWUOB.
+        ! The partition requires the first NPT*(NPT+N)+5*N*(N+3)/2 elements of
+        ! W plus the space that is needed by the last array of NEWUOB.
+
         call newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, w(ixb), w(ixo), w(ixn), &
-         w(ixp), w(ifv), w(igq), w(ihq), w(ipq), w(ibmat), w(izmat), ndim, w(id), w(ivl), &
-         w(iw), calfun)
+                     w(ixp), w(ifv), w(igq), w(ihq), w(ipq), w(ibmat), w(izmat), ndim, &
+                     w(id), w(ivl), w(iw), calfun)
 
     end subroutine newuoa
+!*****************************************************************************************
  
     subroutine newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, xbase, xopt, xnew, xpt, &
      fval, gq, hq, pq, bmat, zmat, ndim, d, vlag, w, calfun)
@@ -1602,14 +1640,18 @@ contains
 
     end subroutine update
  
+!*****************************************************************************************
+!>
+!  The Chebyquad test problem (Fletcher, 1965) for N = 2,4,6 and 8,
+!  with NPT = 2N+1.
+
     subroutine newuoa_test ()
-!
-!     The Chebyquad test problem (Fletcher, 1965) for N = 2,4,6 and 8,
-!     with NPT = 2N+1.
-!
-        implicit real (wp) (a-h, o-z)
+
+        implicit none
         
-        dimension x (10), w (10000)
+        real(wp) :: x (10), w (10000)
+        integer :: iprint,maxfun,n,npt,i
+        real(wp) :: rhoend,rhobeg
         
         iprint = 2
         maxfun = 5000
@@ -1629,9 +1671,15 @@ contains
  
         subroutine calfun (n, x, f)
         
-            implicit real (wp) (a-h, o-z)
+            implicit none
             
-            dimension x (*), y (10, 10)
+            integer :: n
+            real (wp) :: x (*)
+            real (wp) :: f
+            
+            real(wp) :: y (10, 10)
+            integer :: i,j,np,iw
+            real(wp) :: sum
             
             do j = 1, n
                 y (1, j) = 1.0_wp
@@ -1658,5 +1706,6 @@ contains
         end subroutine calfun
  
     end subroutine newuoa_test
+!*****************************************************************************************
  
 end module newuoa_module
