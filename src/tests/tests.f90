@@ -3,11 +3,7 @@
     !!  Units tests for all the optimization methods
     !!
 
-    use bobyqa_module
-    use cobyla_module
-    use lincoa_module
-    use newuoa_module
-    use uobyqa_module
+    use powellopt
 
     implicit none
 

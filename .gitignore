@@ -1,4 +1,6 @@
 *.o
 *.out
+*.mod
 bin
 doc
+lib

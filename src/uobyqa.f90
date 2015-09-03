@@ -49,15 +49,13 @@
 !  This subroutine seeks the least value of a function of many variables,
 !  by a trust region method that forms quadratic models by interpolation.
 
-    subroutine uobyqa (n, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
+    subroutine uobyqa (n, x, rhobeg, rhoend, iprint, maxfun, calfun)
         
         implicit none
         
         integer,intent(in)    :: n               !! the number of variables and must be at least two
         real(wp),intent(inout),dimension(*) :: x !! Initial values of the variables must be set in X(1),X(2),...,X(N). They
                                                  !! will be changed to the values that give the least calculated F.
-        real(wp),intent(inout),dimension(*) :: w !! The array W will be used for working space. Its length must be at least
-                                                 !! `( N**4 + 8*N**3 + 23*N**2 + 42*N + max [ 2*N**2 + 4, 18*N ] ) / 4`.
         real(wp),intent(in)   :: rhobeg          !! RHOBEG and RHOEND must be set to the initial and final values of a trust
                                     	         !! region radius, so both must be positive with RHOEND<=RHOBEG. Typically
                                     	         !! RHOBEG should be about one tenth of the greatest expected change to a
@@ -78,6 +76,7 @@
         procedure (func)     :: calfun           !! It must set F to the value of the objective 
                                                  !! function for the variables X(1),X(2),...,X(N).
 
+        real(wp),dimension(:),allocatable :: w
         integer :: npt,ixb,ixo,ixn,ixp,ipq,ipl,ih,ig,id,ivl,iw
         
         ! Partition the working space array, so that different parts of it can be
@@ -95,10 +94,15 @@
         id = ig + n
         ivl = ih
         iw = id + n
+
+        ! The array W will be used for working space
+        allocate(w((N**4+8*N**3+23*N**2+42*N+max(2*N**2+4,18*N))/4))
         
         call uobyqb (n, x, rhobeg, rhoend, iprint, maxfun, npt, w(ixb), w(ixo), w(ixn), &
                      w(ixp), w(ipq), w(ipl), w(ih), w(ig), w(id), w(ivl), w(iw), calfun)
  
+        deallocate(w)
+        
     end subroutine uobyqa
 !*****************************************************************************************
  
@@ -1187,7 +1191,7 @@
 
         implicit none
         
-        real(wp) :: x (10), w (10000)
+        real(wp) :: x (10)
         integer :: iprint,maxfun,i,n
         real(wp) :: rhoend,rhobeg
         
@@ -1202,7 +1206,7 @@
             print 20, n
 20          format (/ / 5 x, '******************' / 5 x, 'Results with N =', i2, / 5 x,&
                     '******************')
-            call uobyqa (n, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
+            call uobyqa (n, x, rhobeg, rhoend, iprint, maxfun, calfun)
         end do
  
     contains

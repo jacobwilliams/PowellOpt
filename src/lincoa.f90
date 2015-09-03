@@ -207,7 +207,7 @@
                      w(ibmat), w(izmat), ndim, w(istp), w(isp), w(ixn), iact, w(irc), &
                      w(iqf), w(irf), w(ipqw), w, calfun)
          
-         deallocate(w)
+        deallocate(w)
   
     end subroutine lincoa
 !*****************************************************************************************

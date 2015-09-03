@@ -63,7 +63,7 @@ contains
 !  taken up by minimizing the Frobenius norm of the change to the second
 !  derivative of the quadratic model, beginning with a zero matrix.
 
-    subroutine newuoa (n, npt, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
+    subroutine newuoa (n, npt, x, rhobeg, rhoend, iprint, maxfun, calfun)
     
         implicit none
         
@@ -89,11 +89,10 @@ contains
                                                        !! the corresponding value of the objective function. Further, each new
                                                        !! value of F with its variables are output if IPRINT=3.
         integer,intent(in)                  :: maxfun  !! an upper bound on the number of calls of CALFUN.
-        real(wp),dimension(*),intent(inout) :: w       !! The array W will be used for working space. Its length must be at least
-                                                       !! `(NPT+13)*(NPT+N)+3*N*(N+3)/2`.
         procedure(func)                     :: calfun  !! It must set F to the value of the objective function 
                                                        !! for the variables `X(1),X(2),...,X(N)`.
 
+        real(wp),dimension(:),allocatable :: w
         integer :: np,nptm,ndim,ixb,ixo,ixn,ixp,ifv,igq,ihq,ipq,ibmat,izmat,id,ivl,iw
         
         ! Partition the working space array, so that different parts of it can be
@@ -105,6 +104,10 @@ contains
             write(*,*) 'Return from NEWUOA because NPT is not in the required interval'
             return
         end if
+        
+        ! The array W will be used for working space
+        allocate(w((NPT+13)*(NPT+N)+3*N*(N+3)/2))
+        
         ndim = npt + n
         ixb = 1
         ixo = ixb + n
@@ -127,6 +130,8 @@ contains
         call newuob (n, npt, x, rhobeg, rhoend, iprint, maxfun, w(ixb), w(ixo), w(ixn), &
                      w(ixp), w(ifv), w(igq), w(ihq), w(ipq), w(ibmat), w(izmat), ndim, &
                      w(id), w(ivl), w(iw), calfun)
+
+        deallocate(w)
 
     end subroutine newuoa
 !*****************************************************************************************
@@ -1649,7 +1654,7 @@ contains
 
         implicit none
         
-        real(wp) :: x (10), w (10000)
+        real(wp) :: x (10)
         integer :: iprint,maxfun,n,npt,i
         real(wp) :: rhoend,rhobeg
         
@@ -1664,7 +1669,7 @@ contains
             rhobeg = 0.2_wp * x (1)
             print 20, n, npt
 20          format (/ / 4 x, 'Results with N =', i2, ' and NPT =', i3)
-            call newuoa (n, npt, x, rhobeg, rhoend, iprint, maxfun, w, calfun)
+            call newuoa (n, npt, x, rhobeg, rhoend, iprint, maxfun, calfun)
         end do
  
     contains
