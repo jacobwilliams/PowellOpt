@@ -1,4 +1,3 @@
-# PowellOpt
 Optimization algorithms by M.J.D. Powell
 
 ![Build Status](https://github.com/jacobwilliams/PowellOpt/actions/workflows/CI.yml/badge.svg)
