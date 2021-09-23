@@ -1,6 +1,10 @@
 *.o
 *.out
 *.mod
-bin
-doc
-lib
+
+bin/
+doc/
+lib/
+build/
+
+.DS_Store

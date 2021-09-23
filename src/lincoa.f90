@@ -2,9 +2,9 @@
 !>
 !  LINCOA: **LIN**early **C**onstrained **O**ptimization **A**lgorithm
 !
-!  The purpose of LINCOA is to seek the least value of a function F of several variables 
-!  subject to general linear inequality constraints on the variables, 
-!  when derivatives of F are not available. 
+!  The purpose of LINCOA is to seek the least value of a function F of several variables
+!  subject to general linear inequality constraints on the variables,
+!  when derivatives of F are not available.
 !
 !# History
 !  * M.J.D. Powell, December 6th, 2013 : There are no
@@ -12,13 +12,13 @@
 !    and effort I have spent on developing the package will be helpful to much
 !    research and to many applications.
 !  * Jacob Williams, July 2015 : refactoring of the code into modern Fortran.
-    
+
     module lincoa_module
- 
+
     use kind_module, only: wp
- 
+
     private
- 
+
     abstract interface
         subroutine func (n, x, f)  !! calfun interface
             import :: wp
@@ -28,17 +28,17 @@
             real(wp) :: f
         end subroutine func
     end interface
- 
+
     public :: lincoa
     public :: lincoa_test
- 
+
     contains
- 
+
 !*****************************************************************************************
 !>
 !  This subroutine seeks the least value of a function of many variables,
 !  subject to general linear inequality constraints, by a trust region
-!  method that forms quadratic models by interpolation. 
+!  method that forms quadratic models by interpolation.
 !
 !  LINCOA solves the following optimization problem:
 !```
@@ -55,12 +55,12 @@
 !  far of the objective function subject to the linear constraints.
 !  Alternatively, a new vector of variables may be chosen to replace
 !  an interpolation point that may be too far away for reliability, and
-!  then the new point does not have to satisfy the linear constraints.    
+!  then the new point does not have to satisfy the linear constraints.
 
     subroutine lincoa (n, npt, m, a, ia, b, x, rhobeg, rhoend, iprint, maxfun, calfun)
-    
+
         implicit none
-                
+
         integer,intent(in)                  :: n       !! the number of variables. must be at least 2.
         integer,intent(in)                  :: npt     !! the number of interpolation conditions, which is
                                                        !! required to be in the interval [N+2,(N+1)(N+2)/2]. Typical choices
@@ -68,9 +68,9 @@
                                                        !! highly inefficent when the number of variables is substantial, due
                                                        !! to the amount of work and extra difficulty of adjusting more points.
         integer,intent(in)                  :: m       !! the number of linear inequality constraints.
+        integer,intent(in)                  :: ia      !! the first dimension of the array A, which must be at least N.
         real(wp),dimension(ia,*),intent(in) :: a       !! a matrix whose columns are the constraint gradients, which are
                                                        !! required to be nonzero.
-        integer,intent(in)                  :: ia      !! the first dimension of the array A, which must be at least N.
         real(wp),dimension(*),intent(in)    :: b       !! the vector of right hand sides of the constraints, the J-th
                                                        !! constraint being that the scalar product of A(.,J) with X(.) is at
                                                        !! most B(J). The initial vector X(.) is made feasible by increasing
@@ -102,7 +102,7 @@
                                                        !! F to the value of the objective function for the variables X(1),
                                                        !! X(2),...,X(N). The value of the argument F is positive when CALFUN
                                                        !! is called if and only if the current X satisfies the constraints
-       
+
         real(wp),parameter :: zero = 0.0_wp
 
         real(wp),dimension(:),allocatable :: w
@@ -110,7 +110,7 @@
         real(wp) :: smallx,sum,temp
         integer :: np,nptm,iamat,ib,iflag,i,iac,ibmat,ifv,igo,ihq,ipq,ipqw,&
                    iqf,irc,isp,istp,iw,ixb,ixn,ixo,ixp,ixs,irf,izmat,j,ndim
-        
+
 !     W is an array used for working space. Its length must be at least
 !       M*(2+N) + NPT*(4+N+NPT) + N*(9+3*N) + MAX [ M+3*N, 2*M+N, 2*NPT ].
 !       On return, W(1) is set to the final value of F, and W(2) is set to
@@ -206,18 +206,18 @@
                      w(ixb), w(ixp), w(ifv), w(ixs), w(ixo), w(igo), w(ihq), w(ipq), &
                      w(ibmat), w(izmat), ndim, w(istp), w(isp), w(ixn), iact, w(irc), &
                      w(iqf), w(irf), w(ipqw), w, calfun)
-         
+
         deallocate(w)
-  
+
     end subroutine lincoa
 !*****************************************************************************************
- 
+
     subroutine lincob (n, npt, m, amat, b, x, rhobeg, rhoend, iprint, maxfun, xbase, xpt, &
                        fval, xsav, xopt, gopt, hq, pq, bmat, zmat, ndim, step, sp, xnew, &
                        iact, rescon, qfac, rfac, pqw, w, calfun)
-   
+
         implicit real (wp) (a-h, o-z)
-   
+
         dimension amat (n,*), b (*), x (*), xbase (*), xpt (npt,*), fval (*), xsav (*), &
                   xopt (*), gopt (*), hq (*), pq (*), bmat (ndim,*), zmat (npt,*), &
                   step (*), sp (*), xnew (*), iact (*), rescon (*), qfac (n,*), rfac (*), &
@@ -282,7 +282,7 @@
         real(wp),parameter :: one   = 1.0_wp
         real(wp),parameter :: tenth = 0.1_wp
         real(wp),parameter :: zero  = 0.0_wp
- 
+
         np = n + 1
         nh = (n*np) / 2
         nptm = npt - np
@@ -830,12 +830,12 @@
         w (2) = real (nf, wp) + half
 
     end subroutine lincob
- 
+
     subroutine getact (n, m, amat, b, nact, iact, qfac, rfac, snorm, resnew, resact, g, &
                        dw, vlam, w)
-     
+
         implicit real (wp) (a-h, o-z)
-        
+
         dimension amat (n,*), b (*), iact (*), qfac (n,*), rfac (*), resnew (*), &
                   resact (*), g (*), dw (*), vlam (*), w (*)
 !
@@ -866,7 +866,7 @@
         real(wp),parameter :: one  = 1.0_wp
         real(wp),parameter :: tiny = 1.0e-60_wp
         real(wp),parameter :: zero = 0.0_wp
-        
+
         tdel = 0.2_wp * snorm
         ddsav = zero
         do i = 1, n
@@ -1131,14 +1131,14 @@
         end if
         nact = nact - 1
         go to (50, 60, 280), iflag
-        
+
     end subroutine getact
- 
+
     subroutine prelim (n, npt, m, amat, b, x, rhobeg, iprint, xbase, xpt, fval, xsav, &
      xopt, gopt, kopt, hq, pq, bmat, zmat, idz, ndim, sp, rescon, step, pqw, w, calfun)
-        
+
         implicit real (wp) (a-h, o-z)
-        
+
         dimension amat(n,*),b(*),x(*),xbase(*),xpt(npt,*),fval(*),xsav(*),&
                   xopt(*),gopt(*),hq(*),pq(*),bmat(ndim,*),zmat(npt,*),sp(*),rescon(*),&
                   step(*),pqw(*),w(*)
@@ -1166,7 +1166,7 @@
         real(wp),parameter :: half = 0.5_wp
         real(wp),parameter :: one  = 1.0_wp
         real(wp),parameter :: zero = 0.0_wp
-        
+
         nptm = npt - n - 1
         rhosq = rhobeg * rhobeg
         recip = one / rhosq
@@ -1353,12 +1353,12 @@
         end do
 
     end subroutine prelim
- 
+
     subroutine qmstep (n, npt, m, amat, b, xpt, xopt, nact, iact, rescon, qfac, kopt, &
                        knew, del, step, gl, pqw, rstat, w, ifeas)
-     
+
         implicit real (wp) (a-h, o-z)
-     
+
         dimension amat (n,*), b (*), xpt (npt,*), xopt (*), iact (*), rescon (*), &
                   qfac (n,*), step (*), gl (*), pqw (*), rstat (*), w (*)
 !
@@ -1395,7 +1395,7 @@
         real(wp),parameter :: one   = 1.0_wp
         real(wp),parameter :: tenth = 0.1_wp
         real(wp),parameter :: zero  = 0.0_wp
-        
+
         test = 0.2_wp * del
 !
 !     Replace GL by the gradient of LFUNC at the trust region centre, and
@@ -1599,10 +1599,10 @@
 !
 
     end subroutine qmstep
- 
+
     subroutine trstep (n, npt, m, amat, b, xpt, hq, pq, nact, iact, rescon, qfac, rfac, &
                        snorm, step, g, resnew, resact, d, dw, w)
-                       
+
         implicit real (wp) (a-h, o-z)
 
         dimension amat (n,*), b (*), xpt (npt,*), hq (*), pq (*), iact (*), rescon (*), &
@@ -1642,7 +1642,7 @@
         real(wp),parameter :: tiny  = 1.0e-60_wp
         real(wp),parameter :: zero  = 0.0_wp
         real(wp),parameter :: ctest = 0.01_wp
-        
+
         snsq = snorm * snorm
 !
 !     Set the initial elements of RESNEW, RESACT and STEP.
@@ -1939,7 +1939,7 @@
         if (ncall > 1) g (1) = one
 
     end subroutine trstep
- 
+
     subroutine update (n, npt, xpt, bmat, zmat, idz, ndim, sp, step, kopt, knew, vlag, w)
 
         implicit real (wp) (a-h, o-z)
@@ -1970,7 +1970,7 @@
         real(wp),parameter :: half = 0.5_wp
         real(wp),parameter :: one  = 1.0_wp
         real(wp),parameter :: zero = 0.0_wp
-        
+
         nptm = npt - n - 1
 !
 !     Calculate VLAG and BETA for the current choice of STEP. The first NPT
@@ -2162,7 +2162,7 @@
         end do
 
     end subroutine update
- 
+
 !*****************************************************************************************
 !>
 !  Test problem for [[lincoa]].
@@ -2191,7 +2191,7 @@
 !  problem has local minima.
 
     subroutine lincoa_test ()
-    
+
         implicit none
 
         real(wp) :: xp (50), yp (50), zp (50), a (12, 200), b (200), x (12)
@@ -2204,7 +2204,7 @@
         real(wp),parameter :: two  = 2.0_wp
         real(wp),parameter :: zero = 0.0_wp
         real(wp),parameter :: pi   = 4.0_wp * atan(one)
-        
+
         ia = 12
         n = 12
     !
@@ -2289,19 +2289,19 @@
            & pd12.4)
             call lincoa(n,npt,m,a,ia,b,x,rhobeg,rhoend,iprint,maxfun,calfun)
         end do
- 
+
     contains
- 
+
         subroutine calfun (n, x, f)
-        
+
             implicit none
-            
+
             integer :: n
             real(wp) :: x (*)
             real(wp) :: f
-            
+
             real(wp) :: v12,v13,v14,v23,v24,v34,del1,del2,del3,del4,temp
-            
+
             f = fmax
             v12 = x (1) * x (5) - x (4) * x (2)
             v13 = x (1) * x (8) - x (7) * x (2)
@@ -2319,10 +2319,10 @@
             if (del4 <= zero) return
             temp = (del1+del2+del3+del4) ** 3 / (del1*del2*del3*del4)
             f = min (temp/6.0_wp, fmax)
-            
+
         end subroutine calfun
- 
+
     end subroutine lincoa_test
 !*****************************************************************************************
- 
+
 end module lincoa_module

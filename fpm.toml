@@ -1,0 +1,18 @@
+name = "PowellOpt"
+version = "0.0.1"
+license = "BSD"
+author = "Jacob Williams"
+copyright = "Copyright 2015-2021, Jacob Williams"
+
+[install]
+library = true
+
+[build]
+auto-executables = false
+auto-tests = false
+auto-examples = false
+
+[[test]]
+name = "tests"
+source-dir = "test"
+main = "tests.f90"

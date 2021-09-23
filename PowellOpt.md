@@ -12,21 +12,10 @@ predocmark: <
 docmark_alt:
 docmark: !
 display: public
+         protected
+         private
 source: true
 graph: true
+extra_mods: iso_fortran_env:https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fFORTRAN_005fENV.html
 
-# Brief description
-
-This is a collection of derivative-free optimization algorithms by M.J.D. Powell.
-The package contains:
-
-* LINCOA (LINearly Constrained Optimization Algorithm)
-* BOBYQA (Bound Optimization BY Quadratic Approximation)
-* NEWUOA (NEW Unconstrained Optimization Algorithm)
-* UOBYQA (Unconstrained Optimization BY Quadratic Approximation)
-* COBYLA (Constrained Optimization BY Linear Approximations)
-
-The original routines were written in FORTRAN 77. They have been refactored into
-modern Fortran for this package. The original sourcecode was written by Powell and
-released without charges or restrictions (see below). The modifications are released 
-under a [BSD-style license](https://github.com/jacobwilliams/PowellOpt/blob/master/LICENSE).
+{!README.md!}
