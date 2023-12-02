@@ -1,33 +1,33 @@
 !*****************************************************************************************
 !>
 !  BOBYQA: **B**ound **O**ptimization **BY** **Q**uadratic **A**pproximation
-! 
-!  The purpose of BOBYQA is to seek the least value of a function F of several 
-!  variables, when derivatives are not available. The constraints are the lower 
-!  and upper bounds on every variable, which can be set to huge values for 
+!
+!  The purpose of BOBYQA is to seek the least value of a function F of several
+!  variables, when derivatives are not available. The constraints are the lower
+!  and upper bounds on every variable, which can be set to huge values for
 !  unconstrained variables.
-! 
+!
 !  The algorithm is intended to change the variables to values that are close
 !  to a local minimum of F. The user, however, should assume responsibility for
 !  finding out if the calculations are satisfactory, by considering carefully
-!  the values of F that occur. 
+!  the values of F that occur.
 !
 !# References
 !  * "[The BOBYQA algorithm for bound constrained optimization without
 !    derivatives](http://www.damtp.cam.ac.uk/user/na/NA_papers/NA2009_06.pdf)".
 !
 !# History
-!  * M.J.D. Powell (January 5th, 2009) -- There are no restrictions on or charges 
-!    for the use of the software. I hope that the time and effort I have spent on 
+!  * M.J.D. Powell (January 5th, 2009) -- There are no restrictions on or charges
+!    for the use of the software. I hope that the time and effort I have spent on
 !     developing the package will be helpful to much research and to many applications.
 !  * Jacob Williams, July 2015 : refactoring of the code into modern Fortran.
 
 module bobyqa_module
- 
+
     use kind_module, only: wp
- 
+
     private
- 
+
     abstract interface
         subroutine func (n, x, f)  !! calfun interface
             import :: wp
@@ -37,10 +37,10 @@ module bobyqa_module
             real(wp),intent(out)             :: f
         end subroutine func
     end interface
- 
+
     public :: bobyqa
     public :: bobyqa_test
- 
+
 contains
 !*****************************************************************************************
 
@@ -52,12 +52,12 @@ contains
 !  conditions, which is taken up by minimizing the Frobenius norm of
 !  the change to the second derivative of the model, beginning with the
 !  zero matrix. The values of the variables are constrained by upper and
-!  lower bounds. 
-! 
+!  lower bounds.
+!
 !  In addition to providing CALFUN, an initial vector of variables and
 !  the lower and upper bounds, the user has to set the values of the parameters
-!  ```RHOBEG```, ```RHOEND``` and ```NPT```. After scaling the individual variables 
-!  if necessary, so that the magnitudes of their expected changes are similar, 
+!  ```RHOBEG```, ```RHOEND``` and ```NPT```. After scaling the individual variables
+!  if necessary, so that the magnitudes of their expected changes are similar,
 !  ```RHOBEG``` is the initial steplength for changes to the variables, a reasonable choice
 !  being the mesh size of a coarse grid search. Further, ```RHOEND``` should be suitable for
 !  a search on a very fine grid. Typically, the software calculates a vector
@@ -67,17 +67,17 @@ contains
 !  directions. Therefore an error return occurs if the difference between the
 !  bounds on any variable is less than ```2*RHOBEG```. The parameter ```NPT``` specifies
 !  the number of interpolation conditions on each quadratic model, the value
-!  ```NPT=2*N+1``` being recommended for a start, where ```N``` is the number of 
-!  variables. It is often worthwhile to try other choices too, but much larger values 
+!  ```NPT=2*N+1``` being recommended for a start, where ```N``` is the number of
+!  variables. It is often worthwhile to try other choices too, but much larger values
 !  tend to be inefficient, because the amount of routine work of each iteration is
 !  of magnitude ```NPT**2```, and because the achievement of adequate accuracy in some
 !  matrix calculations becomes more difficult. Some excellent numerical results
 !  have been found in the case ```NPT=N+6``` even with more than 100 variables.
- 
+
     subroutine bobyqa (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, calfun)
 
         implicit none
-                
+
         integer,intent(in)                  :: n       !! number of variables (must be at least two)
         integer,intent(in)                  :: npt     !! number of interpolation conditions. Its value must be in
                                                        !! the interval [N+2,(N+1)(N+2)/2]. Choices that exceed 2*N+1 are not
@@ -92,9 +92,9 @@ contains
                                                        !! requires XL(I) to be strictly less than XU(I) for each I. Further,
                                                        !! the contribution to a model from changes to the I-th variable is
                                                        !! damaged severely by rounding errors if XU(I)-XL(I) is too small.
-        real(wp),intent(in)                 :: rhobeg  !! RHOBEG must be set to the initial value of a trust region radius.  
+        real(wp),intent(in)                 :: rhobeg  !! RHOBEG must be set to the initial value of a trust region radius.
                                                        !! It must be positive, and typically should be about one tenth of the greatest
-                                                       !! expected change to a variable.  An error return occurs if any of 
+                                                       !! expected change to a variable.  An error return occurs if any of
                                                        !! the differences XU(I)-XL(I), I=1,...,N, is less than 2*RHOBEG.
         real(wp),intent(in)                 :: rhoend  !! RHOEND must be set to the final value of a trust
                                                        !! region radius. It must be positive with RHOEND no greater than
@@ -110,13 +110,13 @@ contains
         procedure (func)                    :: calfun  !! SUBROUTINE CALFUN (N,X,F) has to be provided by the user. It must set
                                                        !! F to the value of the objective function for the current values of the
                                                        !! variables X(1),X(2),...,X(N), which are generated automatically in a
-                                                       !! way that satisfies the bounds given in XL and XU.   
-        
+                                                       !! way that satisfies the bounds given in XL and XU.
+
         integer :: ibmat,id,ifv,igo,ihq,ipq,isl,isu,ivl,iw,ixa,&
                    ixb,ixn,ixo,ixp,izmat,j,jsl,jsu,ndim,np
         real(wp),dimension(:),allocatable :: w
         real(wp) :: temp
-        
+
         real(wp),parameter :: zero = 0.0_wp
 
         ! The array W will be used for working space.
@@ -202,17 +202,17 @@ contains
         call bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, w(ixb), w(ixp), &
          w(ifv), w(ixo), w(igo), w(ihq), w(ipq), w(ibmat), w(izmat), ndim, w(isl), &
          w(isu), w(ixn), w(ixa), w(id), w(ivl), w(iw), calfun)
-         
+
         deallocate(w)
- 
+
     end subroutine bobyqa
- 
+
     subroutine bobyqb (n, npt, x, xl, xu, rhobeg, rhoend, iprint, maxfun, xbase, xpt, &
                        fval, xopt, gopt, hq, pq, bmat, zmat, ndim, sl, su, xnew, xalt, &
                        d, vlag, w, calfun)
-   
+
         implicit real (wp) (a-h, o-z)
-        
+
         dimension x (*), xl (*), xu (*), xbase (*), xpt (npt,*), fval (*), xopt (*), &
                   gopt (*), hq (*), pq (*), bmat (ndim,*), zmat (npt,*), sl (*), su (*), &
                   xnew (*), xalt (*), d (*), vlag (*), w (*)
@@ -631,9 +631,12 @@ contains
         nf = nf + 1
         call calfun (n, x(1:n), f)
         if (iprint == 3) then
-            print 400, nf, f, (x(i), i=1, n)
-400         format (/ 4 x, 'Function number', i6, '    F =', 1 pd18.10,&
-            '   The corresponding X is:' / (2 x, 5d15.6))
+!             print 400, nf, f, (x(i), i=1, n)
+! 400         format (/ 4 x, 'Function number', i6, '    F =', 1 pd18.10,&
+!             '   The corresponding X is:' / (2 x, 5d15.6))
+            write(*,'(/4x,a,i6,a,1pd18.10,a/(2x,5d15.6))') &
+                'Function number', nf, '    F =', f, &
+                '   The corresponding X is:', (x(i), i=1, n)
         end if
         if (ntrits ==-1) then
             fsave = f
@@ -668,9 +671,8 @@ contains
 !
         if (ntrits > 0) then
             if (vquad >= zero) then
-                if (iprint > 0) print 430
-430             format (/ 4 x, 'Return from BOBYQA because a trust',&
-                ' region step has failed to reduce Q.')
+                if (iprint > 0) write(*,'(/4x,a)') 'Return from BOBYQA because a trust'//&
+                                                   ' region step has failed to reduce Q.'
                 go to 720
             end if
             ratio = (f-fopt) / vquad
@@ -911,14 +913,13 @@ contains
             end if
             delta = max (delta, rho)
             if (iprint >= 2) then
-                if (iprint >= 3) print 690
-690             format (5 x)
+                if (iprint >= 3) write(*,'(5x)') ''
                 print 700, rho, nf
 700             format (/ 4 x, 'New RHO =', 1 pd11.4, 5 x, 'Number of',&
-                ' function values =', i6)
+                        ' function values =', i6)
                 print 710, fval (kopt), (xbase(i)+xopt(i), i=1, n)
 710             format (4 x, 'Least value of F =', 1 pd23.15, 9 x,&
-                'The corresponding X is:'/(2 x, 5d15.6))
+                        'The corresponding X is:'/(2 x, 5d15.6))
             end if
             ntrits = 0
             nfsav = nf
@@ -945,12 +946,12 @@ contains
         end if
         return
     end subroutine bobyqb
- 
+
     subroutine altmov (n, npt, xpt, xopt, bmat, zmat, ndim, sl, su, kopt, knew, adelt, &
    & xnew, xalt, alpha, cauchy, glag, hcol, w)
- 
+
         implicit real (wp) (a-h, o-z)
-        
+
         dimension xpt (npt,*), xopt (*), bmat (ndim,*), zmat (npt,*), sl (*), su (*), &
        & xnew (*), xalt (*), glag (*), hcol (*), w (*)
 !
@@ -1205,7 +1206,7 @@ contains
         do k = 1, npt
             temp = zero
             do j = 1, n
-                temp = temp + xpt (k, j) * w (j) 
+                temp = temp + xpt (k, j) * w (j)
             end do
             curv = curv + hcol (k) * temp * temp
         end do
@@ -1240,18 +1241,18 @@ contains
             end do
             cauchy = csave
         end if
-        
+
     end subroutine altmov
- 
+
     subroutine prelim (n, npt, x, xl, xu, rhobeg, iprint, maxfun, xbase, xpt, fval, gopt, &
    & hq, pq, bmat, zmat, ndim, sl, su, nf, kopt, calfun)
-   
+
         implicit real (wp) (a-h, o-z)
-        
+
         dimension x (*), xl (*), xu (*), xbase (*), xpt (npt,*), fval (*), gopt (*), hq &
        & (*), pq (*), bmat (ndim,*), zmat (npt,*), sl (*), su (*)
         procedure (func) :: calfun
- 
+
 !
 !     The arguments N, NPT, X, XL, XU, RHOBEG, IPRINT and MAXFUN are the
 !       same as the corresponding arguments in SUBROUTINE BOBYQA.
@@ -1408,17 +1409,17 @@ contains
         if (nf < npt .and. nf < maxfun) go to 50
 
     end subroutine prelim
- 
+
     subroutine rescue (n, npt, xl, xu, iprint, maxfun, xbase, xpt, fval, xopt, gopt, hq, &
    & pq, bmat, zmat, ndim, sl, su, nf, delta, kopt, vlag, ptsaux, ptsid, w, calfun)
-   
+
         implicit real (wp) (a-h, o-z)
-        
+
         dimension xl (*), xu (*), xbase (*), xpt (npt,*), fval (*), xopt (*), gopt (*), &
        & hq (*), pq (*), bmat (ndim,*), zmat (npt,*), sl (*), su (*), vlag (*), ptsaux &
        & (2,*), ptsid (*), w (*)
         procedure (func) :: calfun
- 
+
 !
 !     The arguments N, NPT, XL, XU, IPRINT, MAXFUN, XBASE, XPT, FVAL, XOPT,
 !       GOPT, HQ, PQ, BMAT, ZMAT, NDIM, SL and SU have the same meanings as
@@ -1827,12 +1828,12 @@ contains
         end do
 
     end subroutine rescue
- 
+
     subroutine trsbox (n, npt, xpt, xopt, gopt, hq, pq, sl, su, delta, xnew, d, gnew, &
    & xbdi, s, hs, hred, dsq, crvmin)
-   
+
         implicit real (wp) (a-h, o-z)
-        
+
         dimension xpt (npt,*), xopt (*), gopt (*), hq (*), pq (*), sl (*), su (*), xnew &
        & (*), d (*), gnew (*), xbdi (*), s (*), hs (*), hred (*)
 !
@@ -2221,11 +2222,11 @@ contains
         end do
         go to 120
     end subroutine trsbox
- 
+
     subroutine update (n, npt, bmat, zmat, ndim, vlag, beta, denom, knew, w)
- 
+
         implicit real (wp) (a-h, o-z)
-        
+
         dimension bmat (ndim,*), zmat (npt,*), vlag (*), w (*)
 !
 !     The arrays BMAT and ZMAT are updated, as required by the new position
@@ -2300,7 +2301,7 @@ contains
         end do
 
     end subroutine update
- 
+
 !*****************************************************************************************
 !>
 !  Test problem for [[bobyqa]], the objective function being the sum of
@@ -2319,11 +2320,11 @@ contains
     subroutine bobyqa_test()
 
         implicit none
-        
-        real(wp),dimension(100) :: x, xl, xu        
+
+        real(wp),dimension(100) :: x, xl, xu
         integer :: i,j,m,n,jcase,npt
         real(wp) :: temp
- 
+
         real(wp),parameter :: twopi  = 8.0_wp * atan (1.0_wp)
         real(wp),parameter :: bdl    = - 1.0_wp
         real(wp),parameter :: bdu    = 1.0_wp
@@ -2331,7 +2332,7 @@ contains
         integer,parameter  :: maxfun = 500000
         real(wp),parameter :: rhobeg = 1.0e-1_wp
         real(wp),parameter :: rhoend = 1.0e-6_wp
-        
+
         m = 5
         do
             n = 2 * m
@@ -2354,20 +2355,20 @@ contains
             m = m + m
             if (m > 10) exit
         end do
- 
+
     contains
- 
+
         subroutine calfun (n, x, f)
-        
+
             implicit none
-            
+
             integer,intent(in)               :: n
             real(wp),dimension(:),intent(in) :: x
             real(wp),intent(out)             :: f
-            
+
             integer :: i,j
             real(wp) :: temp
-            
+
             f = 0.0_wp
             do i = 4, n, 2
                 do j = 2, i - 2, 2
@@ -2376,12 +2377,12 @@ contains
                     f = f + 1.0_wp / sqrt (temp)
                 end do
             end do
-            
+
         end subroutine calfun
- 
+
     end subroutine bobyqa_test
 !*****************************************************************************************
- 
+
 !*****************************************************************************************
     end module bobyqa_module
 !*****************************************************************************************

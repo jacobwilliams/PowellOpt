@@ -39,3 +39,4 @@ under a [BSD-style license](https://github.com/jacobwilliams/PowellOpt/blob/mast
 
 ### See also
 * [Original sourcecode](http://mat.uc.pt/~zhang/software.html)
+* [PRIMA](https://github.com/libprima/prima) Modernized reference implementations for Powell's derivative-free optimization methods.

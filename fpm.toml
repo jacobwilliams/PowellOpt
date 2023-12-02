@@ -12,6 +12,11 @@ auto-executables = false
 auto-tests = false
 auto-examples = false
 
+[fortran]
+source-form = "default"
+implicit-typing = true
+implicit-external = true
+
 [[test]]
 name = "tests"
 source-dir = "test"
