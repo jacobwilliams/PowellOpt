@@ -11,20 +11,20 @@
 !    (eds. Susana Gomez and Jean-Pierre Hennart), Kluwer Academic Publishers (1994).
 !
 !# History
-!  * Mike Powell (May 7th, 1992) -- There are no restrictions on the use of the 
+!  * Mike Powell (May 7th, 1992) -- There are no restrictions on the use of the
 !    software, nor do I offer any guarantees of success.
 !  * Jacob Williams, July 2015 : refactoring of the code into modern Fortran.
-! 
-!@note There is a need for a linear programming problem to be solved subject to a 
-!      Euclidean norm trust region constraint. Therefore SUBROUTINE TRSTLP is provided, 
+!
+!@note There is a need for a linear programming problem to be solved subject to a
+!      Euclidean norm trust region constraint. Therefore SUBROUTINE TRSTLP is provided,
 !      but you may have some software that you prefer to use instead.
 
 module cobyla_module
 
     use kind_module, only: wp
-     
+
     private
-     
+
     abstract interface
         subroutine func (n, m, x, f, con)  !! calcfc interface
             import :: wp
@@ -36,12 +36,12 @@ module cobyla_module
             real(wp),dimension(*),intent(out) :: con
         end subroutine func
     end interface
- 
+
     public :: cobyla
     public :: cobyla_test
- 
+
 contains
- 
+
 !*****************************************************************************************
 !>
 !  This subroutine minimizes an objective function F(X) subject to M
@@ -57,16 +57,16 @@ contains
 !  RHOEND should be set to reasonable initial changes to and the required
 !  accuracy in the variables respectively, but this accuracy should be
 !  viewed as a subject for experimentation because it is not guaranteed.
-! 
+!
 !  The subroutine has an advantage over many of its competitors, however,
 !  which is that it treats each constraint individually when calculating
 !  a change to the variables, instead of lumping the constraints together
 !  into a single penalty function.
 
     subroutine cobyla (n, m, x, rhobeg, rhoend, iprint, maxfun, calcfc)
-    
+
         implicit none
-        
+
         integer,intent(in)                  :: n      !! number of variables
         integer,intent(in)                  :: m      !! number of inequality constraints
         real(wp),dimension(*),intent(inout) :: x      !! Initial values of the variables must be set in X(1),X(2),...,X(N).
@@ -86,7 +86,7 @@ contains
                                                       !! where C1,C2,...,CM denote the constraint functions that should become
                                                       !! nonnegative eventually, at least to the precision of RHOEND. In the
                                                       !! printed output the displayed term that is multiplied by SIGMA is
-                                                      !! called MAXCV, which stands for 'MAXimum Constraint Violation'. 
+                                                      !! called MAXCV, which stands for 'MAXimum Constraint Violation'.
         integer,intent(inout)               :: maxfun !! MAXFUN is an integer variable that must be set by the user to a
                                                       !! limit on the number of calls of CALCFC.
                                                       !! The value of MAXFUN will be altered to the number of calls
@@ -101,12 +101,12 @@ contains
                                                       !! ...,CON(M). Note that we are trying to adjust X so that F(X) is as
                                                       !! small as possible subject to the constraint functions being nonnegative.
 
-        
+
         integer,dimension(:),allocatable  :: iact
         real(wp),dimension(:),allocatable :: w
         integer :: mpp,icon,isim,isimi,idatm,ia,ivsig,iveta,isigb,idx,iwork
 
-        !W and IACT provide real and integer arrays that are used as working space. 
+        !W and IACT provide real and integer arrays that are used as working space.
         allocate(w(N*(3*N+2*M+11)+4*M+6))
         allocate(iact(M+1))
 
@@ -124,20 +124,20 @@ contains
         isigb = iveta + n
         idx = isigb + n
         iwork = idx + n
- 
+
         call cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, w(icon), w(isim), &
                      w(isimi), w(idatm), w(ia), w(ivsig), w(iveta), w(isigb), w(idx), &
                      w(iwork), iact, calcfc)
-         
+
         deallocate(iact)
         deallocate(w)
- 
+
     end subroutine cobyla
 !*****************************************************************************************
- 
+
     subroutine cobylb (n, m, mpp, x, rhobeg, rhoend, iprint, maxfun, con, sim, simi, &
                        datmat, a, vsig, veta, sigbar, dx, w, iact, calcfc)
-     
+
         implicit real (wp) (a-h, o-z)
 
         dimension x (*), con (*), sim (n,*), simi (n,*), datmat (mpp,*), a (n,*), vsig(*),&
@@ -614,12 +614,12 @@ contains
             if (iptem < n) print 80, (x(i), i=iptemp, n)
         end if
         maxfun = nfvals
- 
+
     end subroutine cobylb
- 
+
     subroutine trstlp (n, m, a, b, rho, dx, ifull, iact, z, zdota, vmultc, sdirn, dxnew, &
                        vmultd)
-     
+
         implicit real (wp) (a-h, o-z)
 
         dimension a (n,*), b (*), dx (*), iact (*), z (n,*), zdota (*), vmultc (*), &
@@ -1090,7 +1090,7 @@ contains
         ifull = 0
 
     end subroutine trstlp
- 
+
 !*****************************************************************************************
 !>
 !  Test routine for [[cobyla]].
@@ -1098,15 +1098,15 @@ contains
 !  From: Report DAMTP 1992/NA5.
 
     subroutine cobyla_test ()
-        
+
         implicit none
-        
+
         real(wp),dimension(10) :: x,xopt
         integer :: nprob,n,m,i,icase,iprint,maxfun
         real(wp) :: rhobeg,rhoend,temp,tempa,tempb,tempc,tempd
-        
+
         do nprob = 1, 10
-        
+
             if (nprob == 1) then
     !
     !     minimization of a simple quadratic function of two variables.
@@ -1117,7 +1117,7 @@ contains
                 m = 0
                 xopt (1) = - 1.0_wp
                 xopt (2) = 0.0_wp
-                
+
             else if (nprob == 2) then
     !
     !     Easy two dimensional minimization in unit circle.
@@ -1129,7 +1129,7 @@ contains
                 m = 1
                 xopt (1) = sqrt (0.5_wp)
                 xopt (2) = - xopt (1)
-                
+
             else if (nprob == 3) then
     !
     !     Easy three dimensional minimization in ellipsoid.
@@ -1142,7 +1142,7 @@ contains
                 xopt (1) = 1.0_wp / sqrt (3.0_wp)
                 xopt (2) = 1.0_wp / sqrt (6.0_wp)
                 xopt (3) = - 1.0_wp / 3.0_wp
-                
+
             else if (nprob == 4) then
     !
     !     Weak version of Rosenbrock's problem.
@@ -1153,7 +1153,7 @@ contains
                 m = 0
                 xopt (1) = - 1.0_wp
                 xopt (2) = 1.0_wp
-                
+
             else if (nprob == 5) then
     !
     !     Intermediate version of Rosenbrock's problem.
@@ -1164,7 +1164,7 @@ contains
                 m = 0
                 xopt (1) = - 1.0_wp
                 xopt (2) = 1.0_wp
-                
+
             else if (nprob == 6) then
     !
     !     This problem is taken from Fletcher's book Practical Methods of
@@ -1177,7 +1177,7 @@ contains
                 m = 2
                 xopt (1) = sqrt (0.5_wp)
                 xopt (2) = xopt (1)
-                
+
             else if (nprob == 7) then
     !
     !     This problem is taken from Fletcher's book Practical Methods of
@@ -1191,7 +1191,7 @@ contains
                 xopt (1) = 0.0_wp
                 xopt (2) = - 3.0_wp
                 xopt (3) = - 3.0_wp
-                
+
             else if (nprob == 8) then
     !
     !     This problem is taken from page 66 of Hock and Schittkowski's book Test
@@ -1206,7 +1206,7 @@ contains
                 xopt (2) = 1.0_wp
                 xopt (3) = 2.0_wp
                 xopt (4) = - 1.0_wp
-                
+
             else if (nprob == 9) then
     !
     !     This problem is taken from page 111 of Hock and Schittkowski's
@@ -1225,7 +1225,7 @@ contains
                 xopt (5) = - 0.624487_wp
                 xopt (6) = 1.038131_wp
                 xopt (7) = 1.594227_wp
-                
+
             else if (nprob == 10) then
     !
     !     This problem is taken from page 415 of Luenberger's book Applied
@@ -1259,6 +1259,7 @@ contains
                     do i = 1, 4
                         xopt (i+4) = xopt (i)
                     end do
+                    xopt (9) = 0.0_wp
                 end if
                 temp = 0.0_wp
                 do i = 1, n
@@ -1270,53 +1271,53 @@ contains
             print 170
 170         format (2 x, '----------------------------------------------',&
             '--------------------')
-            
+
         end do
- 
+
     contains
- 
+
         subroutine calcfc (n, m, x, f, con)
 
             implicit none
-            
+
             integer,intent(in)                :: n
             integer,intent(in)                :: m
             real(wp),dimension(*),intent(in)  :: x
             real(wp),intent(out)              :: f
             real(wp),dimension(*),intent(out) :: con
-            
+
             if (nprob == 1) then
     !
     !     Test problem 1 (Simple quadratic)
     !
                 f = 10.0_wp * (x(1)+1.0_wp) ** 2 + x (2) ** 2
-                
+
             else if (nprob == 2) then
     !
     !    Test problem 2 (2D unit circle calculation)
     !
                 f = x (1) * x (2)
                 con (1) = 1.0_wp - x (1) ** 2 - x (2) ** 2
-                
+
             else if (nprob == 3) then
     !
     !     Test problem 3 (3D ellipsoid calculation)
     !
                 f = x (1) * x (2) * x (3)
                 con (1) = 1.0_wp - x (1) ** 2 - 2.0_wp * x (2) ** 2 - 3.0_wp * x (3) ** 2
-                
+
             else if (nprob == 4) then
     !
     !     Test problem 4 (Weak Rosenbrock)
     !
                 f = (x(1)**2-x(2)) ** 2 + (1.0_wp+x(1)) ** 2
-                
+
             else if (nprob == 5) then
     !
     !     Test problem 5 (Intermediate Rosenbrock)
     !
                 f = 10.0_wp * (x(1)**2-x(2)) ** 2 + (1.0_wp+x(1)) ** 2
-                
+
             else if (nprob == 6) then
     !
     !     Test problem 6 (Equation (9.1.15) in Fletcher's book)
@@ -1324,7 +1325,7 @@ contains
                 f = - x (1) - x (2)
                 con (1) = x (2) - x (1) ** 2
                 con (2) = 1.0_wp - x (1) ** 2 - x (2) ** 2
-                
+
             else if (nprob == 7) then
     !
     !     Test problem 7 (Equation (14.4.2) in Fletcher's book)
@@ -1333,7 +1334,7 @@ contains
                 con (1) = 5.0_wp * x (1) - x (2) + x (3)
                 con (2) = x (3) - x (1) ** 2 - x (2) ** 2 - 4.0_wp * x (2)
                 con (3) = x (3) - 5.0_wp * x (1) - x (2)
-                
+
             else if (nprob == 8) then
     !
     !     Test problem 8 (Rosen-Suzuki)
@@ -1346,7 +1347,7 @@ contains
                & 2.0_wp * x (4) ** 2 + x (1) + x (4)
                 con (3) = 5.0_wp - 2.0_wp * x (1) ** 2 - x (2) ** 2 - x (3) ** 2 - 2.0_wp &
                & * x (1) + x (2) + x (4)
-               
+
             else if (nprob == 9) then
     !
     !     Test problem 9 (Hock and Schittkowski 100)
@@ -1363,7 +1364,7 @@ contains
                & 8.0_wp * x (7)
                 con (4) = - 4.0_wp * x (1) ** 2 - x (2) ** 2 + 3.0_wp * x (1) * x (2) - &
                & 2.0_wp * x (3) ** 2 - 5.0_wp * x (6) + 11.0_wp * x (7)
-               
+
             else if (nprob == 10) then
     !
     !     Test problem 10 (Hexagon area)
@@ -1384,12 +1385,12 @@ contains
                 con (12) = - x (5) * x (9)
                 con (13) = x (5) * x (8) - x (6) * x (7)
                 con (14) = x (9)
-                
+
             end if
-            
+
         end subroutine calcfc
- 
+
     end subroutine cobyla_test
 !*****************************************************************************************
- 
+
 end module cobyla_module
