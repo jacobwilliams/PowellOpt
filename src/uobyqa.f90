@@ -27,6 +27,8 @@
     use kind_module, only: wp
 
     private
+    real(wp), parameter :: half = 0.5_wp, one = 1.0_wp, tenth = 0.1_wp, &
+               zero = 0.0_wp, quart = 0.25_wp, two = 2.0_wp, halfrt = sqrt(half)
 
     abstract interface
     subroutine func (n, x, f)  !! calfun interface
@@ -137,10 +139,6 @@
 !
 !     Set some constants.
 !
-        one = 1.0_wp
-        two = 2.0_wp
-        zero = 0.0_wp
-        half = 0.5_wp
         tol = 0.01_wp
         nnp = n + n + 1
         nptm = npt - 1
@@ -616,10 +614,6 @@
 !
 !     Preliminary calculations.
 !
-        half = 0.5_wp
-        halfrt = sqrt (half)
-        one = 1.0_wp
-        zero = 0.0_wp
 !
 !     Pick V such that ||HV|| / ||V|| is large.
 !
@@ -810,9 +804,6 @@
 !
 !     Initialization.
 !
-        one = 1.0_wp
-        two = 2.0_wp
-        zero = 0.0_wp
         delsq = delta * delta
         evalue = zero
         nm = n - 1
