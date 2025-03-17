@@ -1,0 +1,935 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="PowellOpt -- Optimization algorithms by M.J.D. Powell">
+    <meta name="author" content="Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>All Procedures &ndash; PowellOpt
+</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">PowellOpt </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12" id='text'>
+			 <h1>Procedures</h1>
+			 <table class="table table-striped">
+			 <thead><tr><th>Procedure</th><th>Location</th><th>Procedure Type</th><th>Description</th></tr></thead>
+			 <tbody>
+			   <tr>
+                 <td><a href='../proc/altmov.html'>altmov</a></td>
+                 <td><a href='../module/bobyqa_module.html'>bobyqa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/bigden.html'>bigden</a></td>
+                 <td><a href='../module/newuoa_module.html'>newuoa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/biglag.html'>biglag</a></td>
+                 <td><a href='../module/newuoa_module.html'>newuoa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/bobyqa.html'>bobyqa</a></td>
+                 <td><a href='../module/bobyqa_module.html'>bobyqa_module</a></td>
+                 <td>Subroutine</td>
+                 <td><p>This subroutine seeks the least value of a function of many variables,
+by applying a trust region method that forms quadratic models by
+interpolation. There is usually some freedom in the interpolation
+conditions, which is taken up by minimizing the Frobenius norm of
+the change to the second derivative of the model, beginning with the
+zero matrix. The values of the variables are constrained by upper and
+lower bounds.</p><a href="../proc/bobyqa.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/bobyqa_test.html'>bobyqa_test</a></td>
+                 <td><a href='../module/bobyqa_module.html'>bobyqa_module</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Test problem for <a href="../proc/bobyqa.html">bobyqa</a>, the objective function being the sum of
+the reciprocals of all pairwise distances between the points P_I,
+I=1,2,...,M in two dimensions, where M=N/2 and where the components
+of P_I are X(2<em>I-1) and X(2</em>I). Thus each vector X of N variables
+defines the M points P_I. The initial X gives equally spaced points
+on a circle. Four different choices of the pairs (N,NPT) are tried,
+namely (10,16), (10,21), (20,26) and (20,41). Convergence to a local
+minimum that is not global occurs in both the N=10 cases. The details
+of the results are highly sensitive to computer rounding errors. The
+choice IPRINT=2 provides the current X and optimal F so far whenever
+RHO is reduced. The bound constraints of the problem require every
+component of X to be in the interval [-1,1].</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/bobyqb.html'>bobyqb</a></td>
+                 <td><a href='../module/bobyqa_module.html'>bobyqa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/cobyla.html'>cobyla</a></td>
+                 <td><a href='../module/cobyla_module.html'>cobyla_module</a></td>
+                 <td>Subroutine</td>
+                 <td><p>This subroutine minimizes an objective function F(X) subject to M
+inequality constraints on X, where X is a vector of variables that has
+N components. The algorithm employs linear approximations to the
+objective and constraint functions, the approximations being formed by
+linear interpolation at N+1 points in the space of the variables.
+We regard these interpolation points as vertices of a simplex. The
+parameter RHO controls the size of the simplex and it is reduced
+automatically from RHOBEG to RHOEND. For each RHO the subroutine tries
+to achieve a good vector of variables for the current size, and then
+RHO is reduced until the value RHOEND is reached. Therefore RHOBEG and
+RHOEND should be set to reasonable initial changes to and the required
+accuracy in the variables respectively, but this accuracy should be
+viewed as a subject for experimentation because it is not guaranteed.</p><a href="../proc/cobyla.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/cobyla_test.html'>cobyla_test</a></td>
+                 <td><a href='../module/cobyla_module.html'>cobyla_module</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Test routine for <a href="../proc/cobyla.html">cobyla</a>.</p><a href="../proc/cobyla_test.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/cobylb.html'>cobylb</a></td>
+                 <td><a href='../module/cobyla_module.html'>cobyla_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/getact.html'>getact</a></td>
+                 <td><a href='../module/lincoa_module.html'>lincoa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/lagmax.html'>lagmax</a></td>
+                 <td><a href='../module/uobyqa_module.html'>uobyqa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/lincoa.html'>lincoa</a></td>
+                 <td><a href='../module/lincoa_module.html'>lincoa_module</a></td>
+                 <td>Subroutine</td>
+                 <td><p>This subroutine seeks the least value of a function of many variables,
+  subject to general linear inequality constraints, by a trust region
+  method that forms quadratic models by interpolation.</p><a href="../proc/lincoa.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/lincoa_test.html'>lincoa_test</a></td>
+                 <td><a href='../module/lincoa_module.html'>lincoa_module</a></td>
+                 <td>Subroutine</td>
+                 <td><p>Test problem for <a href="../proc/lincoa.html">lincoa</a>.</p><a href="../proc/lincoa_test.html" class="pull-right"><emph>Read more&hellip;</emph></a></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/lincob.html'>lincob</a></td>
+                 <td><a href='../module/lincoa_module.html'>lincoa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/newuoa.html'>newuoa</a></td>
+                 <td><a href='../module/newuoa_module.html'>newuoa_module</a></td>
+                 <td>Subroutine</td>
+                 <td><p>This subroutine seeks the least value of a function of many variables,
+by a trust region method that forms quadratic models by interpolation.
+There can be some freedom in the interpolation conditions, which is
+taken up by minimizing the Frobenius norm of the change to the second
+derivative of the quadratic model, beginning with a zero matrix.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/newuoa_test.html'>newuoa_test</a></td>
+                 <td><a href='../module/newuoa_module.html'>newuoa_module</a></td>
+                 <td>Subroutine</td>
+                 <td><p>The Chebyquad test problem (Fletcher, 1965) for N = 2,4,6 and 8,
+with NPT = 2N+1.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/newuob.html'>newuob</a></td>
+                 <td><a href='../module/newuoa_module.html'>newuoa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/prelim.html'>prelim</a></td>
+                 <td><a href='../module/lincoa_module.html'>lincoa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/prelim~2.html'>prelim</a></td>
+                 <td><a href='../module/bobyqa_module.html'>bobyqa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/qmstep.html'>qmstep</a></td>
+                 <td><a href='../module/lincoa_module.html'>lincoa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/rescue.html'>rescue</a></td>
+                 <td><a href='../module/bobyqa_module.html'>bobyqa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/trsapp.html'>trsapp</a></td>
+                 <td><a href='../module/newuoa_module.html'>newuoa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/trsbox.html'>trsbox</a></td>
+                 <td><a href='../module/bobyqa_module.html'>bobyqa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/trstep.html'>trstep</a></td>
+                 <td><a href='../module/lincoa_module.html'>lincoa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/trstep~2.html'>trstep</a></td>
+                 <td><a href='../module/uobyqa_module.html'>uobyqa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/trstlp.html'>trstlp</a></td>
+                 <td><a href='../module/cobyla_module.html'>cobyla_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/uobyqa.html'>uobyqa</a></td>
+                 <td><a href='../module/uobyqa_module.html'>uobyqa_module</a></td>
+                 <td>Subroutine</td>
+                 <td><p>This subroutine seeks the least value of a function of many variables,
+by a trust region method that forms quadratic models by interpolation.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/uobyqa_test.html'>uobyqa_test</a></td>
+                 <td><a href='../module/uobyqa_module.html'>uobyqa_module</a></td>
+                 <td>Subroutine</td>
+                 <td><p>The Chebyquad test problem (Fletcher, 1965) for N = 2,4,6,8.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/uobyqb.html'>uobyqb</a></td>
+                 <td><a href='../module/uobyqa_module.html'>uobyqa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/update.html'>update</a></td>
+                 <td><a href='../module/newuoa_module.html'>newuoa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/update~2.html'>update</a></td>
+                 <td><a href='../module/lincoa_module.html'>lincoa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/update~3.html'>update</a></td>
+                 <td><a href='../module/bobyqa_module.html'>bobyqa_module</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			 </tbody></table>
+             <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: call~~graph~~CallGraph Pages: 1 -->
+<svg id="callgraphCallGraph" width="449pt" height="631pt"
+ viewBox="0.00 0.00 449.00 630.75" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="call~~graph~~CallGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 626.75)">
+<title>call~~graph~~CallGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-626.75 445,-626.75 445,4 -4,4"/>
+<!-- proc~altmov -->
+<g id="call~~graph~~CallGraph_node1" class="node">
+<title>proc~altmov</title>
+<g id="a_call~~graph~~CallGraph_node1"><a xlink:href="../proc/altmov.html" xlink:title="altmov">
+<polygon fill="#d9534f" stroke="#d9534f" points="351,-164.75 297,-164.75 297,-140.75 351,-140.75 351,-164.75"/>
+<text text-anchor="middle" x="324" y="-150.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">altmov</text>
+</a>
+</g>
+</g>
+<!-- proc~bigden -->
+<g id="call~~graph~~CallGraph_node2" class="node">
+<title>proc~bigden</title>
+<g id="a_call~~graph~~CallGraph_node2"><a xlink:href="../proc/bigden.html" xlink:title="bigden">
+<polygon fill="#d9534f" stroke="#d9534f" points="351,-332.75 297,-332.75 297,-308.75 351,-308.75 351,-332.75"/>
+<text text-anchor="middle" x="324" y="-318.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">bigden</text>
+</a>
+</g>
+</g>
+<!-- den -->
+<g id="call~~graph~~CallGraph_node33" class="node">
+<title>den</title>
+<polygon fill="#777777" stroke="#777777" points="441,-374.75 387,-374.75 387,-350.75 441,-350.75 441,-374.75"/>
+<text text-anchor="middle" x="414" y="-360.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">den</text>
+</g>
+<!-- proc~bigden&#45;&gt;den -->
+<g id="call~~graph~~CallGraph_edge1" class="edge">
+<title>proc~bigden&#45;&gt;den</title>
+<path fill="none" stroke="#000000" d="M350.45,-332.9C359.21,-337.08 369.17,-341.83 378.52,-346.29"/>
+<polygon fill="#000000" stroke="#000000" points="377.07,-349.48 387.6,-350.63 380.09,-343.16 377.07,-349.48"/>
+</g>
+<!-- denex -->
+<g id="call~~graph~~CallGraph_node34" class="node">
+<title>denex</title>
+<polygon fill="#777777" stroke="#777777" points="441,-332.75 387,-332.75 387,-308.75 441,-308.75 441,-332.75"/>
+<text text-anchor="middle" x="414" y="-318.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">denex</text>
+</g>
+<!-- proc~bigden&#45;&gt;denex -->
+<g id="call~~graph~~CallGraph_edge2" class="edge">
+<title>proc~bigden&#45;&gt;denex</title>
+<path fill="none" stroke="#000000" d="M351.4,-320.75C359.39,-320.75 368.31,-320.75 376.82,-320.75"/>
+<polygon fill="#000000" stroke="#000000" points="376.92,-324.25 386.92,-320.75 376.92,-317.25 376.92,-324.25"/>
+</g>
+<!-- par -->
+<g id="call~~graph~~CallGraph_node35" class="node">
+<title>par</title>
+<polygon fill="#777777" stroke="#777777" points="441,-290.75 387,-290.75 387,-266.75 441,-266.75 441,-290.75"/>
+<text text-anchor="middle" x="414" y="-276.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">par</text>
+</g>
+<!-- proc~bigden&#45;&gt;par -->
+<g id="call~~graph~~CallGraph_edge3" class="edge">
+<title>proc~bigden&#45;&gt;par</title>
+<path fill="none" stroke="#000000" d="M350.45,-308.6C359.21,-304.42 369.17,-299.67 378.52,-295.21"/>
+<polygon fill="#000000" stroke="#000000" points="380.09,-298.34 387.6,-290.87 377.07,-292.02 380.09,-298.34"/>
+</g>
+<!-- proc~biglag -->
+<g id="call~~graph~~CallGraph_node3" class="node">
+<title>proc~biglag</title>
+<g id="a_call~~graph~~CallGraph_node3"><a xlink:href="../proc/biglag.html" xlink:title="biglag">
+<polygon fill="#d9534f" stroke="#d9534f" points="351,-290.75 297,-290.75 297,-266.75 351,-266.75 351,-290.75"/>
+<text text-anchor="middle" x="324" y="-276.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">biglag</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqa -->
+<g id="call~~graph~~CallGraph_node4" class="node">
+<title>proc~bobyqa</title>
+<g id="a_call~~graph~~CallGraph_node4"><a xlink:href="../proc/bobyqa.html" xlink:title="bobyqa">
+<polygon fill="#d9534f" stroke="#d9534f" points="169.5,-80.75 115.5,-80.75 115.5,-56.75 169.5,-56.75 169.5,-80.75"/>
+<text text-anchor="middle" x="142.5" y="-66.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">bobyqa</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqb -->
+<g id="call~~graph~~CallGraph_node6" class="node">
+<title>proc~bobyqb</title>
+<g id="a_call~~graph~~CallGraph_node6"><a xlink:href="../proc/bobyqb.html" xlink:title="bobyqb">
+<polygon fill="#d9534f" stroke="#d9534f" points="260.5,-80.75 206.5,-80.75 206.5,-56.75 260.5,-56.75 260.5,-80.75"/>
+<text text-anchor="middle" x="233.5" y="-66.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">bobyqb</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqa&#45;&gt;proc~bobyqb -->
+<g id="call~~graph~~CallGraph_edge4" class="edge">
+<title>proc~bobyqa&#45;&gt;proc~bobyqb</title>
+<path fill="none" stroke="#000000" d="M169.72,-68.75C178.05,-68.75 187.41,-68.75 196.32,-68.75"/>
+<polygon fill="#000000" stroke="#000000" points="196.47,-72.25 206.47,-68.75 196.47,-65.25 196.47,-72.25"/>
+</g>
+<!-- proc~bobyqa_test -->
+<g id="call~~graph~~CallGraph_node5" class="node">
+<title>proc~bobyqa_test</title>
+<g id="a_call~~graph~~CallGraph_node5"><a xlink:href="../proc/bobyqa_test.html" xlink:title="bobyqa_test">
+<polygon fill="#d9534f" stroke="#d9534f" points="78,-80.75 1,-80.75 1,-56.75 78,-56.75 78,-80.75"/>
+<text text-anchor="middle" x="39.5" y="-66.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">bobyqa_test</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqa_test&#45;&gt;proc~bobyqa -->
+<g id="call~~graph~~CallGraph_edge5" class="edge">
+<title>proc~bobyqa_test&#45;&gt;proc~bobyqa</title>
+<path fill="none" stroke="#000000" d="M78.11,-68.75C86.88,-68.75 96.21,-68.75 104.94,-68.75"/>
+<polygon fill="#000000" stroke="#000000" points="105.2,-72.25 115.2,-68.75 105.2,-65.25 105.2,-72.25"/>
+</g>
+<!-- proc~bobyqb&#45;&gt;proc~altmov -->
+<g id="call~~graph~~CallGraph_edge6" class="edge">
+<title>proc~bobyqb&#45;&gt;proc~altmov</title>
+<path fill="none" stroke="#000000" d="M245.65,-80.75C257.87,-93.73 278.25,-114.82 297,-131.75 297.82,-132.49 298.66,-133.23 299.51,-133.98"/>
+<polygon fill="#000000" stroke="#000000" points="297.46,-136.83 307.37,-140.59 301.97,-131.47 297.46,-136.83"/>
+</g>
+<!-- proc~prelim~2 -->
+<g id="call~~graph~~CallGraph_node19" class="node">
+<title>proc~prelim~2</title>
+<g id="a_call~~graph~~CallGraph_node19"><a xlink:href="../proc/prelim~2.html" xlink:title="prelim">
+<polygon fill="#d9534f" stroke="#d9534f" points="351,-122.75 297,-122.75 297,-98.75 351,-98.75 351,-122.75"/>
+<text text-anchor="middle" x="324" y="-108.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">prelim</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqb&#45;&gt;proc~prelim~2 -->
+<g id="call~~graph~~CallGraph_edge7" class="edge">
+<title>proc~bobyqb&#45;&gt;proc~prelim~2</title>
+<path fill="none" stroke="#000000" d="M260.1,-80.9C268.9,-85.08 278.92,-89.83 288.32,-94.29"/>
+<polygon fill="#000000" stroke="#000000" points="286.92,-97.5 297.46,-98.63 289.93,-91.18 286.92,-97.5"/>
+</g>
+<!-- proc~rescue -->
+<g id="call~~graph~~CallGraph_node21" class="node">
+<title>proc~rescue</title>
+<g id="a_call~~graph~~CallGraph_node21"><a xlink:href="../proc/rescue.html" xlink:title="rescue">
+<polygon fill="#d9534f" stroke="#d9534f" points="351,-80.75 297,-80.75 297,-56.75 351,-56.75 351,-80.75"/>
+<text text-anchor="middle" x="324" y="-66.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">rescue</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqb&#45;&gt;proc~rescue -->
+<g id="call~~graph~~CallGraph_edge8" class="edge">
+<title>proc~bobyqb&#45;&gt;proc~rescue</title>
+<path fill="none" stroke="#000000" d="M260.57,-68.75C268.78,-68.75 278,-68.75 286.78,-68.75"/>
+<polygon fill="#000000" stroke="#000000" points="286.81,-72.25 296.81,-68.75 286.81,-65.25 286.81,-72.25"/>
+</g>
+<!-- proc~trsbox -->
+<g id="call~~graph~~CallGraph_node23" class="node">
+<title>proc~trsbox</title>
+<g id="a_call~~graph~~CallGraph_node23"><a xlink:href="../proc/trsbox.html" xlink:title="trsbox">
+<polygon fill="#d9534f" stroke="#d9534f" points="351,-38.75 297,-38.75 297,-14.75 351,-14.75 351,-38.75"/>
+<text text-anchor="middle" x="324" y="-24.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">trsbox</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqb&#45;&gt;proc~trsbox -->
+<g id="call~~graph~~CallGraph_edge9" class="edge">
+<title>proc~bobyqb&#45;&gt;proc~trsbox</title>
+<path fill="none" stroke="#000000" d="M260.1,-56.6C268.9,-52.42 278.92,-47.67 288.32,-43.21"/>
+<polygon fill="#000000" stroke="#000000" points="289.93,-46.32 297.46,-38.87 286.92,-40 289.93,-46.32"/>
+</g>
+<!-- proc~update~3 -->
+<g id="call~~graph~~CallGraph_node32" class="node">
+<title>proc~update~3</title>
+<g id="a_call~~graph~~CallGraph_node32"><a xlink:href="../proc/update~3.html" xlink:title="update">
+<polygon fill="#d9534f" stroke="#d9534f" points="441,-39.75 387,-39.75 387,-15.75 441,-15.75 441,-39.75"/>
+<text text-anchor="middle" x="414" y="-25.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">update</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqb&#45;&gt;proc~update~3 -->
+<g id="call~~graph~~CallGraph_edge10" class="edge">
+<title>proc~bobyqb&#45;&gt;proc~update~3</title>
+<path fill="none" stroke="#000000" d="M242.01,-56.67C252.27,-41.46 272.25,-16.06 297,-5.75 323.78,5.4 356.39,-2.5 380.21,-11.79"/>
+<polygon fill="#000000" stroke="#000000" points="378.94,-15.05 389.52,-15.67 381.63,-8.59 378.94,-15.05"/>
+</g>
+<!-- proc~cobyla -->
+<g id="call~~graph~~CallGraph_node7" class="node">
+<title>proc~cobyla</title>
+<g id="a_call~~graph~~CallGraph_node7"><a xlink:href="../proc/cobyla.html" xlink:title="cobyla">
+<polygon fill="#d9534f" stroke="#d9534f" points="169.5,-374.75 115.5,-374.75 115.5,-350.75 169.5,-350.75 169.5,-374.75"/>
+<text text-anchor="middle" x="142.5" y="-360.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">cobyla</text>
+</a>
+</g>
+</g>
+<!-- proc~cobylb -->
+<g id="call~~graph~~CallGraph_node9" class="node">
+<title>proc~cobylb</title>
+<g id="a_call~~graph~~CallGraph_node9"><a xlink:href="../proc/cobylb.html" xlink:title="cobylb">
+<polygon fill="#d9534f" stroke="#d9534f" points="260.5,-374.75 206.5,-374.75 206.5,-350.75 260.5,-350.75 260.5,-374.75"/>
+<text text-anchor="middle" x="233.5" y="-360.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">cobylb</text>
+</a>
+</g>
+</g>
+<!-- proc~cobyla&#45;&gt;proc~cobylb -->
+<g id="call~~graph~~CallGraph_edge11" class="edge">
+<title>proc~cobyla&#45;&gt;proc~cobylb</title>
+<path fill="none" stroke="#000000" d="M169.72,-362.75C178.05,-362.75 187.41,-362.75 196.32,-362.75"/>
+<polygon fill="#000000" stroke="#000000" points="196.47,-366.25 206.47,-362.75 196.47,-359.25 196.47,-366.25"/>
+</g>
+<!-- proc~cobyla_test -->
+<g id="call~~graph~~CallGraph_node8" class="node">
+<title>proc~cobyla_test</title>
+<g id="a_call~~graph~~CallGraph_node8"><a xlink:href="../proc/cobyla_test.html" xlink:title="cobyla_test">
+<polygon fill="#d9534f" stroke="#d9534f" points="76,-374.75 3,-374.75 3,-350.75 76,-350.75 76,-374.75"/>
+<text text-anchor="middle" x="39.5" y="-360.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">cobyla_test</text>
+</a>
+</g>
+</g>
+<!-- proc~cobyla_test&#45;&gt;proc~cobyla -->
+<g id="call~~graph~~CallGraph_edge12" class="edge">
+<title>proc~cobyla_test&#45;&gt;proc~cobyla</title>
+<path fill="none" stroke="#000000" d="M76.11,-362.75C85.52,-362.75 95.68,-362.75 105.13,-362.75"/>
+<polygon fill="#000000" stroke="#000000" points="105.41,-366.25 115.41,-362.75 105.41,-359.25 105.41,-366.25"/>
+</g>
+<!-- proc~trstlp -->
+<g id="call~~graph~~CallGraph_node26" class="node">
+<title>proc~trstlp</title>
+<g id="a_call~~graph~~CallGraph_node26"><a xlink:href="../proc/trstlp.html" xlink:title="trstlp">
+<polygon fill="#d9534f" stroke="#d9534f" points="351,-374.75 297,-374.75 297,-350.75 351,-350.75 351,-374.75"/>
+<text text-anchor="middle" x="324" y="-360.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">trstlp</text>
+</a>
+</g>
+</g>
+<!-- proc~cobylb&#45;&gt;proc~trstlp -->
+<g id="call~~graph~~CallGraph_edge13" class="edge">
+<title>proc~cobylb&#45;&gt;proc~trstlp</title>
+<path fill="none" stroke="#000000" d="M260.57,-362.75C268.78,-362.75 278,-362.75 286.78,-362.75"/>
+<polygon fill="#000000" stroke="#000000" points="286.81,-366.25 296.81,-362.75 286.81,-359.25 286.81,-366.25"/>
+</g>
+<!-- proc~getact -->
+<g id="call~~graph~~CallGraph_node10" class="node">
+<title>proc~getact</title>
+<g id="a_call~~graph~~CallGraph_node10"><a xlink:href="../proc/getact.html" xlink:title="getact">
+<polygon fill="#d9534f" stroke="#d9534f" points="441,-416.75 387,-416.75 387,-392.75 441,-392.75 441,-416.75"/>
+<text text-anchor="middle" x="414" y="-402.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">getact</text>
+</a>
+</g>
+</g>
+<!-- proc~lagmax -->
+<g id="call~~graph~~CallGraph_node11" class="node">
+<title>proc~lagmax</title>
+<g id="a_call~~graph~~CallGraph_node11"><a xlink:href="../proc/lagmax.html" xlink:title="lagmax">
+<polygon fill="#d9534f" stroke="#d9534f" points="351,-622.75 297,-622.75 297,-598.75 351,-598.75 351,-622.75"/>
+<text text-anchor="middle" x="324" y="-608.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">lagmax</text>
+</a>
+</g>
+</g>
+<!-- proc~lincoa -->
+<g id="call~~graph~~CallGraph_node12" class="node">
+<title>proc~lincoa</title>
+<g id="a_call~~graph~~CallGraph_node12"><a xlink:href="../proc/lincoa.html" xlink:title="lincoa">
+<polygon fill="#d9534f" stroke="#d9534f" points="169.5,-476.75 115.5,-476.75 115.5,-452.75 169.5,-452.75 169.5,-476.75"/>
+<text text-anchor="middle" x="142.5" y="-462.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">lincoa</text>
+</a>
+</g>
+</g>
+<!-- proc~lincob -->
+<g id="call~~graph~~CallGraph_node14" class="node">
+<title>proc~lincob</title>
+<g id="a_call~~graph~~CallGraph_node14"><a xlink:href="../proc/lincob.html" xlink:title="lincob">
+<polygon fill="#d9534f" stroke="#d9534f" points="260.5,-476.75 206.5,-476.75 206.5,-452.75 260.5,-452.75 260.5,-476.75"/>
+<text text-anchor="middle" x="233.5" y="-462.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">lincob</text>
+</a>
+</g>
+</g>
+<!-- proc~lincoa&#45;&gt;proc~lincob -->
+<g id="call~~graph~~CallGraph_edge14" class="edge">
+<title>proc~lincoa&#45;&gt;proc~lincob</title>
+<path fill="none" stroke="#000000" d="M169.72,-464.75C178.05,-464.75 187.41,-464.75 196.32,-464.75"/>
+<polygon fill="#000000" stroke="#000000" points="196.47,-468.25 206.47,-464.75 196.47,-461.25 196.47,-468.25"/>
+</g>
+<!-- proc~lincoa_test -->
+<g id="call~~graph~~CallGraph_node13" class="node">
+<title>proc~lincoa_test</title>
+<g id="a_call~~graph~~CallGraph_node13"><a xlink:href="../proc/lincoa_test.html" xlink:title="lincoa_test">
+<polygon fill="#d9534f" stroke="#d9534f" points="74.5,-476.75 4.5,-476.75 4.5,-452.75 74.5,-452.75 74.5,-476.75"/>
+<text text-anchor="middle" x="39.5" y="-462.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">lincoa_test</text>
+</a>
+</g>
+</g>
+<!-- proc~lincoa_test&#45;&gt;proc~lincoa -->
+<g id="call~~graph~~CallGraph_edge15" class="edge">
+<title>proc~lincoa_test&#45;&gt;proc~lincoa</title>
+<path fill="none" stroke="#000000" d="M74.69,-464.75C84.55,-464.75 95.33,-464.75 105.3,-464.75"/>
+<polygon fill="#000000" stroke="#000000" points="105.33,-468.25 115.33,-464.75 105.33,-461.25 105.33,-468.25"/>
+</g>
+<!-- proc~prelim -->
+<g id="call~~graph~~CallGraph_node18" class="node">
+<title>proc~prelim</title>
+<g id="a_call~~graph~~CallGraph_node18"><a xlink:href="../proc/prelim.html" xlink:title="prelim">
+<polygon fill="#d9534f" stroke="#d9534f" points="351,-538.75 297,-538.75 297,-514.75 351,-514.75 351,-538.75"/>
+<text text-anchor="middle" x="324" y="-524.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">prelim</text>
+</a>
+</g>
+</g>
+<!-- proc~lincob&#45;&gt;proc~prelim -->
+<g id="call~~graph~~CallGraph_edge16" class="edge">
+<title>proc~lincob&#45;&gt;proc~prelim</title>
+<path fill="none" stroke="#000000" d="M251.98,-477C264.92,-486.06 282.73,-498.54 297.29,-508.74"/>
+<polygon fill="#000000" stroke="#000000" points="295.65,-511.87 305.85,-514.74 299.67,-506.13 295.65,-511.87"/>
+</g>
+<!-- proc~qmstep -->
+<g id="call~~graph~~CallGraph_node20" class="node">
+<title>proc~qmstep</title>
+<g id="a_call~~graph~~CallGraph_node20"><a xlink:href="../proc/qmstep.html" xlink:title="qmstep">
+<polygon fill="#d9534f" stroke="#d9534f" points="351,-496.75 297,-496.75 297,-472.75 351,-472.75 351,-496.75"/>
+<text text-anchor="middle" x="324" y="-482.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">qmstep</text>
+</a>
+</g>
+</g>
+<!-- proc~lincob&#45;&gt;proc~qmstep -->
+<g id="call~~graph~~CallGraph_edge17" class="edge">
+<title>proc~lincob&#45;&gt;proc~qmstep</title>
+<path fill="none" stroke="#000000" d="M260.57,-470.64C268.78,-472.5 278,-474.58 286.78,-476.57"/>
+<polygon fill="#000000" stroke="#000000" points="286.28,-480.04 296.81,-478.83 287.82,-473.21 286.28,-480.04"/>
+</g>
+<!-- proc~trstep -->
+<g id="call~~graph~~CallGraph_node24" class="node">
+<title>proc~trstep</title>
+<g id="a_call~~graph~~CallGraph_node24"><a xlink:href="../proc/trstep.html" xlink:title="trstep">
+<polygon fill="#d9534f" stroke="#d9534f" points="351,-416.75 297,-416.75 297,-392.75 351,-392.75 351,-416.75"/>
+<text text-anchor="middle" x="324" y="-402.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">trstep</text>
+</a>
+</g>
+</g>
+<!-- proc~lincob&#45;&gt;proc~trstep -->
+<g id="call~~graph~~CallGraph_edge18" class="edge">
+<title>proc~lincob&#45;&gt;proc~trstep</title>
+<path fill="none" stroke="#000000" d="M252.41,-452.61C265.12,-443.99 282.4,-432.28 296.68,-422.59"/>
+<polygon fill="#000000" stroke="#000000" points="298.8,-425.38 305.12,-416.88 294.88,-419.59 298.8,-425.38"/>
+</g>
+<!-- proc~update~2 -->
+<g id="call~~graph~~CallGraph_node31" class="node">
+<title>proc~update~2</title>
+<g id="a_call~~graph~~CallGraph_node31"><a xlink:href="../proc/update~2.html" xlink:title="update">
+<polygon fill="#d9534f" stroke="#d9534f" points="441,-498.75 387,-498.75 387,-474.75 441,-474.75 441,-498.75"/>
+<text text-anchor="middle" x="414" y="-484.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">update</text>
+</a>
+</g>
+</g>
+<!-- proc~lincob&#45;&gt;proc~update~2 -->
+<g id="call~~graph~~CallGraph_edge19" class="edge">
+<title>proc~lincob&#45;&gt;proc~update~2</title>
+<path fill="none" stroke="#000000" d="M260.64,-461.78C284.41,-459.73 320.34,-458.25 351,-463.75 359.69,-465.31 368.75,-468.01 377.18,-471.02"/>
+<polygon fill="#000000" stroke="#000000" points="376.14,-474.37 386.73,-474.65 378.63,-467.83 376.14,-474.37"/>
+</g>
+<!-- proc~newuoa -->
+<g id="call~~graph~~CallGraph_node15" class="node">
+<title>proc~newuoa</title>
+<g id="a_call~~graph~~CallGraph_node15"><a xlink:href="../proc/newuoa.html" xlink:title="newuoa">
+<polygon fill="#d9534f" stroke="#d9534f" points="170,-269.75 115,-269.75 115,-245.75 170,-245.75 170,-269.75"/>
+<text text-anchor="middle" x="142.5" y="-255.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">newuoa</text>
+</a>
+</g>
+</g>
+<!-- proc~newuob -->
+<g id="call~~graph~~CallGraph_node17" class="node">
+<title>proc~newuob</title>
+<g id="a_call~~graph~~CallGraph_node17"><a xlink:href="../proc/newuob.html" xlink:title="newuob">
+<polygon fill="#d9534f" stroke="#d9534f" points="261,-269.75 206,-269.75 206,-245.75 261,-245.75 261,-269.75"/>
+<text text-anchor="middle" x="233.5" y="-255.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">newuob</text>
+</a>
+</g>
+</g>
+<!-- proc~newuoa&#45;&gt;proc~newuob -->
+<g id="call~~graph~~CallGraph_edge20" class="edge">
+<title>proc~newuoa&#45;&gt;proc~newuob</title>
+<path fill="none" stroke="#000000" d="M170.2,-257.75C178.21,-257.75 187.14,-257.75 195.68,-257.75"/>
+<polygon fill="#000000" stroke="#000000" points="195.82,-261.25 205.82,-257.75 195.82,-254.25 195.82,-261.25"/>
+</g>
+<!-- proc~newuoa_test -->
+<g id="call~~graph~~CallGraph_node16" class="node">
+<title>proc~newuoa_test</title>
+<g id="a_call~~graph~~CallGraph_node16"><a xlink:href="../proc/newuoa_test.html" xlink:title="newuoa_test">
+<polygon fill="#d9534f" stroke="#d9534f" points="79,-269.75 0,-269.75 0,-245.75 79,-245.75 79,-269.75"/>
+<text text-anchor="middle" x="39.5" y="-255.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">newuoa_test</text>
+</a>
+</g>
+</g>
+<!-- proc~newuoa_test&#45;&gt;proc~newuoa -->
+<g id="call~~graph~~CallGraph_edge21" class="edge">
+<title>proc~newuoa_test&#45;&gt;proc~newuoa</title>
+<path fill="none" stroke="#000000" d="M79.26,-257.75C87.63,-257.75 96.46,-257.75 104.75,-257.75"/>
+<polygon fill="#000000" stroke="#000000" points="104.89,-261.25 114.89,-257.75 104.89,-254.25 104.89,-261.25"/>
+</g>
+<!-- proc~newuob&#45;&gt;proc~bigden -->
+<g id="call~~graph~~CallGraph_edge22" class="edge">
+<title>proc~newuob&#45;&gt;proc~bigden</title>
+<path fill="none" stroke="#000000" d="M251.56,-269.9C264.66,-279.22 282.95,-292.24 297.75,-302.78"/>
+<polygon fill="#000000" stroke="#000000" points="295.81,-305.69 305.99,-308.64 299.87,-299.99 295.81,-305.69"/>
+</g>
+<!-- proc~newuob&#45;&gt;proc~biglag -->
+<g id="call~~graph~~CallGraph_edge23" class="edge">
+<title>proc~newuob&#45;&gt;proc~biglag</title>
+<path fill="none" stroke="#000000" d="M261.05,-264.05C269.18,-265.98 278.25,-268.13 286.9,-270.19"/>
+<polygon fill="#000000" stroke="#000000" points="286.23,-273.62 296.77,-272.53 287.85,-266.81 286.23,-273.62"/>
+</g>
+<!-- proc~trsapp -->
+<g id="call~~graph~~CallGraph_node22" class="node">
+<title>proc~trsapp</title>
+<g id="a_call~~graph~~CallGraph_node22"><a xlink:href="../proc/trsapp.html" xlink:title="trsapp">
+<polygon fill="#d9534f" stroke="#d9534f" points="351,-248.75 297,-248.75 297,-224.75 351,-224.75 351,-248.75"/>
+<text text-anchor="middle" x="324" y="-234.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">trsapp</text>
+</a>
+</g>
+</g>
+<!-- proc~newuob&#45;&gt;proc~trsapp -->
+<g id="call~~graph~~CallGraph_edge24" class="edge">
+<title>proc~newuob&#45;&gt;proc~trsapp</title>
+<path fill="none" stroke="#000000" d="M261.05,-251.45C269.18,-249.52 278.25,-247.37 286.9,-245.32"/>
+<polygon fill="#000000" stroke="#000000" points="287.85,-248.69 296.77,-242.98 286.23,-241.88 287.85,-248.69"/>
+</g>
+<!-- proc~update -->
+<g id="call~~graph~~CallGraph_node30" class="node">
+<title>proc~update</title>
+<g id="a_call~~graph~~CallGraph_node30"><a xlink:href="../proc/update.html" xlink:title="update">
+<polygon fill="#d9534f" stroke="#d9534f" points="351,-206.75 297,-206.75 297,-182.75 351,-182.75 351,-206.75"/>
+<text text-anchor="middle" x="324" y="-192.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">update</text>
+</a>
+</g>
+</g>
+<!-- proc~newuob&#45;&gt;proc~update -->
+<g id="call~~graph~~CallGraph_edge25" class="edge">
+<title>proc~newuob&#45;&gt;proc~update</title>
+<path fill="none" stroke="#000000" d="M251.56,-245.6C264.66,-236.28 282.95,-223.26 297.75,-212.73"/>
+<polygon fill="#000000" stroke="#000000" points="299.87,-215.51 305.99,-206.86 295.81,-209.81 299.87,-215.51"/>
+</g>
+<!-- proc~prelim&#45;&gt;proc~update~2 -->
+<g id="call~~graph~~CallGraph_edge26" class="edge">
+<title>proc~prelim&#45;&gt;proc~update~2</title>
+<path fill="none" stroke="#000000" d="M351.4,-514.75C359.66,-511 368.9,-506.8 377.66,-502.81"/>
+<polygon fill="#000000" stroke="#000000" points="379.26,-505.93 386.92,-498.61 376.37,-499.56 379.26,-505.93"/>
+</g>
+<!-- proc~rescue&#45;&gt;proc~update~3 -->
+<g id="call~~graph~~CallGraph_edge27" class="edge">
+<title>proc~rescue&#45;&gt;proc~update~3</title>
+<path fill="none" stroke="#000000" d="M350.93,-56.67C359.36,-52.74 368.86,-48.32 377.84,-44.13"/>
+<polygon fill="#000000" stroke="#000000" points="379.37,-47.28 386.95,-39.89 376.41,-40.94 379.37,-47.28"/>
+</g>
+<!-- proc~trstep&#45;&gt;proc~getact -->
+<g id="call~~graph~~CallGraph_edge28" class="edge">
+<title>proc~trstep&#45;&gt;proc~getact</title>
+<path fill="none" stroke="#000000" d="M351.4,-404.75C359.39,-404.75 368.31,-404.75 376.82,-404.75"/>
+<polygon fill="#000000" stroke="#000000" points="376.92,-408.25 386.92,-404.75 376.92,-401.25 376.92,-408.25"/>
+</g>
+<!-- proc~trstep~2 -->
+<g id="call~~graph~~CallGraph_node25" class="node">
+<title>proc~trstep~2</title>
+<g id="a_call~~graph~~CallGraph_node25"><a xlink:href="../proc/trstep~2.html" xlink:title="trstep">
+<polygon fill="#d9534f" stroke="#d9534f" points="351,-580.75 297,-580.75 297,-556.75 351,-556.75 351,-580.75"/>
+<text text-anchor="middle" x="324" y="-566.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">trstep</text>
+</a>
+</g>
+</g>
+<!-- proc~uobyqa -->
+<g id="call~~graph~~CallGraph_node27" class="node">
+<title>proc~uobyqa</title>
+<g id="a_call~~graph~~CallGraph_node27"><a xlink:href="../proc/uobyqa.html" xlink:title="uobyqa">
+<polygon fill="#d9534f" stroke="#d9534f" points="169.5,-601.75 115.5,-601.75 115.5,-577.75 169.5,-577.75 169.5,-601.75"/>
+<text text-anchor="middle" x="142.5" y="-587.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">uobyqa</text>
+</a>
+</g>
+</g>
+<!-- proc~uobyqb -->
+<g id="call~~graph~~CallGraph_node29" class="node">
+<title>proc~uobyqb</title>
+<g id="a_call~~graph~~CallGraph_node29"><a xlink:href="../proc/uobyqb.html" xlink:title="uobyqb">
+<polygon fill="#d9534f" stroke="#d9534f" points="260.5,-601.75 206.5,-601.75 206.5,-577.75 260.5,-577.75 260.5,-601.75"/>
+<text text-anchor="middle" x="233.5" y="-587.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">uobyqb</text>
+</a>
+</g>
+</g>
+<!-- proc~uobyqa&#45;&gt;proc~uobyqb -->
+<g id="call~~graph~~CallGraph_edge29" class="edge">
+<title>proc~uobyqa&#45;&gt;proc~uobyqb</title>
+<path fill="none" stroke="#000000" d="M169.72,-589.75C178.05,-589.75 187.41,-589.75 196.32,-589.75"/>
+<polygon fill="#000000" stroke="#000000" points="196.47,-593.25 206.47,-589.75 196.47,-586.25 196.47,-593.25"/>
+</g>
+<!-- proc~uobyqa_test -->
+<g id="call~~graph~~CallGraph_node28" class="node">
+<title>proc~uobyqa_test</title>
+<g id="a_call~~graph~~CallGraph_node28"><a xlink:href="../proc/uobyqa_test.html" xlink:title="uobyqa_test">
+<polygon fill="#d9534f" stroke="#d9534f" points="78,-601.75 1,-601.75 1,-577.75 78,-577.75 78,-601.75"/>
+<text text-anchor="middle" x="39.5" y="-587.35" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">uobyqa_test</text>
+</a>
+</g>
+</g>
+<!-- proc~uobyqa_test&#45;&gt;proc~uobyqa -->
+<g id="call~~graph~~CallGraph_edge30" class="edge">
+<title>proc~uobyqa_test&#45;&gt;proc~uobyqa</title>
+<path fill="none" stroke="#000000" d="M78.11,-589.75C86.88,-589.75 96.21,-589.75 104.94,-589.75"/>
+<polygon fill="#000000" stroke="#000000" points="105.2,-593.25 115.2,-589.75 105.2,-586.25 105.2,-593.25"/>
+</g>
+<!-- proc~uobyqb&#45;&gt;proc~lagmax -->
+<g id="call~~graph~~CallGraph_edge31" class="edge">
+<title>proc~uobyqb&#45;&gt;proc~lagmax</title>
+<path fill="none" stroke="#000000" d="M260.57,-595.94C268.87,-597.91 278.2,-600.12 287.07,-602.23"/>
+<polygon fill="#000000" stroke="#000000" points="286.27,-605.63 296.81,-604.54 287.88,-598.82 286.27,-605.63"/>
+</g>
+<!-- proc~uobyqb&#45;&gt;proc~trstep~2 -->
+<g id="call~~graph~~CallGraph_edge32" class="edge">
+<title>proc~uobyqb&#45;&gt;proc~trstep~2</title>
+<path fill="none" stroke="#000000" d="M260.57,-583.56C268.87,-581.6 278.2,-579.38 287.07,-577.28"/>
+<polygon fill="#000000" stroke="#000000" points="287.88,-580.68 296.81,-574.97 286.27,-573.87 287.88,-580.68"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 27.51" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.86 0.86) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 741.5,-28 741.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="70,-24 0,-24 0,0 70,0 70,-24"/>
+<text text-anchor="middle" x="35" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="146,-24 88,-24 88,0 146,0 146,-24"/>
+<text text-anchor="middle" x="117" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="225.5,-24 164.5,-24 164.5,0 225.5,0 225.5,-24"/>
+<text text-anchor="middle" x="195" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="374,-24 244,-24 244,0 374,0 374,-24"/>
+<text text-anchor="middle" x="309" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="537.5,-24 392.5,-24 392.5,0 537.5,0 537.5,-24"/>
+<text text-anchor="middle" x="465" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="614,-24 556,-24 556,0 614,0 614,-24"/>
+<text text-anchor="middle" x="585" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="737.5,-24 632.5,-24 632.5,0 737.5,0 737.5,-24"/>
+<text text-anchor="middle" x="685" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              PowellOpt
+ was developed by Jacob Williams<br>              &copy; 2025 
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+            </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
+
+    <!-- MathJax JavaScript
+             ================================================== -->
+             <!-- Placed at the end of the document so the pages load faster -->
+        <script type="text/x-mathjax-config">
+          MathJax.Hub.Config({
+          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+          });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+          <script src="../tipuesearch/tipuesearch_content.js"></script>
+          <script src="../tipuesearch/tipuesearch_set.js"></script>
+          <script src="../tipuesearch/tipuesearch.js"></script>
+
+  </body>
+</html>

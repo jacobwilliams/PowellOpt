@@ -1,0 +1,662 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="PowellOpt -- Optimization algorithms by M.J.D. Powell">
+    <meta name="author" content="Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>lagmax &ndash; PowellOpt</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">PowellOpt </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>lagmax
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 2.2% of total for procedures.">139 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/uobyqa.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/uobyqa.f90.html'>uobyqa.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/uobyqa_module.html'>uobyqa_module</a></li>
+            <li class="breadcrumb-item active" aria-current="page">lagmax</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+    $('[data-bs-toggle="tooltip"]').tooltip()
+    })
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/lagmax.html#src">lagmax</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>private  subroutine lagmax(n, g, h, rho, d, v, vmax)  
+</h2>
+    
+
+
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~29"></span>
+              integer
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-g~5"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>g</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-h~2"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>h</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rho~2"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rho</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-d~7"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>d</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-v"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>v</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vmax"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>vmax</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Called by</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: proc~~lagmax~~CalledByGraph Pages: 1 -->
+<svg id="proclagmaxCalledByGraph" width="355pt" height="32pt"
+ viewBox="0.00 0.00 355.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~lagmax~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>proc~~lagmax~~CalledByGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 351,-28 351,4 -4,4"/>
+<!-- proc~lagmax -->
+<g id="proc~~lagmax~~CalledByGraph_node1" class="node">
+<title>proc~lagmax</title>
+<polygon fill="none" stroke="black" points="347,-24 293,-24 293,0 347,0 347,-24"/>
+<text text-anchor="middle" x="320" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">lagmax</text>
+</g>
+<!-- proc~uobyqb -->
+<g id="proc~~lagmax~~CalledByGraph_node2" class="node">
+<title>proc~uobyqb</title>
+<g id="a_proc~~lagmax~~CalledByGraph_node2"><a xlink:href="../proc/uobyqb.html" xlink:title="uobyqb">
+<polygon fill="#d9534f" stroke="#d9534f" points="257,-24 203,-24 203,0 257,0 257,-24"/>
+<text text-anchor="middle" x="230" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">uobyqb</text>
+</a>
+</g>
+</g>
+<!-- proc~uobyqb&#45;&gt;proc~lagmax -->
+<g id="proc~~lagmax~~CalledByGraph_edge1" class="edge">
+<title>proc~uobyqb&#45;&gt;proc~lagmax</title>
+<path fill="none" stroke="#000000" d="M257.4,-12C265.39,-12 274.31,-12 282.82,-12"/>
+<polygon fill="#000000" stroke="#000000" points="282.92,-15.5 292.92,-12 282.92,-8.5 282.92,-15.5"/>
+</g>
+<!-- proc~uobyqa -->
+<g id="proc~~lagmax~~CalledByGraph_node3" class="node">
+<title>proc~uobyqa</title>
+<g id="a_proc~~lagmax~~CalledByGraph_node3"><a xlink:href="../proc/uobyqa.html" xlink:title="uobyqa">
+<polygon fill="#d9534f" stroke="#d9534f" points="167,-24 113,-24 113,0 167,0 167,-24"/>
+<text text-anchor="middle" x="140" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">uobyqa</text>
+</a>
+</g>
+</g>
+<!-- proc~uobyqa&#45;&gt;proc~uobyqb -->
+<g id="proc~~lagmax~~CalledByGraph_edge2" class="edge">
+<title>proc~uobyqa&#45;&gt;proc~uobyqb</title>
+<path fill="none" stroke="#000000" d="M167.4,-12C175.39,-12 184.31,-12 192.82,-12"/>
+<polygon fill="#000000" stroke="#000000" points="192.92,-15.5 202.92,-12 192.92,-8.5 192.92,-15.5"/>
+</g>
+<!-- proc~uobyqa_test -->
+<g id="proc~~lagmax~~CalledByGraph_node4" class="node">
+<title>proc~uobyqa_test</title>
+<g id="a_proc~~lagmax~~CalledByGraph_node4"><a xlink:href="../proc/uobyqa_test.html" xlink:title="uobyqa_test">
+<polygon fill="#d9534f" stroke="#d9534f" points="77,-24 0,-24 0,0 77,0 77,-24"/>
+<text text-anchor="middle" x="38.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">uobyqa_test</text>
+</a>
+</g>
+</g>
+<!-- proc~uobyqa_test&#45;&gt;proc~uobyqa -->
+<g id="proc~~lagmax~~CalledByGraph_edge3" class="edge">
+<title>proc~uobyqa_test&#45;&gt;proc~uobyqa</title>
+<path fill="none" stroke="#000000" d="M77.12,-12C85.47,-12 94.32,-12 102.63,-12"/>
+<polygon fill="#000000" stroke="#000000" points="102.78,-15.5 112.78,-12 102.78,-8.5 102.78,-15.5"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CalledByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CalledByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 27.51" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.86 0.86) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 741.5,-28 741.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="70,-24 0,-24 0,0 70,0 70,-24"/>
+<text text-anchor="middle" x="35" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="146,-24 88,-24 88,0 146,0 146,-24"/>
+<text text-anchor="middle" x="117" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="225.5,-24 164.5,-24 164.5,0 225.5,0 225.5,-24"/>
+<text text-anchor="middle" x="195" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="374,-24 244,-24 244,0 374,0 374,-24"/>
+<text text-anchor="middle" x="309" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="537.5,-24 392.5,-24 392.5,0 537.5,0 537.5,-24"/>
+<text text-anchor="middle" x="465" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="614,-24 556,-24 556,0 614,0 614,-24"/>
+<text text-anchor="middle" x="585" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="737.5,-24 632.5,-24 632.5,0 737.5,0 737.5,-24"/>
+<text text-anchor="middle" x="685" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">lagmax</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">g</span><span class="p">,</span><span class="w"> </span><span class="n">h</span><span class="p">,</span><span class="w"> </span><span class="n">rho</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">,</span><span class="w"> </span><span class="n">vmax</span><span class="p">)</span>
+
+<span class="w">        </span><span class="k">implicit </span><span class="kt">real</span><span class="w"> </span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">h</span><span class="p">,</span><span class="w"> </span><span class="n">o</span><span class="o">-</span><span class="n">z</span><span class="p">)</span>
+
+<span class="w">        </span><span class="k">dimension </span><span class="n">g</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="p">)</span>
+<span class="c">!</span>
+<span class="c">!     N is the number of variables of a quadratic objective function, Q say.</span>
+<span class="c">!     G is the gradient of Q at the origin.</span>
+<span class="c">!     H is the symmetric Hessian matrix of Q. Only the upper triangular and</span>
+<span class="c">!       diagonal parts need be set.</span>
+<span class="c">!     RHO is the trust region radius, and has to be positive.</span>
+<span class="c">!     D will be set to the calculated vector of variables.</span>
+<span class="c">!     The array V will be used for working space.</span>
+<span class="c">!     VMAX will be set to |Q(0)-Q(D)|.</span>
+<span class="c">!</span>
+<span class="c">!     Calculating the D that maximizes |Q(0)-Q(D)| subject to ||D|| .LEQ. RHO</span>
+<span class="c">!     requires of order N**3 operations, but sometimes it is adequate if</span>
+<span class="c">!     |Q(0)-Q(D)| is within about 0.9 of its greatest possible value. This</span>
+<span class="c">!     subroutine provides such a solution in only of order N**2 operations,</span>
+<span class="c">!     where the claim of accuracy has been tested by numerical experiments.</span>
+<span class="c">!</span>
+<span class="c">!     Preliminary calculations.</span>
+<span class="c">!</span>
+<span class="c">!</span>
+<span class="c">!     Pick V such that ||HV|| / ||V|| is large.</span>
+<span class="c">!</span>
+<span class="w">        </span><span class="n">hmax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">            </span><span class="nb">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">            </span><span class="k">do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                </span><span class="n">h</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span>
+<span class="w">                </span><span class="nb">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sum</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="nb">sum</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">hmax</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                </span><span class="n">hmax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sum</span>
+<span class="nb">                </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span>
+<span class="w">            </span><span class="k">end if</span>
+<span class="k">        end do</span>
+<span class="k">        do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">            </span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="c">!</span>
+<span class="c">!     Set D to a vector in the subspace spanned by V and HV that maximizes</span>
+<span class="c">!     |(D,HD)|/(D,D), except that we set D=HV if V and HV are nearly parallel.</span>
+<span class="c">!     The vector that has the name D at label 60 used to be the vector W.</span>
+<span class="c">!</span>
+<span class="w">        </span><span class="n">vsq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="n">vhv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="n">dsq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">            </span><span class="n">vsq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsq</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">            </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">            </span><span class="k">do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">            </span><span class="n">vhv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vhv</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="n">dsq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dsq</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">vhv</span><span class="o">*</span><span class="n">vhv</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mf">0.9999_wp</span><span class="o">*</span><span class="n">dsq</span><span class="o">*</span><span class="n">vsq</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vhv</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">vsq</span>
+<span class="w">            </span><span class="n">wsq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">            </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="n">wsq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">wsq</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">            </span><span class="n">whw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">            </span><span class="n">ratio</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="w"> </span><span class="p">(</span><span class="n">wsq</span><span class="o">/</span><span class="n">vsq</span><span class="p">)</span>
+<span class="w">            </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">                </span><span class="k">do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                    </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+<span class="w">                </span><span class="k">end do</span>
+<span class="k">                </span><span class="n">whw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">whw</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ratio</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">            </span><span class="n">vhv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ratio</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">ratio</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">vhv</span>
+<span class="w">            </span><span class="n">vhw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ratio</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">wsq</span>
+<span class="w">            </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">half</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">whw</span><span class="o">-</span><span class="n">vhv</span><span class="p">)</span>
+<span class="w">            </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">sign</span><span class="w"> </span><span class="p">(</span><span class="nb">sqrt</span><span class="p">(</span><span class="n">temp</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">vhw</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="n">whw</span><span class="o">+</span><span class="n">vhv</span><span class="p">)</span>
+<span class="w">            </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vhw</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">        end if</span>
+<span class="c">!</span>
+<span class="c">!     We now turn our attention to the subspace spanned by G and D. A multiple</span>
+<span class="c">!     of the current D is returned if that choice seems to be adequate.</span>
+<span class="c">!</span>
+<span class="w">        </span><span class="n">gg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="n">gd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="n">dd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="n">dhd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">            </span><span class="n">gg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gg</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">            </span><span class="n">gd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gd</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="n">dd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dd</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">            </span><span class="nb">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">            </span><span class="k">do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                </span><span class="nb">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sum</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">            </span><span class="n">dhd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dhd</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">sum</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="k">        </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gd</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">gg</span>
+<span class="w">        </span><span class="n">vv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="nb">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sign</span><span class="w"> </span><span class="p">(</span><span class="n">rho</span><span class="o">/</span><span class="nb">sqrt</span><span class="p">(</span><span class="n">dd</span><span class="p">),</span><span class="w"> </span><span class="n">gd</span><span class="o">*</span><span class="n">dhd</span><span class="p">)</span>
+<span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">            </span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="n">vv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vv</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">            </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">scale</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="k">        </span><span class="n">gnorm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="w"> </span><span class="p">(</span><span class="n">gg</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">gnorm</span><span class="o">*</span><span class="n">dd</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mf">0.5e-2_wp</span><span class="o">*</span><span class="n">rho</span><span class="o">*</span><span class="nb">abs</span><span class="p">(</span><span class="n">dhd</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="n">vv</span><span class="o">/</span><span class="n">dd</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mf">1.0e-4_wp</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">vmax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">abs</span><span class="w"> </span><span class="p">(</span><span class="nb">scale</span><span class="o">*</span><span class="p">(</span><span class="n">gd</span><span class="o">+</span><span class="n">half</span><span class="o">*</span><span class="nb">scale</span><span class="o">*</span><span class="n">dhd</span><span class="p">))</span>
+<span class="w">            </span><span class="k">return</span>
+<span class="k">        end if</span>
+<span class="c">!</span>
+<span class="c">!     G and V are now orthogonal in the subspace spanned by G and D. Hence</span>
+<span class="c">!     we generate an orthonormal basis of this subspace such that (D,HV) is</span>
+<span class="c">!     negligible or zero, where D and V will be the basis vectors.</span>
+<span class="c">!</span>
+<span class="w">        </span><span class="n">ghg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="n">vhg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="n">vhv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">            </span><span class="nb">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">            </span><span class="n">sumv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">            </span><span class="k">do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                </span><span class="nb">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sum</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+<span class="w">                </span><span class="n">sumv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sumv</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">            </span><span class="n">ghg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ghg</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">sum</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="n">vhg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vhg</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">sumv</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="n">vhv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vhv</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">sumv</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="k">        </span><span class="n">vnorm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="w"> </span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+<span class="w">        </span><span class="n">ghg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ghg</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">gg</span>
+<span class="w">        </span><span class="n">vhg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vhg</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">vnorm</span><span class="o">*</span><span class="n">gnorm</span><span class="p">)</span>
+<span class="w">        </span><span class="n">vhv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vhv</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">vv</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">vhg</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mf">0.01_wp</span><span class="o">*</span><span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">ghg</span><span class="p">),</span><span class="w"> </span><span class="nb">abs</span><span class="p">(</span><span class="n">vhv</span><span class="p">)))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">vmu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ghg</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">vhv</span>
+<span class="w">            </span><span class="n">wcos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">one</span>
+<span class="w">            </span><span class="n">wsin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="k">            </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">half</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">ghg</span><span class="o">-</span><span class="n">vhv</span><span class="p">)</span>
+<span class="w">            </span><span class="n">vmu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">sign</span><span class="w"> </span><span class="p">(</span><span class="nb">sqrt</span><span class="p">(</span><span class="n">temp</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">vhg</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="n">temp</span><span class="p">)</span>
+<span class="w">            </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="w"> </span><span class="p">(</span><span class="n">vmu</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">vhg</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+<span class="w">            </span><span class="n">wcos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vmu</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">temp</span>
+<span class="w">            </span><span class="n">wsin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vhg</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">temp</span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">        </span><span class="n">tempa</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">wcos</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">gnorm</span>
+<span class="w">        </span><span class="n">tempb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">wsin</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">vnorm</span>
+<span class="w">        </span><span class="n">tempc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">wcos</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">vnorm</span>
+<span class="w">        </span><span class="n">tempd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">wsin</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">gnorm</span>
+<span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">            </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tempa</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tempb</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tempc</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">tempd</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="c">!</span>
+<span class="c">!     The final D is a multiple of the current D, V, D+V or D-V. We make the</span>
+<span class="c">!     choice from these possibilities that is optimal.</span>
+<span class="c">!</span>
+<span class="w">        </span><span class="n">dlin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">wcos</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">gnorm</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">rho</span>
+<span class="w">        </span><span class="n">vlin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">wsin</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">gnorm</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">rho</span>
+<span class="w">        </span><span class="n">tempa</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">abs</span><span class="w"> </span><span class="p">(</span><span class="n">dlin</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">half</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">abs</span><span class="w"> </span><span class="p">(</span><span class="n">vmu</span><span class="o">+</span><span class="n">vhv</span><span class="p">)</span>
+<span class="w">        </span><span class="n">tempb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">abs</span><span class="w"> </span><span class="p">(</span><span class="n">vlin</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">half</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">abs</span><span class="w"> </span><span class="p">(</span><span class="n">ghg</span><span class="o">-</span><span class="n">vmu</span><span class="p">)</span>
+<span class="w">        </span><span class="n">tempc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">halfrt</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">dlin</span><span class="p">)</span><span class="o">+</span><span class="nb">abs</span><span class="p">(</span><span class="n">vlin</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.25_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">abs</span><span class="w"> </span><span class="p">(</span><span class="n">ghg</span><span class="o">+</span><span class="n">vhv</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tempa</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">tempb</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">tempa</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">tempc</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">tempd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sign</span><span class="w"> </span><span class="p">(</span><span class="n">rho</span><span class="p">,</span><span class="w"> </span><span class="n">dlin</span><span class="o">*</span><span class="p">(</span><span class="n">vmu</span><span class="o">+</span><span class="n">vhv</span><span class="p">))</span>
+<span class="w">            </span><span class="n">tempv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="k">else if</span><span class="w"> </span><span class="p">(</span><span class="n">tempb</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">tempc</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">tempd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">            </span><span class="n">tempv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sign</span><span class="w"> </span><span class="p">(</span><span class="n">rho</span><span class="p">,</span><span class="w"> </span><span class="n">vlin</span><span class="o">*</span><span class="p">(</span><span class="n">ghg</span><span class="o">-</span><span class="n">vmu</span><span class="p">))</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="k">            </span><span class="n">tempd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sign</span><span class="w"> </span><span class="p">(</span><span class="n">halfrt</span><span class="o">*</span><span class="n">rho</span><span class="p">,</span><span class="w"> </span><span class="n">dlin</span><span class="o">*</span><span class="p">(</span><span class="n">ghg</span><span class="o">+</span><span class="n">vhv</span><span class="p">))</span>
+<span class="w">            </span><span class="n">tempv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sign</span><span class="w"> </span><span class="p">(</span><span class="n">halfrt</span><span class="o">*</span><span class="n">rho</span><span class="p">,</span><span class="w"> </span><span class="n">vlin</span><span class="o">*</span><span class="p">(</span><span class="n">ghg</span><span class="o">+</span><span class="n">vhv</span><span class="p">))</span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">        do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">            </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tempd</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tempv</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="k">        </span><span class="n">vmax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rho</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">rho</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">max</span><span class="w"> </span><span class="p">(</span><span class="n">tempa</span><span class="p">,</span><span class="w"> </span><span class="n">tempb</span><span class="p">,</span><span class="w"> </span><span class="n">tempc</span><span class="p">)</span>
+
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">lagmax</span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              PowellOpt
+ was developed by Jacob Williams<br>              &copy; 2025 
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+            </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
+
+    <!-- MathJax JavaScript
+             ================================================== -->
+             <!-- Placed at the end of the document so the pages load faster -->
+        <script type="text/x-mathjax-config">
+          MathJax.Hub.Config({
+          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+          });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+          <script src="../tipuesearch/tipuesearch_content.js"></script>
+          <script src="../tipuesearch/tipuesearch_set.js"></script>
+          <script src="../tipuesearch/tipuesearch.js"></script>
+
+  </body>
+</html>

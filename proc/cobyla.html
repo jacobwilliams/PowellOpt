@@ -1,0 +1,711 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="PowellOpt -- Optimization algorithms by M.J.D. Powell">
+    <meta name="author" content="Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>cobyla &ndash; PowellOpt</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">PowellOpt </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>cobyla
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.5% of total for procedures.">30 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/cobyla.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/cobyla.f90.html'>cobyla.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/cobyla_module.html'>cobyla_module</a></li>
+            <li class="breadcrumb-item active" aria-current="page">cobyla</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+    $('[data-bs-toggle="tooltip"]').tooltip()
+    })
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/cobyla.html#src">cobyla</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>public  subroutine cobyla(n, m, x, rhobeg, rhoend, iprint, maxfun, calcfc)  
+</h2>
+    
+
+    <p>This subroutine minimizes an objective function F(X) subject to M
+inequality constraints on X, where X is a vector of variables that has
+N components. The algorithm employs linear approximations to the
+objective and constraint functions, the approximations being formed by
+linear interpolation at N+1 points in the space of the variables.
+We regard these interpolation points as vertices of a simplex. The
+parameter RHO controls the size of the simplex and it is reduced
+automatically from RHOBEG to RHOEND. For each RHO the subroutine tries
+to achieve a good vector of variables for the current size, and then
+RHO is reduced until the value RHOEND is reached. Therefore RHOBEG and
+RHOEND should be set to reasonable initial changes to and the required
+accuracy in the variables respectively, but this accuracy should be
+viewed as a subject for experimentation because it is not guaranteed.</p>
+<p>The subroutine has an advantage over many of its competitors, however,
+which is that it treats each constraint individually when calculating
+a change to the variables, instead of lumping the constraints together
+into a single penalty function.</p>
+
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~11"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+                <p>number of variables</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-m~2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>m</strong></td>
+            <td>
+                <p>number of inequality constraints</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~7"></span>
+              real(kind=wp),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              dimension(*)
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+                <p>Initial values of the variables must be set in X(1),X(2),...,X(N).
+On return they will be changed to the solution.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rhobeg~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rhobeg</strong></td>
+            <td>
+                <p>reasonable initial change to variables (see description of RHO)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rhoend~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rhoend</strong></td>
+            <td>
+                <p>required accuracy (see description of RHO)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-iprint~4"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>iprint</strong></td>
+            <td>
+                <p>IPRINT should be set to 0, 1, 2 or 3, which controls the amount of
+printing during the calculation. Specifically, there is no output if
+IPRINT=0 and there is output only at the end of the calculation if
+IPRINT=1. Otherwise each new value of RHO and SIGMA is printed.
+Further, the vector of variables and some function information are
+given either when RHO is reduced or when each new value of F(X) is
+computed in the cases IPRINT=2 or IPRINT=3 respectively. Here SIGMA
+is a penalty parameter, it being assumed that a change to X is an
+improvement if it reduces the merit function
+    F(X)+SIGMA*MAX(0.0,-C1(X),-C2(X),...,-CM(X)),
+where C1,C2,...,CM denote the constraint functions that should become
+nonnegative eventually, at least to the precision of RHOEND. In the
+printed output the displayed term that is multiplied by SIGMA is
+called MAXCV, which stands for 'MAXimum Constraint Violation'.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-maxfun~4"></span>
+              integer,
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>maxfun</strong></td>
+            <td>
+                <p>MAXFUN is an integer variable that must be set by the user to a
+limit on the number of calls of CALCFC.
+The value of MAXFUN will be altered to the number of calls
+of CALCFC that are made.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-calcfc"></span>
+              procedure(<a href='../interface/func~2.html'>func</a>)
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>calcfc</strong></td>
+            <td>
+                <p>In order to define the objective and constraint functions, we require
+a subroutine that has the name and arguments
+    SUBROUTINE CALCFC (N,M,X,F,CON)
+    DIMENSION X(<em>),CON(</em>)
+The values of N and M are fixed and have been defined already, while
+X is now the current vector of variables. The subroutine should return
+the objective and constraint functions at X in F and CON(1),CON(2),
+...,CON(M). Note that we are trying to adjust X so that F(X) is as
+small as possible subject to the constraint functions being nonnegative.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Calls</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: proc~~cobyla~~CallsGraph Pages: 1 -->
+<svg id="proccobylaCallsGraph" width="242pt" height="32pt"
+ viewBox="0.00 0.00 242.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~cobyla~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>proc~~cobyla~~CallsGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 238,-28 238,4 -4,4"/>
+<!-- proc~cobyla -->
+<g id="proc~~cobyla~~CallsGraph_node1" class="node">
+<title>proc~cobyla</title>
+<polygon fill="none" stroke="black" points="54,-24 0,-24 0,0 54,0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">cobyla</text>
+</g>
+<!-- proc~cobylb -->
+<g id="proc~~cobyla~~CallsGraph_node2" class="node">
+<title>proc~cobylb</title>
+<g id="a_proc~~cobyla~~CallsGraph_node2"><a xlink:href="../proc/cobylb.html" xlink:title="cobylb">
+<polygon fill="#d9534f" stroke="#d9534f" points="144,-24 90,-24 90,0 144,0 144,-24"/>
+<text text-anchor="middle" x="117" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">cobylb</text>
+</a>
+</g>
+</g>
+<!-- proc~cobyla&#45;&gt;proc~cobylb -->
+<g id="proc~~cobyla~~CallsGraph_edge1" class="edge">
+<title>proc~cobyla&#45;&gt;proc~cobylb</title>
+<path fill="none" stroke="#000000" d="M54.4,-12C62.39,-12 71.31,-12 79.82,-12"/>
+<polygon fill="#000000" stroke="#000000" points="79.92,-15.5 89.92,-12 79.92,-8.5 79.92,-15.5"/>
+</g>
+<!-- proc~trstlp -->
+<g id="proc~~cobyla~~CallsGraph_node3" class="node">
+<title>proc~trstlp</title>
+<g id="a_proc~~cobyla~~CallsGraph_node3"><a xlink:href="../proc/trstlp.html" xlink:title="trstlp">
+<polygon fill="#d9534f" stroke="#d9534f" points="234,-24 180,-24 180,0 234,0 234,-24"/>
+<text text-anchor="middle" x="207" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">trstlp</text>
+</a>
+</g>
+</g>
+<!-- proc~cobylb&#45;&gt;proc~trstlp -->
+<g id="proc~~cobyla~~CallsGraph_edge2" class="edge">
+<title>proc~cobylb&#45;&gt;proc~trstlp</title>
+<path fill="none" stroke="#000000" d="M144.4,-12C152.39,-12 161.31,-12 169.82,-12"/>
+<polygon fill="#000000" stroke="#000000" points="169.92,-15.5 179.92,-12 169.92,-8.5 169.92,-15.5"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 27.51" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.86 0.86) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 741.5,-28 741.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="70,-24 0,-24 0,0 70,0 70,-24"/>
+<text text-anchor="middle" x="35" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="146,-24 88,-24 88,0 146,0 146,-24"/>
+<text text-anchor="middle" x="117" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="225.5,-24 164.5,-24 164.5,0 225.5,0 225.5,-24"/>
+<text text-anchor="middle" x="195" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="374,-24 244,-24 244,0 374,0 374,-24"/>
+<text text-anchor="middle" x="309" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="537.5,-24 392.5,-24 392.5,0 537.5,0 537.5,-24"/>
+<text text-anchor="middle" x="465" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="614,-24 556,-24 556,0 614,0 614,-24"/>
+<text text-anchor="middle" x="585" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="737.5,-24 632.5,-24 632.5,0 737.5,0 737.5,-24"/>
+<text text-anchor="middle" x="685" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Called by</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: proc~~cobyla~~CalledByGraph Pages: 1 -->
+<svg id="proccobylaCalledByGraph" width="171pt" height="32pt"
+ viewBox="0.00 0.00 171.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~cobyla~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>proc~~cobyla~~CalledByGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 167,-28 167,4 -4,4"/>
+<!-- proc~cobyla -->
+<g id="proc~~cobyla~~CalledByGraph_node1" class="node">
+<title>proc~cobyla</title>
+<polygon fill="none" stroke="black" points="163,-24 109,-24 109,0 163,0 163,-24"/>
+<text text-anchor="middle" x="136" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">cobyla</text>
+</g>
+<!-- proc~cobyla_test -->
+<g id="proc~~cobyla~~CalledByGraph_node2" class="node">
+<title>proc~cobyla_test</title>
+<g id="a_proc~~cobyla~~CalledByGraph_node2"><a xlink:href="../proc/cobyla_test.html" xlink:title="cobyla_test">
+<polygon fill="#d9534f" stroke="#d9534f" points="73,-24 0,-24 0,0 73,0 73,-24"/>
+<text text-anchor="middle" x="36.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">cobyla_test</text>
+</a>
+</g>
+</g>
+<!-- proc~cobyla_test&#45;&gt;proc~cobyla -->
+<g id="proc~~cobyla~~CalledByGraph_edge1" class="edge">
+<title>proc~cobyla_test&#45;&gt;proc~cobyla</title>
+<path fill="none" stroke="#000000" d="M73.25,-12C81.51,-12 90.3,-12 98.58,-12"/>
+<polygon fill="#000000" stroke="#000000" points="98.72,-15.5 108.72,-12 98.72,-8.5 98.72,-15.5"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CalledByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CalledByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 27.51" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.86 0.86) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 741.5,-28 741.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="70,-24 0,-24 0,0 70,0 70,-24"/>
+<text text-anchor="middle" x="35" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="146,-24 88,-24 88,0 146,0 146,-24"/>
+<text text-anchor="middle" x="117" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="225.5,-24 164.5,-24 164.5,0 225.5,0 225.5,-24"/>
+<text text-anchor="middle" x="195" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="374,-24 244,-24 244,0 374,0 374,-24"/>
+<text text-anchor="middle" x="309" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="537.5,-24 392.5,-24 392.5,0 537.5,0 537.5,-24"/>
+<text text-anchor="middle" x="465" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="614,-24 556,-24 556,0 614,0 614,-24"/>
+<text text-anchor="middle" x="585" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="737.5,-24 632.5,-24 632.5,0 737.5,0 737.5,-24"/>
+<text text-anchor="middle" x="685" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">cobyla</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">rhobeg</span><span class="p">,</span><span class="w"> </span><span class="n">rhoend</span><span class="p">,</span><span class="w"> </span><span class="n">iprint</span><span class="p">,</span><span class="w"> </span><span class="n">maxfun</span><span class="p">,</span><span class="w"> </span><span class="n">calcfc</span><span class="p">)</span>
+
+<span class="w">        </span><span class="k">implicit none</span>
+
+<span class="k">        </span><span class="kt">integer</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">                  </span><span class="kd">::</span><span class="w"> </span><span class="n">n</span><span class="w">      </span><span class="c">!! number of variables</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">                  </span><span class="kd">::</span><span class="w"> </span><span class="n">m</span><span class="w">      </span><span class="c">!! number of inequality constraints</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">dimension</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">x</span><span class="w">      </span><span class="c">!! Initial values of the variables must be set in X(1),X(2),...,X(N).</span>
+<span class="w">                                                      </span><span class="c">!! On return they will be changed to the solution.</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">                 </span><span class="kd">::</span><span class="w"> </span><span class="n">rhobeg</span><span class="w"> </span><span class="c">!! reasonable initial change to variables (see description of RHO)</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">                 </span><span class="kd">::</span><span class="w"> </span><span class="n">rhoend</span><span class="w"> </span><span class="c">!! required accuracy (see description of RHO)</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">                  </span><span class="kd">::</span><span class="w"> </span><span class="n">iprint</span><span class="w"> </span><span class="c">!! IPRINT should be set to 0, 1, 2 or 3, which controls the amount of</span>
+<span class="w">                                                      </span><span class="c">!! printing during the calculation. Specifically, there is no output if</span>
+<span class="w">                                                      </span><span class="c">!! IPRINT=0 and there is output only at the end of the calculation if</span>
+<span class="w">                                                      </span><span class="c">!! IPRINT=1. Otherwise each new value of RHO and SIGMA is printed.</span>
+<span class="w">                                                      </span><span class="c">!! Further, the vector of variables and some function information are</span>
+<span class="w">                                                      </span><span class="c">!! given either when RHO is reduced or when each new value of F(X) is</span>
+<span class="w">                                                      </span><span class="c">!! computed in the cases IPRINT=2 or IPRINT=3 respectively. Here SIGMA</span>
+<span class="w">                                                      </span><span class="c">!! is a penalty parameter, it being assumed that a change to X is an</span>
+<span class="w">                                                      </span><span class="c">!! improvement if it reduces the merit function</span>
+<span class="w">                                                      </span><span class="c">!!     F(X)+SIGMA*MAX(0.0,-C1(X),-C2(X),...,-CM(X)),</span>
+<span class="w">                                                      </span><span class="c">!! where C1,C2,...,CM denote the constraint functions that should become</span>
+<span class="w">                                                      </span><span class="c">!! nonnegative eventually, at least to the precision of RHOEND. In the</span>
+<span class="w">                                                      </span><span class="c">!! printed output the displayed term that is multiplied by SIGMA is</span>
+<span class="w">                                                      </span><span class="c">!! called MAXCV, which stands for &#39;MAXimum Constraint Violation&#39;.</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w">               </span><span class="kd">::</span><span class="w"> </span><span class="n">maxfun</span><span class="w"> </span><span class="c">!! MAXFUN is an integer variable that must be set by the user to a</span>
+<span class="w">                                                      </span><span class="c">!! limit on the number of calls of CALCFC.</span>
+<span class="w">                                                      </span><span class="c">!! The value of MAXFUN will be altered to the number of calls</span>
+<span class="w">                                                      </span><span class="c">!! of CALCFC that are made.</span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="w">                    </span><span class="kd">::</span><span class="w"> </span><span class="n">calcfc</span><span class="w"> </span><span class="c">!! In order to define the objective and constraint functions, we require</span>
+<span class="w">                                                      </span><span class="c">!! a subroutine that has the name and arguments</span>
+<span class="w">                                                      </span><span class="c">!!     SUBROUTINE CALCFC (N,M,X,F,CON)</span>
+<span class="w">                                                      </span><span class="c">!!     DIMENSION X(*),CON(*)</span>
+<span class="w">                                                      </span><span class="c">!! The values of N and M are fixed and have been defined already, while</span>
+<span class="w">                                                      </span><span class="c">!! X is now the current vector of variables. The subroutine should return</span>
+<span class="w">                                                      </span><span class="c">!! the objective and constraint functions at X in F and CON(1),CON(2),</span>
+<span class="w">                                                      </span><span class="c">!! ...,CON(M). Note that we are trying to adjust X so that F(X) is as</span>
+<span class="w">                                                      </span><span class="c">!! small as possible subject to the constraint functions being nonnegative.</span>
+
+
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="k">dimension</span><span class="p">(:),</span><span class="k">allocatable</span><span class="w">  </span><span class="kd">::</span><span class="w"> </span><span class="n">iact</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">dimension</span><span class="p">(:),</span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">w</span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">mpp</span><span class="p">,</span><span class="n">icon</span><span class="p">,</span><span class="n">isim</span><span class="p">,</span><span class="n">isimi</span><span class="p">,</span><span class="n">idatm</span><span class="p">,</span><span class="n">ia</span><span class="p">,</span><span class="n">ivsig</span><span class="p">,</span><span class="n">iveta</span><span class="p">,</span><span class="n">isigb</span><span class="p">,</span><span class="n">idx</span><span class="p">,</span><span class="n">iwork</span>
+
+<span class="w">        </span><span class="c">!W and IACT provide real and integer arrays that are used as working space.</span>
+<span class="w">        </span><span class="k">allocate</span><span class="p">(</span><span class="n">w</span><span class="p">(</span><span class="n">N</span><span class="o">*</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="n">N</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">M</span><span class="o">+</span><span class="mi">11</span><span class="p">)</span><span class="o">+</span><span class="mi">4</span><span class="o">*</span><span class="n">M</span><span class="o">+</span><span class="mi">6</span><span class="p">))</span>
+<span class="w">        </span><span class="k">allocate</span><span class="p">(</span><span class="n">iact</span><span class="p">(</span><span class="n">M</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="w">        </span><span class="c">! Partition the working space array W to provide the storage that is needed</span>
+<span class="w">        </span><span class="c">! for the main calculation.</span>
+
+<span class="w">        </span><span class="n">mpp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">        </span><span class="n">icon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">        </span><span class="n">isim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">icon</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">mpp</span>
+<span class="w">        </span><span class="n">isimi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">isim</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="n">idatm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">isimi</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="n">ia</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">idatm</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">mpp</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">mpp</span>
+<span class="w">        </span><span class="n">ivsig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ia</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="n">iveta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ivsig</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="n">isigb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iveta</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="n">idx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">isigb</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="n">iwork</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span>
+
+<span class="w">        </span><span class="k">call </span><span class="n">cobylb</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">mpp</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">rhobeg</span><span class="p">,</span><span class="w"> </span><span class="n">rhoend</span><span class="p">,</span><span class="w"> </span><span class="n">iprint</span><span class="p">,</span><span class="w"> </span><span class="n">maxfun</span><span class="p">,</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">icon</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">isim</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                     </span><span class="n">w</span><span class="p">(</span><span class="n">isimi</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">idatm</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">ia</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">ivsig</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">iveta</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">isigb</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                     </span><span class="n">w</span><span class="p">(</span><span class="n">iwork</span><span class="p">),</span><span class="w"> </span><span class="n">iact</span><span class="p">,</span><span class="w"> </span><span class="n">calcfc</span><span class="p">)</span>
+
+<span class="w">        </span><span class="k">deallocate</span><span class="p">(</span><span class="n">iact</span><span class="p">)</span>
+<span class="w">        </span><span class="k">deallocate</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">cobyla</span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              PowellOpt
+ was developed by Jacob Williams<br>              &copy; 2025 
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+            </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
+
+    <!-- MathJax JavaScript
+             ================================================== -->
+             <!-- Placed at the end of the document so the pages load faster -->
+        <script type="text/x-mathjax-config">
+          MathJax.Hub.Config({
+          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+          });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+          <script src="../tipuesearch/tipuesearch_content.js"></script>
+          <script src="../tipuesearch/tipuesearch_set.js"></script>
+          <script src="../tipuesearch/tipuesearch.js"></script>
+
+  </body>
+</html>

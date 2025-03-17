@@ -1,0 +1,957 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="PowellOpt -- Optimization algorithms by M.J.D. Powell">
+    <meta name="author" content="Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>altmov &ndash; PowellOpt</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">PowellOpt </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>altmov
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 3.4% of total for procedures.">211 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/bobyqa.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/bobyqa.f90.html'>bobyqa.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/bobyqa_module.html'>bobyqa_module</a></li>
+            <li class="breadcrumb-item active" aria-current="page">altmov</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+    $('[data-bs-toggle="tooltip"]').tooltip()
+    })
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/altmov.html#src">altmov</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>private  subroutine altmov(n, npt, xpt, xopt, bmat, zmat, ndim, sl, su, kopt, knew, adelt, xnew, xalt, alpha, cauchy, glag, hcol, w)  
+</h2>
+    
+
+
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~36"></span>
+              integer
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-npt~19"></span>
+              integer
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>npt</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-xpt~12"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>xpt</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-xopt~11"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>xopt</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bmat~9"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>bmat</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-zmat~9"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>zmat</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ndim~12"></span>
+              integer
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ndim</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sl~2"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>sl</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-su~2"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>su</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-kopt~5"></span>
+              integer
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>kopt</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-knew~6"></span>
+              integer
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>knew</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-adelt"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>adelt</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-xnew~5"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>xnew</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-xalt~2"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>xalt</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-alpha~2"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>alpha</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cauchy"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cauchy</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-glag"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>glag</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-hcol~2"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>hcol</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-w~20"></span>
+              real
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>w</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Called by</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: proc~~altmov~~CalledByGraph Pages: 1 -->
+<svg id="procaltmovCalledByGraph" width="355pt" height="32pt"
+ viewBox="0.00 0.00 355.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~altmov~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>proc~~altmov~~CalledByGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 351,-28 351,4 -4,4"/>
+<!-- proc~altmov -->
+<g id="proc~~altmov~~CalledByGraph_node1" class="node">
+<title>proc~altmov</title>
+<polygon fill="none" stroke="black" points="347,-24 293,-24 293,0 347,0 347,-24"/>
+<text text-anchor="middle" x="320" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">altmov</text>
+</g>
+<!-- proc~bobyqb -->
+<g id="proc~~altmov~~CalledByGraph_node2" class="node">
+<title>proc~bobyqb</title>
+<g id="a_proc~~altmov~~CalledByGraph_node2"><a xlink:href="../proc/bobyqb.html" xlink:title="bobyqb">
+<polygon fill="#d9534f" stroke="#d9534f" points="257,-24 203,-24 203,0 257,0 257,-24"/>
+<text text-anchor="middle" x="230" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">bobyqb</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqb&#45;&gt;proc~altmov -->
+<g id="proc~~altmov~~CalledByGraph_edge1" class="edge">
+<title>proc~bobyqb&#45;&gt;proc~altmov</title>
+<path fill="none" stroke="#000000" d="M257.4,-12C265.39,-12 274.31,-12 282.82,-12"/>
+<polygon fill="#000000" stroke="#000000" points="282.92,-15.5 292.92,-12 282.92,-8.5 282.92,-15.5"/>
+</g>
+<!-- proc~bobyqa -->
+<g id="proc~~altmov~~CalledByGraph_node3" class="node">
+<title>proc~bobyqa</title>
+<g id="a_proc~~altmov~~CalledByGraph_node3"><a xlink:href="../proc/bobyqa.html" xlink:title="bobyqa">
+<polygon fill="#d9534f" stroke="#d9534f" points="167,-24 113,-24 113,0 167,0 167,-24"/>
+<text text-anchor="middle" x="140" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">bobyqa</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqa&#45;&gt;proc~bobyqb -->
+<g id="proc~~altmov~~CalledByGraph_edge2" class="edge">
+<title>proc~bobyqa&#45;&gt;proc~bobyqb</title>
+<path fill="none" stroke="#000000" d="M167.4,-12C175.39,-12 184.31,-12 192.82,-12"/>
+<polygon fill="#000000" stroke="#000000" points="192.92,-15.5 202.92,-12 192.92,-8.5 192.92,-15.5"/>
+</g>
+<!-- proc~bobyqa_test -->
+<g id="proc~~altmov~~CalledByGraph_node4" class="node">
+<title>proc~bobyqa_test</title>
+<g id="a_proc~~altmov~~CalledByGraph_node4"><a xlink:href="../proc/bobyqa_test.html" xlink:title="bobyqa_test">
+<polygon fill="#d9534f" stroke="#d9534f" points="77,-24 0,-24 0,0 77,0 77,-24"/>
+<text text-anchor="middle" x="38.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">bobyqa_test</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqa_test&#45;&gt;proc~bobyqa -->
+<g id="proc~~altmov~~CalledByGraph_edge3" class="edge">
+<title>proc~bobyqa_test&#45;&gt;proc~bobyqa</title>
+<path fill="none" stroke="#000000" d="M77.12,-12C85.47,-12 94.32,-12 102.63,-12"/>
+<polygon fill="#000000" stroke="#000000" points="102.78,-15.5 112.78,-12 102.78,-8.5 102.78,-15.5"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CalledByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CalledByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 27.51" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.86 0.86) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 741.5,-28 741.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="70,-24 0,-24 0,0 70,0 70,-24"/>
+<text text-anchor="middle" x="35" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="146,-24 88,-24 88,0 146,0 146,-24"/>
+<text text-anchor="middle" x="117" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="225.5,-24 164.5,-24 164.5,0 225.5,0 225.5,-24"/>
+<text text-anchor="middle" x="195" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="374,-24 244,-24 244,0 374,0 374,-24"/>
+<text text-anchor="middle" x="309" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="537.5,-24 392.5,-24 392.5,0 537.5,0 537.5,-24"/>
+<text text-anchor="middle" x="465" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="614,-24 556,-24 556,0 614,0 614,-24"/>
+<text text-anchor="middle" x="585" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="737.5,-24 632.5,-24 632.5,0 737.5,0 737.5,-24"/>
+<text text-anchor="middle" x="685" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">altmov</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">npt</span><span class="p">,</span><span class="w"> </span><span class="n">xpt</span><span class="p">,</span><span class="w"> </span><span class="n">xopt</span><span class="p">,</span><span class="w"> </span><span class="n">bmat</span><span class="p">,</span><span class="w"> </span><span class="n">zmat</span><span class="p">,</span><span class="w"> </span><span class="n">ndim</span><span class="p">,</span><span class="w"> </span><span class="n">sl</span><span class="p">,</span><span class="w"> </span><span class="n">su</span><span class="p">,</span><span class="w"> </span><span class="n">kopt</span><span class="p">,</span><span class="w"> </span><span class="n">knew</span><span class="p">,</span><span class="w"> </span><span class="n">adelt</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">   </span><span class="p">&amp;</span><span class="w"> </span><span class="n">xnew</span><span class="p">,</span><span class="w"> </span><span class="n">xalt</span><span class="p">,</span><span class="w"> </span><span class="n">alpha</span><span class="p">,</span><span class="w"> </span><span class="n">cauchy</span><span class="p">,</span><span class="w"> </span><span class="n">glag</span><span class="p">,</span><span class="w"> </span><span class="n">hcol</span><span class="p">,</span><span class="w"> </span><span class="n">w</span><span class="p">)</span>
+
+<span class="w">        </span><span class="k">implicit </span><span class="kt">real</span><span class="w"> </span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">h</span><span class="p">,</span><span class="w"> </span><span class="n">o</span><span class="o">-</span><span class="n">z</span><span class="p">)</span>
+
+<span class="w">        </span><span class="k">dimension </span><span class="n">xpt</span><span class="w"> </span><span class="p">(</span><span class="n">npt</span><span class="p">,</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="n">xopt</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="n">bmat</span><span class="w"> </span><span class="p">(</span><span class="n">ndim</span><span class="p">,</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="n">zmat</span><span class="w"> </span><span class="p">(</span><span class="n">npt</span><span class="p">,</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="n">sl</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="n">su</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">       </span><span class="p">&amp;</span><span class="w"> </span><span class="n">xnew</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="n">xalt</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="n">glag</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="n">hcol</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="p">)</span>
+<span class="c">!</span>
+<span class="c">!     The arguments N, NPT, XPT, XOPT, BMAT, ZMAT, NDIM, SL and SU all have</span>
+<span class="c">!       the same meanings as the corresponding arguments of BOBYQB.</span>
+<span class="c">!     KOPT is the index of the optimal interpolation point.</span>
+<span class="c">!     KNEW is the index of the interpolation point that is going to be moved.</span>
+<span class="c">!     ADELT is the current trust region bound.</span>
+<span class="c">!     XNEW will be set to a suitable new position for the interpolation point</span>
+<span class="c">!       XPT(KNEW,.). Specifically, it satisfies the SL, SU and trust region</span>
+<span class="c">!       bounds and it should provide a large denominator in the next call of</span>
+<span class="c">!       UPDATE. The step XNEW-XOPT from XOPT is restricted to moves along the</span>
+<span class="c">!       straight lines through XOPT and another interpolation point.</span>
+<span class="c">!     XALT also provides a large value of the modulus of the KNEW-th Lagrange</span>
+<span class="c">!       function subject to the constraints that have been mentioned, its main</span>
+<span class="c">!       difference from XNEW being that XALT-XOPT is a constrained version of</span>
+<span class="c">!       the Cauchy step within the trust region. An exception is that XALT is</span>
+<span class="c">!       not calculated if all components of GLAG (see below) are zero.</span>
+<span class="c">!     ALPHA will be set to the KNEW-th diagonal element of the H matrix.</span>
+<span class="c">!     CAUCHY will be set to the square of the KNEW-th Lagrange function at</span>
+<span class="c">!       the step XALT-XOPT from XOPT for the vector XALT that is returned,</span>
+<span class="c">!       except that CAUCHY is set to zero if XALT is not calculated.</span>
+<span class="c">!     GLAG is a working space vector of length N for the gradient of the</span>
+<span class="c">!       KNEW-th Lagrange function at XOPT.</span>
+<span class="c">!     HCOL is a working space vector of length NPT for the second derivative</span>
+<span class="c">!       coefficients of the KNEW-th Lagrange function.</span>
+<span class="c">!     W is a working space vector of length 2N that is going to hold the</span>
+<span class="c">!       constrained Cauchy step from XOPT of the Lagrange function, followed</span>
+<span class="c">!       by the downhill version of XALT when the uphill step is calculated.</span>
+<span class="c">!</span>
+<span class="c">!     Set the first NPT components of W to the leading elements of the</span>
+<span class="c">!     KNEW-th column of the H matrix.</span>
+<span class="c">!</span>
+<span class="w">        </span><span class="n">half</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.5_wp</span>
+<span class="w">        </span><span class="n">one</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_wp</span>
+<span class="w">        </span><span class="n">zero</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span>
+<span class="w">        </span><span class="n">const</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">one</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">sqrt</span><span class="w"> </span><span class="p">(</span><span class="mf">2.0_wp</span><span class="p">)</span>
+<span class="w">        </span><span class="k">do </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">npt</span>
+<span class="w">            </span><span class="n">hcol</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="k">        do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">npt</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">            </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zmat</span><span class="w"> </span><span class="p">(</span><span class="n">knew</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span>
+<span class="w">            </span><span class="k">do </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">npt</span>
+<span class="w">                </span><span class="n">hcol</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hcol</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">zmat</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">        end do</span>
+<span class="k">        </span><span class="n">alpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hcol</span><span class="w"> </span><span class="p">(</span><span class="n">knew</span><span class="p">)</span>
+<span class="w">        </span><span class="n">ha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">half</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">alpha</span>
+<span class="c">!</span>
+<span class="c">!     Calculate the gradient of the KNEW-th Lagrange function at XOPT.</span>
+<span class="c">!</span>
+<span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">            </span><span class="n">glag</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bmat</span><span class="w"> </span><span class="p">(</span><span class="n">knew</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">)</span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="k">        do </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">npt</span>
+<span class="w">            </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">            </span><span class="k">do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">xpt</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">xopt</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">            </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hcol</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">temp</span>
+<span class="w">            </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                </span><span class="n">glag</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glag</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">xpt</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">        end do</span>
+<span class="c">!</span>
+<span class="c">!     Search for a large denominator along the straight lines through XOPT</span>
+<span class="c">!     and another interpolation point. SLBD and SUBD will be lower and upper</span>
+<span class="c">!     bounds on the step along each of these lines in turn. PREDSQ will be</span>
+<span class="c">!     set to the square of the predicted denominator for each line. PRESAV</span>
+<span class="c">!     will be set to the largest admissible value of PREDSQ that occurs.</span>
+<span class="c">!</span>
+<span class="w">        </span><span class="n">presav</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="k">do </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">npt</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">kopt</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
+<span class="k">            </span><span class="n">dderiv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">            </span><span class="n">distsq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">            </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xpt</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">xopt</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="n">dderiv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dderiv</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">glag</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">temp</span>
+<span class="w">                </span><span class="n">distsq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">distsq</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">temp</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">            </span><span class="n">subd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">adelt</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">sqrt</span><span class="w"> </span><span class="p">(</span><span class="n">distsq</span><span class="p">)</span>
+<span class="w">            </span><span class="n">slbd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">subd</span>
+<span class="w">            </span><span class="n">ilbd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">            </span><span class="n">iubd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">            </span><span class="n">sumin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">min</span><span class="w"> </span><span class="p">(</span><span class="n">one</span><span class="p">,</span><span class="w"> </span><span class="n">subd</span><span class="p">)</span>
+<span class="c">!</span>
+<span class="c">!     Revise SLBD and SUBD if necessary because of the bounds in SL and SU.</span>
+<span class="c">!</span>
+<span class="w">            </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xpt</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">xopt</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">temp</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">zero</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    if</span><span class="w"> </span><span class="p">(</span><span class="n">slbd</span><span class="o">*</span><span class="n">temp</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">sl</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">-</span><span class="n">xopt</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        </span><span class="n">slbd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">sl</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">-</span><span class="n">xopt</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">temp</span>
+<span class="w">                        </span><span class="n">ilbd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">i</span>
+<span class="w">                    </span><span class="k">end if</span>
+<span class="k">                    if</span><span class="w"> </span><span class="p">(</span><span class="n">subd</span><span class="o">*</span><span class="n">temp</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">su</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">-</span><span class="n">xopt</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        </span><span class="n">subd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">max</span><span class="w"> </span><span class="p">(</span><span class="n">sumin</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">su</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">-</span><span class="n">xopt</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="o">/</span><span class="n">temp</span><span class="p">)</span>
+<span class="w">                        </span><span class="n">iubd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span>
+<span class="w">                    </span><span class="k">end if</span>
+<span class="k">                else if</span><span class="w"> </span><span class="p">(</span><span class="n">temp</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">zero</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    if</span><span class="w"> </span><span class="p">(</span><span class="n">slbd</span><span class="o">*</span><span class="n">temp</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">su</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">-</span><span class="n">xopt</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        </span><span class="n">slbd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">su</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">-</span><span class="n">xopt</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">temp</span>
+<span class="w">                        </span><span class="n">ilbd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span>
+<span class="w">                    </span><span class="k">end if</span>
+<span class="k">                    if</span><span class="w"> </span><span class="p">(</span><span class="n">subd</span><span class="o">*</span><span class="n">temp</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">sl</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">-</span><span class="n">xopt</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        </span><span class="n">subd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">max</span><span class="w"> </span><span class="p">(</span><span class="n">sumin</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">sl</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">-</span><span class="n">xopt</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="o">/</span><span class="n">temp</span><span class="p">)</span>
+<span class="w">                        </span><span class="n">iubd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">i</span>
+<span class="w">                    </span><span class="k">end if</span>
+<span class="k">                end if</span>
+<span class="k">            end do</span>
+<span class="c">!</span>
+<span class="c">!     Seek a large modulus of the KNEW-th Lagrange function when the index</span>
+<span class="c">!     of the other interpolation point on the line through XOPT is KNEW.</span>
+<span class="c">!</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">knew</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                </span><span class="n">diff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dderiv</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">one</span>
+<span class="w">                </span><span class="n">step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">slbd</span>
+<span class="w">                </span><span class="n">vlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">slbd</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">dderiv</span><span class="o">-</span><span class="n">slbd</span><span class="o">*</span><span class="n">diff</span><span class="p">)</span>
+<span class="w">                </span><span class="n">isbd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ilbd</span>
+<span class="w">                </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">subd</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">dderiv</span><span class="o">-</span><span class="n">subd</span><span class="o">*</span><span class="n">diff</span><span class="p">)</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="nb">abs</span><span class="p">(</span><span class="n">vlag</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    </span><span class="n">step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">subd</span>
+<span class="w">                    </span><span class="n">vlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">temp</span>
+<span class="w">                    </span><span class="n">isbd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iubd</span>
+<span class="w">                </span><span class="k">end if</span>
+<span class="k">                </span><span class="n">tempd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">half</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dderiv</span>
+<span class="w">                </span><span class="n">tempa</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tempd</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">diff</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">slbd</span>
+<span class="w">                </span><span class="n">tempb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tempd</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">diff</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">subd</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tempa</span><span class="o">*</span><span class="n">tempb</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">zero</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tempd</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">tempd</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">diff</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="nb">abs</span><span class="p">(</span><span class="n">vlag</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        </span><span class="n">step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tempd</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">diff</span>
+<span class="w">                        </span><span class="n">vlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">temp</span>
+<span class="w">                        </span><span class="n">isbd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">                    </span><span class="k">end if</span>
+<span class="k">                end if</span>
+<span class="c">!</span>
+<span class="c">!     Search along each of the other lines through XOPT and another point.</span>
+<span class="c">!</span>
+<span class="w">            </span><span class="k">else</span>
+<span class="k">                </span><span class="n">step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">slbd</span>
+<span class="w">                </span><span class="n">vlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">slbd</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">one</span><span class="o">-</span><span class="n">slbd</span><span class="p">)</span>
+<span class="w">                </span><span class="n">isbd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ilbd</span>
+<span class="w">                </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">subd</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">one</span><span class="o">-</span><span class="n">subd</span><span class="p">)</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="nb">abs</span><span class="p">(</span><span class="n">vlag</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    </span><span class="n">step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">subd</span>
+<span class="w">                    </span><span class="n">vlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">temp</span>
+<span class="w">                    </span><span class="n">isbd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iubd</span>
+<span class="w">                </span><span class="k">end if</span>
+<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="n">subd</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">half</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    if</span><span class="w"> </span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">vlag</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">0.25_wp</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        </span><span class="n">step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">half</span>
+<span class="w">                        </span><span class="n">vlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.25_wp</span>
+<span class="w">                        </span><span class="n">isbd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">                    </span><span class="k">end if</span>
+<span class="k">                end if</span>
+<span class="k">                </span><span class="n">vlag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vlag</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dderiv</span>
+<span class="w">            </span><span class="k">end if</span>
+<span class="c">!</span>
+<span class="c">!     Calculate PREDSQ for the current line search and maintain PRESAV.</span>
+<span class="c">!</span>
+<span class="w">            </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">one</span><span class="o">-</span><span class="n">step</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">distsq</span>
+<span class="w">            </span><span class="n">predsq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vlag</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">vlag</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">vlag</span><span class="o">*</span><span class="n">vlag</span><span class="o">+</span><span class="n">ha</span><span class="o">*</span><span class="n">temp</span><span class="o">*</span><span class="n">temp</span><span class="p">)</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">predsq</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">presav</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                </span><span class="n">presav</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">predsq</span>
+<span class="w">                </span><span class="n">ksav</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">k</span>
+<span class="w">                </span><span class="n">stpsav</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">step</span>
+<span class="w">                </span><span class="n">ibdsav</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">isbd</span>
+<span class="w">            </span><span class="k">end if</span>
+<span class="k">        end do</span>
+<span class="c">!</span>
+<span class="c">!     Construct XNEW in a way that satisfies the bound constraints exactly.</span>
+<span class="c">!</span>
+<span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">            </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xopt</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">stpsav</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">xpt</span><span class="p">(</span><span class="n">ksav</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="o">-</span><span class="n">xopt</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+<span class="w">            </span><span class="n">xnew</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">max</span><span class="w"> </span><span class="p">(</span><span class="n">sl</span><span class="p">(</span><span class="n">i</span><span class="p">),</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="n">su</span><span class="p">(</span><span class="n">i</span><span class="p">),</span><span class="w"> </span><span class="n">temp</span><span class="p">))</span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">ibdsav</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">xnew</span><span class="w"> </span><span class="p">(</span><span class="o">-</span><span class="n">ibdsav</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sl</span><span class="w"> </span><span class="p">(</span><span class="o">-</span><span class="n">ibdsav</span><span class="p">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ibdsav</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">xnew</span><span class="w"> </span><span class="p">(</span><span class="n">ibdsav</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">su</span><span class="w"> </span><span class="p">(</span><span class="n">ibdsav</span><span class="p">)</span>
+<span class="c">!</span>
+<span class="c">!     Prepare for the iterative method that assembles the constrained Cauchy</span>
+<span class="c">!     step in W. The sum of squares of the fixed components of W is formed in</span>
+<span class="c">!     WFIXSQ, and the free components of W are set to BIGSTP.</span>
+<span class="c">!</span>
+<span class="w">        </span><span class="n">bigstp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">adelt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">adelt</span>
+<span class="w">        </span><span class="n">iflag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<span class="mi">100</span><span class="w">     </span><span class="n">wfixsq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="n">ggfree</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">            </span><span class="n">w</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">            </span><span class="n">tempa</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">min</span><span class="w"> </span><span class="p">(</span><span class="n">xopt</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">-</span><span class="n">sl</span><span class="p">(</span><span class="n">i</span><span class="p">),</span><span class="w"> </span><span class="n">glag</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+<span class="w">            </span><span class="n">tempb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">max</span><span class="w"> </span><span class="p">(</span><span class="n">xopt</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">-</span><span class="n">su</span><span class="p">(</span><span class="n">i</span><span class="p">),</span><span class="w"> </span><span class="n">glag</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tempa</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">zero</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="n">tempb</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">zero</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                </span><span class="n">w</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bigstp</span>
+<span class="w">                </span><span class="n">ggfree</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ggfree</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">glag</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">            </span><span class="k">end if</span>
+<span class="k">        end do</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">ggfree</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">zero</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">cauchy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">            </span><span class="k">return</span>
+<span class="k">        end if</span>
+<span class="c">!</span>
+<span class="c">!     Investigate whether more components of W can be fixed.</span>
+<span class="c">!</span>
+<span class="mi">120</span><span class="w">     </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">adelt</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">adelt</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">wfixsq</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">temp</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">zero</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">wsqsav</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">wfixsq</span>
+<span class="w">            </span><span class="n">step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="w"> </span><span class="p">(</span><span class="n">temp</span><span class="o">/</span><span class="n">ggfree</span><span class="p">)</span>
+<span class="w">            </span><span class="n">ggfree</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">            </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">w</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">bigstp</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xopt</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">glag</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">temp</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">sl</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        </span><span class="n">w</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sl</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">xopt</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                        </span><span class="n">wfixsq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">wfixsq</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">                    </span><span class="k">else if</span><span class="w"> </span><span class="p">(</span><span class="n">temp</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">su</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        </span><span class="n">w</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">su</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">xopt</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                        </span><span class="n">wfixsq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">wfixsq</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">                    </span><span class="k">else</span>
+<span class="k">                        </span><span class="n">ggfree</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ggfree</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">glag</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">                    </span><span class="k">end if</span>
+<span class="k">                end if</span>
+<span class="k">            end do</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">wfixsq</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">wsqsav</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">ggfree</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">zero</span><span class="p">)</span><span class="w"> </span><span class="k">go</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="mi">120</span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="c">!</span>
+<span class="c">!     Set the remaining free components of W and all components of XALT,</span>
+<span class="c">!     except that W may be scaled later.</span>
+<span class="c">!</span>
+<span class="w">        </span><span class="n">gw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">w</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">bigstp</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                </span><span class="n">w</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">glag</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="n">xalt</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">max</span><span class="w"> </span><span class="p">(</span><span class="n">sl</span><span class="p">(</span><span class="n">i</span><span class="p">),</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="n">su</span><span class="p">(</span><span class="n">i</span><span class="p">),</span><span class="w"> </span><span class="n">xopt</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="n">w</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span>
+<span class="w">            </span><span class="k">else if</span><span class="w"> </span><span class="p">(</span><span class="n">w</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">zero</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                </span><span class="n">xalt</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xopt</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="k">else if</span><span class="w"> </span><span class="p">(</span><span class="n">glag</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">zero</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                </span><span class="n">xalt</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sl</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="k">else</span>
+<span class="k">                </span><span class="n">xalt</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">su</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="k">end if</span>
+<span class="k">            </span><span class="n">gw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gw</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">glag</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="c">!</span>
+<span class="c">!     Set CURV to the curvature of the KNEW-th Lagrange function along W.</span>
+<span class="c">!     Scale W by a factor less than one if that can reduce the modulus of</span>
+<span class="c">!     the Lagrange function at XOPT+W. Set CAUCHY to the final value of</span>
+<span class="c">!     the square of this function.</span>
+<span class="c">!</span>
+<span class="w">        </span><span class="n">curv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">        </span><span class="k">do </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">npt</span>
+<span class="w">            </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">            </span><span class="k">do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">xpt</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">            </span><span class="n">curv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">curv</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">hcol</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">temp</span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">iflag</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="n">curv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">curv</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">curv</span><span class="w"> </span><span class="o">&gt;-</span><span class="n">gw</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">curv</span><span class="w"> </span><span class="o">&lt;-</span><span class="n">const</span><span class="o">*</span><span class="n">gw</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="nb">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">gw</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">curv</span>
+<span class="w">            </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xopt</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">scale</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="n">xalt</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">max</span><span class="w"> </span><span class="p">(</span><span class="n">sl</span><span class="p">(</span><span class="n">i</span><span class="p">),</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="n">su</span><span class="p">(</span><span class="n">i</span><span class="p">),</span><span class="w"> </span><span class="n">temp</span><span class="p">))</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">            </span><span class="n">cauchy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">half</span><span class="o">*</span><span class="n">gw</span><span class="o">*</span><span class="nb">scale</span><span class="p">)</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="k">            </span><span class="n">cauchy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">gw</span><span class="o">+</span><span class="n">half</span><span class="o">*</span><span class="n">curv</span><span class="p">)</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="c">!</span>
+<span class="c">!     If IFLAG is zero, then XALT is calculated as before after reversing</span>
+<span class="c">!     the sign of GLAG. Thus two XALT vectors become available. The one that</span>
+<span class="c">!     is chosen is the one that gives the larger value of CAUCHY.</span>
+<span class="c">!</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">iflag</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                </span><span class="n">glag</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">glag</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="n">w</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xalt</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">            </span><span class="n">csave</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cauchy</span>
+<span class="w">            </span><span class="n">iflag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">            </span><span class="k">go</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="mi">100</span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">csave</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">cauchy</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                </span><span class="n">xalt</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">            </span><span class="n">cauchy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">csave</span>
+<span class="w">        </span><span class="k">end if</span>
+
+<span class="k">    end subroutine </span><span class="n">altmov</span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              PowellOpt
+ was developed by Jacob Williams<br>              &copy; 2025 
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+            </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
+
+    <!-- MathJax JavaScript
+             ================================================== -->
+             <!-- Placed at the end of the document so the pages load faster -->
+        <script type="text/x-mathjax-config">
+          MathJax.Hub.Config({
+          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+          });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+          <script src="../tipuesearch/tipuesearch_content.js"></script>
+          <script src="../tipuesearch/tipuesearch_set.js"></script>
+          <script src="../tipuesearch/tipuesearch.js"></script>
+
+  </body>
+</html>

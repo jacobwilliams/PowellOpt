@@ -1,0 +1,507 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="PowellOpt -- Optimization algorithms by M.J.D. Powell">
+    <meta name="author" content="Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>bobyqa_test &ndash; PowellOpt</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">PowellOpt </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>bobyqa_test
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.8% of total for procedures.">52 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/bobyqa.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/bobyqa.f90.html'>bobyqa.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/bobyqa_module.html'>bobyqa_module</a></li>
+            <li class="breadcrumb-item active" aria-current="page">bobyqa_test</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+    $('[data-bs-toggle="tooltip"]').tooltip()
+    })
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/bobyqa_test.html#src">bobyqa_test</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>public  subroutine bobyqa_test()  
+</h2>
+    
+
+    <p>Test problem for <a href="../proc/bobyqa.html">bobyqa</a>, the objective function being the sum of
+the reciprocals of all pairwise distances between the points P_I,
+I=1,2,...,M in two dimensions, where M=N/2 and where the components
+of P_I are X(2<em>I-1) and X(2</em>I). Thus each vector X of N variables
+defines the M points P_I. The initial X gives equally spaced points
+on a circle. Four different choices of the pairs (N,NPT) are tried,
+namely (10,16), (10,21), (20,26) and (20,41). Convergence to a local
+minimum that is not global occurs in both the N=10 cases. The details
+of the results are highly sensitive to computer rounding errors. The
+choice IPRINT=2 provides the current X and optimal F so far whenever
+RHO is reduced. The bound constraints of the problem require every
+component of X to be in the interval [-1,1].</p>
+
+
+    <h3>Arguments</h3>
+    <em>None</em>
+    <br>
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Calls</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: proc~~bobyqa_test~~CallsGraph Pages: 1 -->
+<svg id="procbobyqa_testCallsGraph" width="445pt" height="173pt"
+ viewBox="0.00 0.00 445.00 172.79" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~bobyqa_test~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 168.79)">
+<title>proc~~bobyqa_test~~CallsGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-168.79 441,-168.79 441,4 -4,4"/>
+<!-- proc~bobyqa_test -->
+<g id="proc~~bobyqa_test~~CallsGraph_node1" class="node">
+<title>proc~bobyqa_test</title>
+<polygon fill="none" stroke="black" points="77,-80.79 0,-80.79 0,-56.79 77,-56.79 77,-80.79"/>
+<text text-anchor="middle" x="38.5" y="-66.39" font-family="Helvetica,sans-Serif" font-size="10.50">bobyqa_test</text>
+</g>
+<!-- proc~bobyqa -->
+<g id="proc~~bobyqa_test~~CallsGraph_node2" class="node">
+<title>proc~bobyqa</title>
+<g id="a_proc~~bobyqa_test~~CallsGraph_node2"><a xlink:href="../proc/bobyqa.html" xlink:title="bobyqa">
+<polygon fill="#d9534f" stroke="#d9534f" points="167,-80.79 113,-80.79 113,-56.79 167,-56.79 167,-80.79"/>
+<text text-anchor="middle" x="140" y="-66.39" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">bobyqa</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqa_test&#45;&gt;proc~bobyqa -->
+<g id="proc~~bobyqa_test~~CallsGraph_edge1" class="edge">
+<title>proc~bobyqa_test&#45;&gt;proc~bobyqa</title>
+<path fill="none" stroke="#000000" d="M77.12,-68.79C85.47,-68.79 94.32,-68.79 102.63,-68.79"/>
+<polygon fill="#000000" stroke="#000000" points="102.78,-72.29 112.78,-68.79 102.78,-65.29 102.78,-72.29"/>
+</g>
+<!-- proc~bobyqb -->
+<g id="proc~~bobyqa_test~~CallsGraph_node3" class="node">
+<title>proc~bobyqb</title>
+<g id="a_proc~~bobyqa_test~~CallsGraph_node3"><a xlink:href="../proc/bobyqb.html" xlink:title="bobyqb">
+<polygon fill="#d9534f" stroke="#d9534f" points="257,-80.79 203,-80.79 203,-56.79 257,-56.79 257,-80.79"/>
+<text text-anchor="middle" x="230" y="-66.39" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">bobyqb</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqa&#45;&gt;proc~bobyqb -->
+<g id="proc~~bobyqa_test~~CallsGraph_edge2" class="edge">
+<title>proc~bobyqa&#45;&gt;proc~bobyqb</title>
+<path fill="none" stroke="#000000" d="M167.4,-68.79C175.39,-68.79 184.31,-68.79 192.82,-68.79"/>
+<polygon fill="#000000" stroke="#000000" points="192.92,-72.29 202.92,-68.79 192.92,-65.29 192.92,-72.29"/>
+</g>
+<!-- proc~altmov -->
+<g id="proc~~bobyqa_test~~CallsGraph_node4" class="node">
+<title>proc~altmov</title>
+<g id="a_proc~~bobyqa_test~~CallsGraph_node4"><a xlink:href="../proc/altmov.html" xlink:title="altmov">
+<polygon fill="#d9534f" stroke="#d9534f" points="347,-164.79 293,-164.79 293,-140.79 347,-140.79 347,-164.79"/>
+<text text-anchor="middle" x="320" y="-150.39" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">altmov</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqb&#45;&gt;proc~altmov -->
+<g id="proc~~bobyqa_test~~CallsGraph_edge3" class="edge">
+<title>proc~bobyqb&#45;&gt;proc~altmov</title>
+<path fill="none" stroke="#000000" d="M242.04,-80.8C254.15,-93.78 274.35,-114.89 293,-131.79 293.82,-132.53 294.66,-133.27 295.51,-134.02"/>
+<polygon fill="#000000" stroke="#000000" points="293.46,-136.87 303.36,-140.63 297.97,-131.52 293.46,-136.87"/>
+</g>
+<!-- proc~prelim~2 -->
+<g id="proc~~bobyqa_test~~CallsGraph_node5" class="node">
+<title>proc~prelim~2</title>
+<g id="a_proc~~bobyqa_test~~CallsGraph_node5"><a xlink:href="../proc/prelim~2.html" xlink:title="prelim">
+<polygon fill="#d9534f" stroke="#d9534f" points="347,-122.79 293,-122.79 293,-98.79 347,-98.79 347,-122.79"/>
+<text text-anchor="middle" x="320" y="-108.39" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">prelim</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqb&#45;&gt;proc~prelim~2 -->
+<g id="proc~~bobyqa_test~~CallsGraph_edge4" class="edge">
+<title>proc~bobyqb&#45;&gt;proc~prelim~2</title>
+<path fill="none" stroke="#000000" d="M256.45,-80.94C265.21,-85.12 275.17,-89.87 284.52,-94.33"/>
+<polygon fill="#000000" stroke="#000000" points="283.07,-97.52 293.6,-98.67 286.09,-91.2 283.07,-97.52"/>
+</g>
+<!-- proc~rescue -->
+<g id="proc~~bobyqa_test~~CallsGraph_node6" class="node">
+<title>proc~rescue</title>
+<g id="a_proc~~bobyqa_test~~CallsGraph_node6"><a xlink:href="../proc/rescue.html" xlink:title="rescue">
+<polygon fill="#d9534f" stroke="#d9534f" points="347,-80.79 293,-80.79 293,-56.79 347,-56.79 347,-80.79"/>
+<text text-anchor="middle" x="320" y="-66.39" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">rescue</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqb&#45;&gt;proc~rescue -->
+<g id="proc~~bobyqa_test~~CallsGraph_edge5" class="edge">
+<title>proc~bobyqb&#45;&gt;proc~rescue</title>
+<path fill="none" stroke="#000000" d="M257.4,-68.79C265.39,-68.79 274.31,-68.79 282.82,-68.79"/>
+<polygon fill="#000000" stroke="#000000" points="282.92,-72.29 292.92,-68.79 282.92,-65.29 282.92,-72.29"/>
+</g>
+<!-- proc~trsbox -->
+<g id="proc~~bobyqa_test~~CallsGraph_node7" class="node">
+<title>proc~trsbox</title>
+<g id="a_proc~~bobyqa_test~~CallsGraph_node7"><a xlink:href="../proc/trsbox.html" xlink:title="trsbox">
+<polygon fill="#d9534f" stroke="#d9534f" points="347,-38.79 293,-38.79 293,-14.79 347,-14.79 347,-38.79"/>
+<text text-anchor="middle" x="320" y="-24.39" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">trsbox</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqb&#45;&gt;proc~trsbox -->
+<g id="proc~~bobyqa_test~~CallsGraph_edge6" class="edge">
+<title>proc~bobyqb&#45;&gt;proc~trsbox</title>
+<path fill="none" stroke="#000000" d="M256.45,-56.64C265.21,-52.46 275.17,-47.71 284.52,-43.25"/>
+<polygon fill="#000000" stroke="#000000" points="286.09,-46.37 293.6,-38.91 283.07,-40.06 286.09,-46.37"/>
+</g>
+<!-- proc~update~3 -->
+<g id="proc~~bobyqa_test~~CallsGraph_node8" class="node">
+<title>proc~update~3</title>
+<g id="a_proc~~bobyqa_test~~CallsGraph_node8"><a xlink:href="../proc/update~3.html" xlink:title="update">
+<polygon fill="#d9534f" stroke="#d9534f" points="437,-39.79 383,-39.79 383,-15.79 437,-15.79 437,-39.79"/>
+<text text-anchor="middle" x="410" y="-25.39" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">update</text>
+</a>
+</g>
+</g>
+<!-- proc~bobyqb&#45;&gt;proc~update~3 -->
+<g id="proc~~bobyqa_test~~CallsGraph_edge7" class="edge">
+<title>proc~bobyqb&#45;&gt;proc~update~3</title>
+<path fill="none" stroke="#000000" d="M238.43,-56.71C248.58,-41.5 268.37,-16.1 293,-5.79 319.75,5.42 352.37,-2.49 376.2,-11.8"/>
+<polygon fill="#000000" stroke="#000000" points="374.93,-15.06 385.51,-15.68 377.63,-8.6 374.93,-15.06"/>
+</g>
+<!-- proc~rescue&#45;&gt;proc~update~3 -->
+<g id="proc~~bobyqa_test~~CallsGraph_edge8" class="edge">
+<title>proc~rescue&#45;&gt;proc~update~3</title>
+<path fill="none" stroke="#000000" d="M346.93,-56.71C355.36,-52.78 364.86,-48.36 373.84,-44.17"/>
+<polygon fill="#000000" stroke="#000000" points="375.37,-47.32 382.95,-39.92 372.41,-40.97 375.37,-47.32"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 27.51" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.86 0.86) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 741.5,-28 741.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="70,-24 0,-24 0,0 70,0 70,-24"/>
+<text text-anchor="middle" x="35" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="146,-24 88,-24 88,0 146,0 146,-24"/>
+<text text-anchor="middle" x="117" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="225.5,-24 164.5,-24 164.5,0 225.5,0 225.5,-24"/>
+<text text-anchor="middle" x="195" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="374,-24 244,-24 244,0 374,0 374,-24"/>
+<text text-anchor="middle" x="309" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="537.5,-24 392.5,-24 392.5,0 537.5,0 537.5,-24"/>
+<text text-anchor="middle" x="465" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="614,-24 556,-24 556,0 614,0 614,-24"/>
+<text text-anchor="middle" x="585" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="737.5,-24 632.5,-24 632.5,0 737.5,0 737.5,-24"/>
+<text text-anchor="middle" x="685" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">bobyqa_test</span><span class="p">()</span>
+
+<span class="w">        </span><span class="k">implicit none</span>
+
+<span class="k">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">dimension</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">xl</span><span class="p">,</span><span class="w"> </span><span class="n">xu</span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">jcase</span><span class="p">,</span><span class="n">npt</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">temp</span>
+
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">twopi</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mf">8.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">atan</span><span class="w"> </span><span class="p">(</span><span class="mf">1.0_wp</span><span class="p">)</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">bdl</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1.0_wp</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">bdu</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_wp</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="k">parameter</span><span class="w">  </span><span class="kd">::</span><span class="w"> </span><span class="n">iprint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="k">parameter</span><span class="w">  </span><span class="kd">::</span><span class="w"> </span><span class="n">maxfun</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">500000</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">rhobeg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0e-1_wp</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">rhoend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0e-6_wp</span>
+
+<span class="w">        </span><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span>
+<span class="w">        </span><span class="k">do</span>
+<span class="k">            </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">m</span>
+<span class="w">            </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                </span><span class="n">xl</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bdl</span>
+<span class="w">                </span><span class="n">xu</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bdu</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">            do </span><span class="n">jcase</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">                </span><span class="n">npt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">6</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">jcase</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="n">npt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">                </span><span class="k">print </span><span class="mi">30</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">npt</span>
+<span class="mi">30</span><span class="w">              </span><span class="k">format</span><span class="w"> </span><span class="p">(</span><span class="o">/</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;2D output with M =&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">i4</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;,  N =&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">i4</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;  and  NPT =&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">i4</span><span class="p">)</span>
+<span class="w">                </span><span class="k">do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">m</span>
+<span class="w">                    </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">real</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">twopi</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="kt">real</span><span class="w"> </span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">wp</span><span class="p">)</span>
+<span class="w">                    </span><span class="n">x</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">cos</span><span class="w"> </span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+<span class="w">                    </span><span class="n">x</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sin</span><span class="w"> </span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+<span class="w">                </span><span class="k">end do</span>
+<span class="k">                call </span><span class="n">bobyqa</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">npt</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">xl</span><span class="p">,</span><span class="w"> </span><span class="n">xu</span><span class="p">,</span><span class="w"> </span><span class="n">rhobeg</span><span class="p">,</span><span class="w"> </span><span class="n">rhoend</span><span class="p">,</span><span class="w"> </span><span class="n">iprint</span><span class="p">,</span><span class="w"> </span><span class="n">maxfun</span><span class="p">,</span><span class="w"> </span><span class="n">calfun</span><span class="p">)</span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">            </span><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">m</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="k">exit</span>
+<span class="k">        end do</span>
+
+<span class="k">    contains</span>
+
+<span class="k">        subroutine </span><span class="n">calfun</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">f</span><span class="p">)</span>
+
+<span class="w">            </span><span class="k">implicit none</span>
+
+<span class="k">            </span><span class="kt">integer</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">               </span><span class="kd">::</span><span class="w"> </span><span class="n">n</span>
+<span class="w">            </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">dimension</span><span class="p">(:),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">x</span>
+<span class="w">            </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w">             </span><span class="kd">::</span><span class="w"> </span><span class="n">f</span>
+
+<span class="w">            </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="n">j</span>
+<span class="w">            </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">temp</span>
+
+<span class="w">            </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span>
+<span class="w">            </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">                </span><span class="k">do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">                    </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">-</span><span class="n">x</span><span class="p">(</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">-</span><span class="n">x</span><span class="p">(</span><span class="n">j</span><span class="p">))</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">                    </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">max</span><span class="w"> </span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0e-6_wp</span><span class="p">)</span>
+<span class="w">                    </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">sqrt</span><span class="w"> </span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+<span class="w">                </span><span class="k">end do</span>
+<span class="k">            end do</span>
+
+<span class="k">        end subroutine </span><span class="n">calfun</span>
+
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">bobyqa_test</span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              PowellOpt
+ was developed by Jacob Williams<br>              &copy; 2025 
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+            </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
+
+    <!-- MathJax JavaScript
+             ================================================== -->
+             <!-- Placed at the end of the document so the pages load faster -->
+        <script type="text/x-mathjax-config">
+          MathJax.Hub.Config({
+          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+          });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+          <script src="../tipuesearch/tipuesearch_content.js"></script>
+          <script src="../tipuesearch/tipuesearch_set.js"></script>
+          <script src="../tipuesearch/tipuesearch.js"></script>
+
+  </body>
+</html>

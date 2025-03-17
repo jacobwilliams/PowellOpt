@@ -1,0 +1,925 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="PowellOpt -- Optimization algorithms by M.J.D. Powell">
+    <meta name="author" content="Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>lincoa &ndash; PowellOpt</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+      <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">PowellOpt </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>lincoa
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 1.5% of total for procedures.">90 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/lincoa.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/lincoa.f90.html'>lincoa.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/lincoa_module.html'>lincoa_module</a></li>
+            <li class="breadcrumb-item active" aria-current="page">lincoa</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+    $('[data-bs-toggle="tooltip"]').tooltip()
+    })
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/lincoa.html#src">lincoa</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>public  subroutine lincoa(n, npt, m, a, ia, b, x, rhobeg, rhoend, iprint, maxfun, calfun)  
+</h2>
+    
+
+    <p>This subroutine seeks the least value of a function of many variables,
+  subject to general linear inequality constraints, by a trust region
+  method that forms quadratic models by interpolation.</p>
+<p>LINCOA solves the following optimization problem:</p>
+<div class="codehilite"><pre><span></span><code>   Minimize F(X(1),X(2),...X(N)) subject to:
+   A * X &lt;= B
+</code></pre></div>
+
+<p>Usually there
+  is much freedom in each new model after satisfying the interpolation
+  conditions, which is taken up by minimizing the Frobenius norm of
+  the change to the second derivative matrix of the model. One new
+  function value is calculated on each iteration, usually at a point
+  where the current model predicts a reduction in the least value so
+  far of the objective function subject to the linear constraints.
+  Alternatively, a new vector of variables may be chosen to replace
+  an interpolation point that may be too far away for reliability, and
+  then the new point does not have to satisfy the linear constraints.</p>
+
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~17"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+                <p>the number of variables. must be at least 2.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-npt~8"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>npt</strong></td>
+            <td>
+                <p>the number of interpolation conditions, which is
+required to be in the interval [N+2,(N+1)(N+2)/2]. Typical choices
+of the author are NPT=N+6 and NPT=2*N+1. Larger values tend to be
+highly inefficent when the number of variables is substantial, due
+to the amount of work and extra difficulty of adjusting more points.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-m~7"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>m</strong></td>
+            <td>
+                <p>the number of linear inequality constraints.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              dimension(ia,*)
+            </td>
+            <td>::</td>
+            <td><strong>a</strong></td>
+            <td>
+                <p>a matrix whose columns are the constraint gradients, which are
+required to be nonzero.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ia~2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ia</strong></td>
+            <td>
+                <p>the first dimension of the array A, which must be at least N.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              dimension(*)
+            </td>
+            <td>::</td>
+            <td><strong>b</strong></td>
+            <td>
+                <p>the vector of right hand sides of the constraints, the J-th
+constraint being that the scalar product of A(.,J) with X(.) is at
+most B(J). The initial vector X(.) is made feasible by increasing
+the value of B(J) if necessary.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~12"></span>
+              real(kind=wp),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              dimension(*)
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+                <p>the vector of variables. Initial values of X(1),X(2),...,X(N)
+must be supplied. If they do not satisfy the constraints, then B
+is increased as mentioned above. X contains on return the variables
+that have given the least calculated F subject to the constraints.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rhobeg~7"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rhobeg</strong></td>
+            <td>
+                <p>RHOBEG and RHOEND must be set to the initial and final values of a
+trust region radius, so both must be positive with RHOEND&lt;=RHOBEG.
+Typically, RHOBEG should be about one tenth of the greatest expected
+change to a variable, and RHOEND should indicate the accuracy that
+is required in the final values of the variables.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rhoend~7"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rhoend</strong></td>
+            <td>
+                <p>RHOBEG and RHOEND must be set to the initial and final values of a
+trust region radius, so both must be positive with RHOEND&lt;=RHOBEG.
+Typically, RHOBEG should be about one tenth of the greatest expected
+change to a variable, and RHOEND should indicate the accuracy that
+is required in the final values of the variables.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-iprint~7"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>iprint</strong></td>
+            <td>
+                <p>The value of IPRINT should be set to 0, 1, 2 or 3, which controls the
+amount of printing. Specifically, there is no output if IPRINT=0 and
+there is output only at the return if IPRINT=1. Otherwise, the best
+feasible vector of variables so far and the corresponding value of
+the objective function are printed whenever RHO is reduced, where
+RHO is the current lower bound on the trust region radius. Further,
+each new value of F with its variables are output if IPRINT=3.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-maxfun~7"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>maxfun</strong></td>
+            <td>
+                <p>an upper bound on the number of calls of CALFUN,
+its value being at least NPT+1.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-calfun~4"></span>
+              procedure(<a href='../interface/func~3.html'>func</a>)
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>calfun</strong></td>
+            <td>
+                <p>It must set
+F to the value of the objective function for the variables X(1),
+X(2),...,X(N). The value of the argument F is positive when CALFUN
+is called if and only if the current X satisfies the constraints</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Calls</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: proc~~lincoa~~CallsGraph Pages: 1 -->
+<svg id="proclincoaCallsGraph" width="332pt" height="154pt"
+ viewBox="0.00 0.00 332.00 154.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~lincoa~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 150)">
+<title>proc~~lincoa~~CallsGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-150 328,-150 328,4 -4,4"/>
+<!-- proc~lincoa -->
+<g id="proc~~lincoa~~CallsGraph_node1" class="node">
+<title>proc~lincoa</title>
+<polygon fill="none" stroke="black" points="54,-84 0,-84 0,-60 54,-60 54,-84"/>
+<text text-anchor="middle" x="27" y="-69.6" font-family="Helvetica,sans-Serif" font-size="10.50">lincoa</text>
+</g>
+<!-- proc~lincob -->
+<g id="proc~~lincoa~~CallsGraph_node2" class="node">
+<title>proc~lincob</title>
+<g id="a_proc~~lincoa~~CallsGraph_node2"><a xlink:href="../proc/lincob.html" xlink:title="lincob">
+<polygon fill="#d9534f" stroke="#d9534f" points="144,-84 90,-84 90,-60 144,-60 144,-84"/>
+<text text-anchor="middle" x="117" y="-69.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">lincob</text>
+</a>
+</g>
+</g>
+<!-- proc~lincoa&#45;&gt;proc~lincob -->
+<g id="proc~~lincoa~~CallsGraph_edge1" class="edge">
+<title>proc~lincoa&#45;&gt;proc~lincob</title>
+<path fill="none" stroke="#000000" d="M54.4,-72C62.39,-72 71.31,-72 79.82,-72"/>
+<polygon fill="#000000" stroke="#000000" points="79.92,-75.5 89.92,-72 79.92,-68.5 79.92,-75.5"/>
+</g>
+<!-- proc~prelim -->
+<g id="proc~~lincoa~~CallsGraph_node3" class="node">
+<title>proc~prelim</title>
+<g id="a_proc~~lincoa~~CallsGraph_node3"><a xlink:href="../proc/prelim.html" xlink:title="prelim">
+<polygon fill="#d9534f" stroke="#d9534f" points="234,-146 180,-146 180,-122 234,-122 234,-146"/>
+<text text-anchor="middle" x="207" y="-131.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">prelim</text>
+</a>
+</g>
+</g>
+<!-- proc~lincob&#45;&gt;proc~prelim -->
+<g id="proc~~lincoa~~CallsGraph_edge2" class="edge">
+<title>proc~lincob&#45;&gt;proc~prelim</title>
+<path fill="none" stroke="#000000" d="M135.39,-84.25C148.24,-93.31 165.96,-105.79 180.43,-115.99"/>
+<polygon fill="#000000" stroke="#000000" points="178.76,-119.09 188.95,-121.99 182.79,-113.37 178.76,-119.09"/>
+</g>
+<!-- proc~qmstep -->
+<g id="proc~~lincoa~~CallsGraph_node4" class="node">
+<title>proc~qmstep</title>
+<g id="a_proc~~lincoa~~CallsGraph_node4"><a xlink:href="../proc/qmstep.html" xlink:title="qmstep">
+<polygon fill="#d9534f" stroke="#d9534f" points="234,-104 180,-104 180,-80 234,-80 234,-104"/>
+<text text-anchor="middle" x="207" y="-89.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">qmstep</text>
+</a>
+</g>
+</g>
+<!-- proc~lincob&#45;&gt;proc~qmstep -->
+<g id="proc~~lincoa~~CallsGraph_edge3" class="edge">
+<title>proc~lincob&#45;&gt;proc~qmstep</title>
+<path fill="none" stroke="#000000" d="M144.4,-78C152.48,-79.84 161.51,-81.89 170.1,-83.84"/>
+<polygon fill="#000000" stroke="#000000" points="169.39,-87.27 179.92,-86.07 170.94,-80.44 169.39,-87.27"/>
+</g>
+<!-- proc~trstep -->
+<g id="proc~~lincoa~~CallsGraph_node5" class="node">
+<title>proc~trstep</title>
+<g id="a_proc~~lincoa~~CallsGraph_node5"><a xlink:href="../proc/trstep.html" xlink:title="trstep">
+<polygon fill="#d9534f" stroke="#d9534f" points="234,-24 180,-24 180,0 234,0 234,-24"/>
+<text text-anchor="middle" x="207" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">trstep</text>
+</a>
+</g>
+</g>
+<!-- proc~lincob&#45;&gt;proc~trstep -->
+<g id="proc~~lincoa~~CallsGraph_edge4" class="edge">
+<title>proc~lincob&#45;&gt;proc~trstep</title>
+<path fill="none" stroke="#000000" d="M135.81,-59.86C148.45,-51.24 165.63,-39.52 179.83,-29.84"/>
+<polygon fill="#000000" stroke="#000000" points="181.93,-32.65 188.22,-24.12 177.98,-26.87 181.93,-32.65"/>
+</g>
+<!-- proc~update~2 -->
+<g id="proc~~lincoa~~CallsGraph_node6" class="node">
+<title>proc~update~2</title>
+<g id="a_proc~~lincoa~~CallsGraph_node6"><a xlink:href="../proc/update~2.html" xlink:title="update">
+<polygon fill="#d9534f" stroke="#d9534f" points="324,-106 270,-106 270,-82 324,-82 324,-106"/>
+<text text-anchor="middle" x="297" y="-91.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">update</text>
+</a>
+</g>
+</g>
+<!-- proc~lincob&#45;&gt;proc~update~2 -->
+<g id="proc~~lincoa~~CallsGraph_edge5" class="edge">
+<title>proc~lincob&#45;&gt;proc~update~2</title>
+<path fill="none" stroke="#000000" d="M144.03,-69.04C167.7,-67 203.47,-65.52 234,-71 242.69,-72.56 251.75,-75.26 260.18,-78.27"/>
+<polygon fill="#000000" stroke="#000000" points="259.14,-81.62 269.73,-81.9 261.63,-75.07 259.14,-81.62"/>
+</g>
+<!-- proc~prelim&#45;&gt;proc~update~2 -->
+<g id="proc~~lincoa~~CallsGraph_edge6" class="edge">
+<title>proc~prelim&#45;&gt;proc~update~2</title>
+<path fill="none" stroke="#000000" d="M234.4,-122C242.66,-118.25 251.9,-114.05 260.66,-110.06"/>
+<polygon fill="#000000" stroke="#000000" points="262.26,-113.18 269.92,-105.86 259.37,-106.81 262.26,-113.18"/>
+</g>
+<!-- proc~getact -->
+<g id="proc~~lincoa~~CallsGraph_node7" class="node">
+<title>proc~getact</title>
+<g id="a_proc~~lincoa~~CallsGraph_node7"><a xlink:href="../proc/getact.html" xlink:title="getact">
+<polygon fill="#d9534f" stroke="#d9534f" points="324,-24 270,-24 270,0 324,0 324,-24"/>
+<text text-anchor="middle" x="297" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">getact</text>
+</a>
+</g>
+</g>
+<!-- proc~trstep&#45;&gt;proc~getact -->
+<g id="proc~~lincoa~~CallsGraph_edge7" class="edge">
+<title>proc~trstep&#45;&gt;proc~getact</title>
+<path fill="none" stroke="#000000" d="M234.4,-12C242.39,-12 251.31,-12 259.82,-12"/>
+<polygon fill="#000000" stroke="#000000" points="259.92,-15.5 269.92,-12 259.92,-8.5 259.92,-15.5"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 27.51" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.86 0.86) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 741.5,-28 741.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="70,-24 0,-24 0,0 70,0 70,-24"/>
+<text text-anchor="middle" x="35" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="146,-24 88,-24 88,0 146,0 146,-24"/>
+<text text-anchor="middle" x="117" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="225.5,-24 164.5,-24 164.5,0 225.5,0 225.5,-24"/>
+<text text-anchor="middle" x="195" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="374,-24 244,-24 244,0 374,0 374,-24"/>
+<text text-anchor="middle" x="309" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="537.5,-24 392.5,-24 392.5,0 537.5,0 537.5,-24"/>
+<text text-anchor="middle" x="465" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="614,-24 556,-24 556,0 614,0 614,-24"/>
+<text text-anchor="middle" x="585" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="737.5,-24 632.5,-24 632.5,0 737.5,0 737.5,-24"/>
+<text text-anchor="middle" x="685" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Called by</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: proc~~lincoa~~CalledByGraph Pages: 1 -->
+<svg id="proclincoaCalledByGraph" width="168pt" height="32pt"
+ viewBox="0.00 0.00 168.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~lincoa~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>proc~~lincoa~~CalledByGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 164,-28 164,4 -4,4"/>
+<!-- proc~lincoa -->
+<g id="proc~~lincoa~~CalledByGraph_node1" class="node">
+<title>proc~lincoa</title>
+<polygon fill="none" stroke="black" points="160,-24 106,-24 106,0 160,0 160,-24"/>
+<text text-anchor="middle" x="133" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">lincoa</text>
+</g>
+<!-- proc~lincoa_test -->
+<g id="proc~~lincoa~~CalledByGraph_node2" class="node">
+<title>proc~lincoa_test</title>
+<g id="a_proc~~lincoa~~CalledByGraph_node2"><a xlink:href="../proc/lincoa_test.html" xlink:title="lincoa_test">
+<polygon fill="#d9534f" stroke="#d9534f" points="70,-24 0,-24 0,0 70,0 70,-24"/>
+<text text-anchor="middle" x="35" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">lincoa_test</text>
+</a>
+</g>
+</g>
+<!-- proc~lincoa_test&#45;&gt;proc~lincoa -->
+<g id="proc~~lincoa~~CalledByGraph_edge1" class="edge">
+<title>proc~lincoa_test&#45;&gt;proc~lincoa</title>
+<path fill="none" stroke="#000000" d="M70.12,-12C78.38,-12 87.24,-12 95.6,-12"/>
+<polygon fill="#000000" stroke="#000000" points="95.84,-15.5 105.84,-12 95.84,-8.5 95.84,-15.5"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CalledByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CalledByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 27.51" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.86 0.86) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-28 741.5,-28 741.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="70,-24 0,-24 0,0 70,0 70,-24"/>
+<text text-anchor="middle" x="35" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="146,-24 88,-24 88,0 146,0 146,-24"/>
+<text text-anchor="middle" x="117" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="225.5,-24 164.5,-24 164.5,0 225.5,0 225.5,-24"/>
+<text text-anchor="middle" x="195" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="374,-24 244,-24 244,0 374,0 374,-24"/>
+<text text-anchor="middle" x="309" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="537.5,-24 392.5,-24 392.5,0 537.5,0 537.5,-24"/>
+<text text-anchor="middle" x="465" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="614,-24 556,-24 556,0 614,0 614,-24"/>
+<text text-anchor="middle" x="585" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="737.5,-24 632.5,-24 632.5,0 737.5,0 737.5,-24"/>
+<text text-anchor="middle" x="685" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">lincoa</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">npt</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">ia</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">rhobeg</span><span class="p">,</span><span class="w"> </span><span class="n">rhoend</span><span class="p">,</span><span class="w"> </span><span class="n">iprint</span><span class="p">,</span><span class="w"> </span><span class="n">maxfun</span><span class="p">,</span><span class="w"> </span><span class="n">calfun</span><span class="p">)</span>
+
+<span class="w">        </span><span class="k">implicit none</span>
+
+<span class="k">        </span><span class="kt">integer</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">                  </span><span class="kd">::</span><span class="w"> </span><span class="n">n</span><span class="w">       </span><span class="c">!! the number of variables. must be at least 2.</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">                  </span><span class="kd">::</span><span class="w"> </span><span class="n">npt</span><span class="w">     </span><span class="c">!! the number of interpolation conditions, which is</span>
+<span class="w">                                                       </span><span class="c">!! required to be in the interval [N+2,(N+1)(N+2)/2]. Typical choices</span>
+<span class="w">                                                       </span><span class="c">!! of the author are NPT=N+6 and NPT=2*N+1. Larger values tend to be</span>
+<span class="w">                                                       </span><span class="c">!! highly inefficent when the number of variables is substantial, due</span>
+<span class="w">                                                       </span><span class="c">!! to the amount of work and extra difficulty of adjusting more points.</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">                  </span><span class="kd">::</span><span class="w"> </span><span class="n">m</span><span class="w">       </span><span class="c">!! the number of linear inequality constraints.</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">                  </span><span class="kd">::</span><span class="w"> </span><span class="n">ia</span><span class="w">      </span><span class="c">!! the first dimension of the array A, which must be at least N.</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">dimension</span><span class="p">(</span><span class="n">ia</span><span class="p">,</span><span class="o">*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">a</span><span class="w">       </span><span class="c">!! a matrix whose columns are the constraint gradients, which are</span>
+<span class="w">                                                       </span><span class="c">!! required to be nonzero.</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">dimension</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">b</span><span class="w">       </span><span class="c">!! the vector of right hand sides of the constraints, the J-th</span>
+<span class="w">                                                       </span><span class="c">!! constraint being that the scalar product of A(.,J) with X(.) is at</span>
+<span class="w">                                                       </span><span class="c">!! most B(J). The initial vector X(.) is made feasible by increasing</span>
+<span class="w">                                                       </span><span class="c">!! the value of B(J) if necessary.</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">dimension</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">x</span><span class="w">       </span><span class="c">!! the vector of variables. Initial values of X(1),X(2),...,X(N)</span>
+<span class="w">                                                       </span><span class="c">!! must be supplied. If they do not satisfy the constraints, then B</span>
+<span class="w">                                                       </span><span class="c">!! is increased as mentioned above. X contains on return the variables</span>
+<span class="w">                                                       </span><span class="c">!! that have given the least calculated F subject to the constraints.</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">                 </span><span class="kd">::</span><span class="w"> </span><span class="n">rhobeg</span><span class="w">  </span><span class="c">!! RHOBEG and RHOEND must be set to the initial and final values of a</span>
+<span class="w">                                                       </span><span class="c">!! trust region radius, so both must be positive with RHOEND&lt;=RHOBEG.</span>
+<span class="w">                                                       </span><span class="c">!! Typically, RHOBEG should be about one tenth of the greatest expected</span>
+<span class="w">                                                       </span><span class="c">!! change to a variable, and RHOEND should indicate the accuracy that</span>
+<span class="w">                                                       </span><span class="c">!! is required in the final values of the variables.</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">                 </span><span class="kd">::</span><span class="w"> </span><span class="n">rhoend</span><span class="w">  </span><span class="c">!! RHOBEG and RHOEND must be set to the initial and final values of a</span>
+<span class="w">                                                       </span><span class="c">!! trust region radius, so both must be positive with RHOEND&lt;=RHOBEG.</span>
+<span class="w">                                                       </span><span class="c">!! Typically, RHOBEG should be about one tenth of the greatest expected</span>
+<span class="w">                                                       </span><span class="c">!! change to a variable, and RHOEND should indicate the accuracy that</span>
+<span class="w">                                                       </span><span class="c">!! is required in the final values of the variables.</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">                  </span><span class="kd">::</span><span class="w"> </span><span class="n">iprint</span><span class="w">  </span><span class="c">!! The value of IPRINT should be set to 0, 1, 2 or 3, which controls the</span>
+<span class="w">                                                       </span><span class="c">!! amount of printing. Specifically, there is no output if IPRINT=0 and</span>
+<span class="w">                                                       </span><span class="c">!! there is output only at the return if IPRINT=1. Otherwise, the best</span>
+<span class="w">                                                       </span><span class="c">!! feasible vector of variables so far and the corresponding value of</span>
+<span class="w">                                                       </span><span class="c">!! the objective function are printed whenever RHO is reduced, where</span>
+<span class="w">                                                       </span><span class="c">!! RHO is the current lower bound on the trust region radius. Further,</span>
+<span class="w">                                                       </span><span class="c">!! each new value of F with its variables are output if IPRINT=3.</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">                  </span><span class="kd">::</span><span class="w"> </span><span class="n">maxfun</span><span class="w">  </span><span class="c">!! an upper bound on the number of calls of CALFUN,</span>
+<span class="w">                                                       </span><span class="c">!! its value being at least NPT+1.</span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="w">                    </span><span class="kd">::</span><span class="w"> </span><span class="n">calfun</span><span class="w">  </span><span class="c">!! It must set</span>
+<span class="w">                                                       </span><span class="c">!! F to the value of the objective function for the variables X(1),</span>
+<span class="w">                                                       </span><span class="c">!! X(2),...,X(N). The value of the argument F is positive when CALFUN</span>
+<span class="w">                                                       </span><span class="c">!! is called if and only if the current X satisfies the constraints</span>
+
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">zero</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span>
+
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="k">dimension</span><span class="p">(:),</span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">w</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">dimension</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">iact</span><span class="w"> </span><span class="c">!to avoid type mismatch error - JW</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">smallx</span><span class="p">,</span><span class="nb">sum</span><span class="p">,</span><span class="n">temp</span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">np</span><span class="p">,</span><span class="n">nptm</span><span class="p">,</span><span class="n">iamat</span><span class="p">,</span><span class="n">ib</span><span class="p">,</span><span class="n">iflag</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">iac</span><span class="p">,</span><span class="n">ibmat</span><span class="p">,</span><span class="n">ifv</span><span class="p">,</span><span class="n">igo</span><span class="p">,</span><span class="n">ihq</span><span class="p">,</span><span class="n">ipq</span><span class="p">,</span><span class="n">ipqw</span><span class="p">,&amp;</span>
+<span class="w">                   </span><span class="n">iqf</span><span class="p">,</span><span class="n">irc</span><span class="p">,</span><span class="n">isp</span><span class="p">,</span><span class="n">istp</span><span class="p">,</span><span class="n">iw</span><span class="p">,</span><span class="n">ixb</span><span class="p">,</span><span class="n">ixn</span><span class="p">,</span><span class="n">ixo</span><span class="p">,</span><span class="n">ixp</span><span class="p">,</span><span class="n">ixs</span><span class="p">,</span><span class="n">irf</span><span class="p">,</span><span class="n">izmat</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">ndim</span>
+
+<span class="c">!     W is an array used for working space. Its length must be at least</span>
+<span class="c">!       M*(2+N) + NPT*(4+N+NPT) + N*(9+3*N) + MAX [ M+3*N, 2*M+N, 2*NPT ].</span>
+<span class="c">!       On return, W(1) is set to the final value of F, and W(2) is set to</span>
+<span class="c">!       the total number of function evaluations plus 0.5.</span>
+<span class="w">        </span><span class="k">allocate</span><span class="p">(</span><span class="n">w</span><span class="p">(</span><span class="n">M</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">+</span><span class="n">N</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">NPT</span><span class="o">*</span><span class="p">(</span><span class="mi">4</span><span class="o">+</span><span class="n">N</span><span class="o">+</span><span class="n">NPT</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">N</span><span class="o">*</span><span class="p">(</span><span class="mi">9</span><span class="o">+</span><span class="mi">3</span><span class="o">*</span><span class="n">N</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">MAX</span><span class="p">(</span><span class="n">M</span><span class="o">+</span><span class="mi">3</span><span class="o">*</span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="o">*</span><span class="n">M</span><span class="o">+</span><span class="n">N</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="o">*</span><span class="n">NPT</span><span class="p">)))</span>
+
+<span class="c">!</span>
+<span class="c">!     Check that N, NPT and MAXFUN are acceptable.</span>
+<span class="c">!</span>
+<span class="w">        </span><span class="n">smallx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0e-6_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">rhoend</span>
+<span class="w">        </span><span class="n">np</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">        </span><span class="n">nptm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">npt</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">np</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            print </span><span class="mi">10</span>
+<span class="mi">10</span><span class="w">          </span><span class="k">format</span><span class="w"> </span><span class="p">(</span><span class="o">/</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Return from LINCOA because N is less than 2.&#39;</span><span class="p">)</span>
+<span class="w">            </span><span class="k">return</span>
+<span class="k">        end if</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">npt</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n</span><span class="o">+</span><span class="mi">2</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="n">npt</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="p">((</span><span class="n">n</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            print </span><span class="mi">20</span>
+<span class="mi">20</span><span class="w">          </span><span class="k">format</span><span class="w"> </span><span class="p">(</span><span class="o">/</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Return from LINCOA because NPT is not in&#39;</span><span class="p">,&amp;</span>
+<span class="w">            </span><span class="s1">&#39; the required interval.&#39;</span><span class="p">)</span>
+<span class="w">            </span><span class="k">return</span>
+<span class="k">        end if</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">maxfun</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">npt</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            print </span><span class="mi">30</span>
+<span class="mi">30</span><span class="w">          </span><span class="k">format</span><span class="w"> </span><span class="p">(</span><span class="o">/</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Return from LINCOA because MAXFUN is less&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39; than NPT+1.&#39;</span><span class="p">)</span>
+<span class="w">            </span><span class="k">return</span>
+<span class="k">        end if</span>
+<span class="c">!</span>
+<span class="c">!     Normalize the constraints, and copy the resultant constraint matrix</span>
+<span class="c">!       and right hand sides into working space, after increasing the right</span>
+<span class="c">!       hand sides if necessary so that the starting point is feasible.</span>
+<span class="c">!</span>
+<span class="w">        </span><span class="n">iamat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">max</span><span class="w"> </span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="mi">3</span><span class="o">*</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="o">*</span><span class="n">m</span><span class="o">+</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="o">*</span><span class="n">npt</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">        </span><span class="n">ib</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iamat</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="n">iflag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">m</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">iw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iamat</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">            </span><span class="k">do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">m</span>
+<span class="w">                </span><span class="nb">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">                </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">zero</span>
+<span class="w">                </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                    </span><span class="nb">sum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sum</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                    </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">                </span><span class="k">end do</span>
+<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="n">temp</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">zero</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    print </span><span class="mi">50</span>
+<span class="mi">50</span><span class="w">                  </span><span class="k">format</span><span class="w"> </span><span class="p">(</span><span class="o">/</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Return from LINCOA because the gradient of&#39;</span><span class="p">,&amp;</span>
+<span class="w">                    </span><span class="s1">&#39; a constraint is zero.&#39;</span><span class="p">)</span>
+<span class="w">                    </span><span class="k">return</span>
+<span class="k">                end if</span>
+<span class="k">                </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="w"> </span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">sum</span><span class="o">-</span><span class="n">b</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">smallx</span><span class="o">*</span><span class="n">temp</span><span class="p">)</span><span class="w"> </span><span class="n">iflag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">                </span><span class="n">w</span><span class="w"> </span><span class="p">(</span><span class="n">ib</span><span class="o">+</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">max</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="p">(</span><span class="n">j</span><span class="p">),</span><span class="w"> </span><span class="nb">sum</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">temp</span>
+<span class="w">                </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span>
+<span class="w">                    </span><span class="n">iw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iw</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">                    </span><span class="n">w</span><span class="w"> </span><span class="p">(</span><span class="n">iw</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">temp</span>
+<span class="w">                </span><span class="k">end do</span>
+<span class="k">            end do</span>
+<span class="k">        end if</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">iflag</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">iprint</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">print </span><span class="mi">70</span>
+<span class="mi">70</span><span class="w">          </span><span class="k">format</span><span class="w"> </span><span class="p">(</span><span class="o">/</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;LINCOA has made the initial X feasible by&#39;</span><span class="p">,&amp;</span>
+<span class="w">            </span><span class="s1">&#39; increasing part(s) of B.&#39;</span><span class="p">)</span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="c">!</span>
+<span class="c">!     Partition the working space array, so that different parts of it can be</span>
+<span class="c">!     treated separately by the subroutine that performs the main calculation.</span>
+<span class="c">!</span>
+<span class="w">        </span><span class="n">ndim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">npt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="n">ixb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ib</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span>
+<span class="w">        </span><span class="n">ixp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ixb</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="n">ifv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ixp</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">npt</span>
+<span class="w">        </span><span class="n">ixs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ifv</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">npt</span>
+<span class="w">        </span><span class="n">ixo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ixs</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="n">igo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ixo</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="n">ihq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">igo</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="n">ipq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ihq</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">np</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">        </span><span class="n">ibmat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ipq</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">npt</span>
+<span class="w">        </span><span class="n">izmat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ibmat</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ndim</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="n">istp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">izmat</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">npt</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">nptm</span>
+<span class="w">        </span><span class="n">isp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">istp</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="n">ixn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">isp</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">npt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">npt</span>
+<span class="w">        </span><span class="n">iac</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ixn</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="n">irc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iac</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="n">iqf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">irc</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span>
+<span class="w">        </span><span class="n">irf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iqf</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="n">ipqw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">irf</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">np</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span>
+<span class="c">!</span>
+<span class="c">!     The above settings provide a partition of W for subroutine LINCOB.</span>
+<span class="c">!</span>
+<span class="w">        </span><span class="k">call </span><span class="n">lincob</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">npt</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">iamat</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">ib</span><span class="p">),</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">rhobeg</span><span class="p">,</span><span class="w"> </span><span class="n">rhoend</span><span class="p">,</span><span class="w"> </span><span class="n">iprint</span><span class="p">,</span><span class="w"> </span><span class="n">maxfun</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                     </span><span class="n">w</span><span class="p">(</span><span class="n">ixb</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">ixp</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">ifv</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">ixs</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">ixo</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">igo</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">ihq</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">ipq</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                     </span><span class="n">w</span><span class="p">(</span><span class="n">ibmat</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">izmat</span><span class="p">),</span><span class="w"> </span><span class="n">ndim</span><span class="p">,</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">istp</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">isp</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">ixn</span><span class="p">),</span><span class="w"> </span><span class="n">iact</span><span class="p">,</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">irc</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                     </span><span class="n">w</span><span class="p">(</span><span class="n">iqf</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">irf</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">(</span><span class="n">ipqw</span><span class="p">),</span><span class="w"> </span><span class="n">w</span><span class="p">,</span><span class="w"> </span><span class="n">calfun</span><span class="p">)</span>
+
+<span class="w">        </span><span class="k">deallocate</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">lincoa</span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              PowellOpt
+ was developed by Jacob Williams<br>              &copy; 2025 
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+            </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>    
+
+    <!-- MathJax JavaScript
+             ================================================== -->
+             <!-- Placed at the end of the document so the pages load faster -->
+        <script type="text/x-mathjax-config">
+          MathJax.Hub.Config({
+          TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+          jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+          extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+          });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+          <script src="../tipuesearch/tipuesearch_content.js"></script>
+          <script src="../tipuesearch/tipuesearch_set.js"></script>
+          <script src="../tipuesearch/tipuesearch.js"></script>
+
+  </body>
+</html>
