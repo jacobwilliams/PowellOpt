@@ -11,7 +11,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         gcc_v: [10] # Version of GFortran we want to use.
-        python-version: [3.9]
+        python-version: [3.11]
     env:
       FC: gfortran-${{ matrix.gcc_v }}
       GCC_V: ${{ matrix.gcc_v }}
@@ -31,7 +31,7 @@ jobs:
       uses: ts-graphviz/setup-graphviz@v1
 
     - name: Setup Fortran Package Manager
-      uses: fortran-lang/setup-fpm@v5
+      uses: fortran-lang/setup-fpm@v7
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -54,18 +54,34 @@ jobs:
            --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-${{ matrix.gcc_v }} \
            --slave /usr/bin/gcov gcov /usr/bin/gcov-${{ matrix.gcc_v }}
 
-    - name: Compile
-      run: fpm build --profile release
+    # - name: Compile
+    #   run: fpm build --profile release
 
-    - name: Run test
-      run: fpm test
+    - name: Run tests
+      run: fpm test --profile debug --flag -coverage
+
+    # - name: Create coverage report
+    #   run: |
+    #     mkdir -p ${{ env.COV_DIR }}
+    #     mv ./build/gfortran_*/*/* ${{ env.COV_DIR }}
+    #     lcov --capture --initial --base-directory . --directory ${{ env.COV_DIR }} --output-file ${{ env.COV_DIR }}/coverage.base
+    #     lcov --capture           --base-directory . --directory ${{ env.COV_DIR }} --output-file ${{ env.COV_DIR }}/coverage.capture
+    #     lcov --add-tracefile ${{ env.COV_DIR }}/coverage.base --add-tracefile ${{ env.COV_DIR }}/coverage.capture --output-file ${{ env.COV_DIR }}/coverage.info
+    #   env:
+    #     COV_DIR: build/coverage
+
+    # - name: Upload coverage report
+    #   uses: codecov/codecov-action@v3
+    #   with:
+    #     files: build/coverage/coverage.info
 
     - name: Build documentation
-      run: ford ./PowellOpt.md
+      run: ford ./ford.md
 
     - name: Deploy Documentation
       if: github.ref == 'refs/heads/master'
-      uses: JamesIves/github-pages-deploy-action@v4.4.1
+      uses: JamesIves/github-pages-deploy-action@v4.7.3
       with:
         branch: gh-pages # The branch the action should deploy to.
         folder: doc  # The folder the action should deploy.
+        single-commit: true
